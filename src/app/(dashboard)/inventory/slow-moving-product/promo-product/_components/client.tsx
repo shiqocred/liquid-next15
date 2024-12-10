@@ -29,11 +29,11 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
+// import { useConfirm } from "@/hooks/use-confirm";
 import { useGetListPromo } from "../_api/use-get-list-promo";
-import { useDeleteProductSlow } from "../_api/use-delete-product-slow";
+// import { useDeleteProductSlow } from "../_api/use-delete-product-slow";
 import { useExportSlow } from "../_api/use-export-product-slow";
-import { useQueryClient } from "@tanstack/react-query";
+// import { useQueryClient } from "@tanstack/react-query";
 import { useGetDetailPeoductSlow } from "../_api/use-get-detail-product-slow";
 import {
   Dialog,
@@ -46,7 +46,7 @@ import Pagination from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   const [isMounted, setIsMounted] = useState(false);
   const [openDialog, setOpenDialog] = useQueryState(
@@ -67,14 +67,13 @@ export const Client = () => {
     perPage: 1,
   });
 
-  const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Product",
-    "This action cannot be undone",
-    "liquid"
-  );
+  // const [DeleteDialog, confirmDelete] = useConfirm(
+  //   "Delete Product",
+  //   "This action cannot be undone",
+  //   "liquid"
+  // );
 
-  const { mutate: mutateDelete, isPending: isPendingDelete } =
-    useDeleteProductSlow();
+  // const { mutate: mutateDelete } = useDeleteProductSlow();
   const { mutate: mutateExport, isPending: isPendingExport } = useExportSlow();
 
   const {
@@ -117,23 +116,23 @@ export const Client = () => {
     }
   }, [data]);
 
-  const handleDelete = async (id: any) => {
-    const ok = await confirmDelete();
+  // const handleDelete = async (id: any) => {
+  //   const ok = await confirmDelete();
 
-    if (!ok) return;
+  //   if (!ok) return;
 
-    mutateDelete(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-product-slow", id],
-          });
-          queryClient.invalidateQueries({ queryKey: ["list-product-slow"] });
-        },
-      }
-    );
-  };
+  //   mutateDelete(
+  //     { id },
+  //     {
+  //       onSuccess: () => {
+  //         queryClient.invalidateQueries({
+  //           queryKey: ["detail-product-slow", id],
+  //         });
+  //         queryClient.invalidateQueries({ queryKey: ["list-product-slow"] });
+  //       },
+  //     }
+  //   );
+  // };
 
   const handleExport = async () => {
     mutateExport("", {
@@ -316,7 +315,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <DeleteDialog />
+      {/* <DeleteDialog /> */}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
