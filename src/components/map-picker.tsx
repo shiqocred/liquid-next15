@@ -347,32 +347,6 @@ const Maps = ({
 
   return (
     <div className="w-[560px] h-[560px] flex-none relative flex justify-center overflow-hidden">
-      <style>{`
-        input[type="range"]::-webkit-slider-thumb {
-          appearance: none;
-          width: 20px;
-          height: 20px;
-          background-color: black; /* Fixed white color for lightness pointer */
-          border: 4px solid white; /* Black border for contrast */
-          border-radius: 50%;
-          box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-        }
-        input[type="range"]::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          background-color: black;
-          border: 4px solid white;
-          border-radius: 50%;
-          box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-        }
-          input[type="range"]::-moz-range-progress {
-          background-color: black; /* Warna bagian range yang sudah diisi */
-        }
-
-        input[type="range"]::-ms-fill-lower {
-          background-color: black;
-        }
-      `}</style>
       <Command className="h-fit absolute top-0 z-10 w-full p-1">
         <div className="w-full relative flex items-center">
           <MapIcon className="size-4 absolute left-3" />
@@ -453,12 +427,13 @@ const Maps = ({
                 </g>
               </svg>
             </div>
-            <div className="w-6 h-[150px] bg-white absolute left-3 bottom-3 flex items-center justify-center rounded-md">
+            <div className="w-6 h-[150px] bg-white absolute left-3 bottom-3 flex items-center justify-center rounded-md shadow-md border">
               <input
                 type="range"
                 min="5"
                 max="20"
-                className="w-[140px] h-2 rounded-full border-2 border-white shadow appearance-none cursor-pointer -rotate-90 vertical-range"
+                style={{ accentColor: "#000000" }}
+                className="w-[140px] h-2 rounded-full shadow cursor-pointer border border-white -rotate-90 vertical-range"
                 value={zoomLevel}
                 onChange={handleZoomChangeSlider}
               />

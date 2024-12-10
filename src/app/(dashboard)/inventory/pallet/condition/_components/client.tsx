@@ -21,12 +21,12 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useGetListWarehousePalet } from "../_api/use-get-list-warehouse-palet";
-import { useDeleteWarehousePalet } from "../_api/use-delete-warehouse-palet";
+import { useGetListConditionPalet } from "../_api/use-get-list-condition-palet";
+import { useDeleteConditionPalet } from "../_api/use-delete-condition-palet";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateWarehousePalet } from "../_api/use-update-warehouse-palet";
-import { useGetDetailWarehousePalet } from "../_api/use-get-detail-warehouse-palet";
-import { useCreateWarehousePalet } from "../_api/use-create-warehouse-palet";
+import { useUpdateConditionPalet } from "../_api/use-update-condition-palet";
+import { useGetDetailConditionPalet } from "../_api/use-get-detail-condition-palet";
+import { useCreateConditionPalet } from "../_api/use-create-condition-palet";
 import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
@@ -44,31 +44,15 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
 
-  // warehouse Id for Edit
-  const [warehouseId, setWarehouseId] = useQueryState("warehouseId", {
+  // condition Id for Edit
+  const [conditionId, setConditionId] = useQueryState("conditionId", {
     defaultValue: "",
   });
 
   // data form create edit
   const [input, setInput] = useState({
     name: "",
-    phone: "",
-    address: "",
-    provinsi: "",
-    kabupaten: "",
-    kecamatan: "",
-    latitude: "-6.175392",
-    longitude: "106.827153",
-  });
-
-  // dataGMaps
-  const [address, setAddress] = useState({
-    address: "",
-    kecamatan: "",
-    kabupaten: "",
-    provinsi: "",
-    latitude: "-6.175392",
-    longitude: "106.827153",
+    slug: "",
   });
 
   // data search, page
@@ -84,18 +68,18 @@ export const Client = () => {
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Warehouse",
+    "Delete Condition",
     "This action cannot be undone",
     "destructive"
   );
 
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } =
-    useDeleteWarehousePalet();
+    useDeleteConditionPalet();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } =
-    useUpdateWarehousePalet();
+    useUpdateConditionPalet();
   const { mutate: mutateCreate, isPending: isPendingCreate } =
-    useCreateWarehousePalet();
+    useCreateConditionPalet();
 
   // get data utama
   const {
@@ -107,16 +91,16 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListWarehousePalet({ p: page, q: searchValue });
+  } = useGetListConditionPalet({ p: page, q: searchValue });
 
   // get detail data
   const {
-    data: dataWarehouse,
-    isLoading: isLoadingWarehouse,
-    isSuccess: isSuccessWarehouse,
-    isError: isErrorWarehouse,
-    error: errorWarehouse,
-  } = useGetDetailWarehousePalet({ id: warehouseId });
+    data: dataCondition,
+    isLoading: isLoadingCondition,
+    isSuccess: isSuccessCondition,
+    isError: isErrorCondition,
+    error: errorCondition,
+  } = useGetDetailConditionPalet({ id: conditionId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -151,41 +135,20 @@ export const Client = () => {
   // handle close
   const handleClose = () => {
     setOpenCreateEdit(false);
-    setWarehouseId("");
+    setConditionId("");
     setInput((prev) => ({
       ...prev,
       name: "",
-      phone: "",
-      address: "",
-      kecamatan: "",
-      kabupaten: "",
-      provinsi: "",
-      latitude: "-6.175392",
-      longitude: "106.827153",
+      slug: "",
     }));
-    setAddress({
-      address: "",
-      kecamatan: "",
-      kabupaten: "",
-      provinsi: "",
-      latitude: "-6.175392",
-      longitude: "106.827153",
-    });
   };
 
   // handle create
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      nama: input.name,
-      alamat: input.address,
-      provinsi: input.provinsi,
-      kabupaten: input.kabupaten,
-      kota: input.kabupaten,
-      kecamatan: input.kecamatan,
-      no_hp: input.phone,
-      latitude: input.latitude,
-      longitude: input.longitude,
+      condition_name: input.name,
+      condition_slug: input.slug,
     };
     mutateCreate(
       { body },
@@ -201,96 +164,46 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      nama: input.name,
-      alamat: input.address,
-      provinsi: input.provinsi,
-      kabupaten: input.kabupaten,
-      kota: input.kabupaten,
-      kecamatan: input.kecamatan,
-      no_hp: input.phone,
-      latitude: input.latitude,
-      longitude: input.longitude,
+      condition_name: input.name,
+      condition_slug: input.slug,
     };
     mutateUpdate(
-      { id: warehouseId, body },
+      { id: conditionId, body },
       {
         onSuccess: (data) => {
           handleClose();
           queryClient.invalidateQueries({
-            queryKey: ["warehouse-palet-detail", data.data.data.resource.id],
+            queryKey: ["condition-palet-detail", data.data.data.resource.id],
           });
         },
       }
     );
   };
 
-  // update from gmaps to state
-  useEffect(() => {
-    setInput((prev) => ({
-      ...prev,
-      address: address.address ?? "",
-      kecamatan: address.kecamatan ?? "",
-      kabupaten: address.kabupaten ?? "",
-      provinsi: address.provinsi ?? "",
-      latitude: address.latitude ?? "-6.175392",
-      longitude: address.longitude ?? "106.827153",
-    }));
-  }, [address]);
-
   // set data detail
   useEffect(() => {
-    if (isSuccessWarehouse && dataWarehouse) {
-      setInput((prev) => ({
-        ...prev,
-        name: dataWarehouse.data.data.resource.nama ?? "",
-        phone: dataWarehouse.data.data.resource.no_hp ?? "",
-        address: dataWarehouse.data.data.resource.alamat ?? "",
-        provinsi: dataWarehouse.data.data.resource.provinsi ?? "",
-        kabupaten: dataWarehouse.data.data.resource.kabupaten ?? "",
-        kecamatan: dataWarehouse.data.data.resource.kecamatan ?? "",
-      }));
-      setAddress((prev) => ({
-        ...prev,
-        latitude: dataWarehouse.data.data.resource.latitude ?? "-6.175392",
-        longitude: dataWarehouse.data.data.resource.longitude ?? "106.827153",
-      }));
+    if (isSuccessCondition && dataCondition) {
+      setInput({
+        name: dataCondition.data.data.resource.condition_name ?? "",
+        slug: dataCondition.data.data.resource.condition_slug ?? "",
+      });
     }
-  }, [dataWarehouse]);
+  }, [dataCondition]);
 
   // isError get Detail
   useEffect(() => {
-    if (isErrorWarehouse && (errorWarehouse as AxiosError).status === 403) {
+    if (isErrorCondition && (errorCondition as AxiosError).status === 403) {
       toast.error(`Error 403: Restricted Access`);
     }
-    if (isErrorWarehouse && (errorWarehouse as AxiosError).status !== 403) {
+    if (isErrorCondition && (errorCondition as AxiosError).status !== 403) {
       toast.error(
         `ERROR ${
-          (errorWarehouse as AxiosError).status
-        }: Warehouse failed to get Data`
+          (errorCondition as AxiosError).status
+        }: Condition failed to get Data`
       );
-      console.log("ERROR_GET_WAREHOUSE:", errorWarehouse);
+      console.log("ERROR_GET_CONDITION:", errorCondition);
     }
-  }, [isErrorWarehouse, errorWarehouse]);
-
-  // set Default lat & lng "-6.175392 && 106.827153"
-  useEffect(() => {
-    if (isNaN(parseFloat(input.latitude))) {
-      setInput((prev) => ({ ...prev, latitude: "-6.175392" }));
-    }
-    if (isNaN(parseFloat(input.longitude))) {
-      setInput((prev) => ({ ...prev, longitude: "106.827153" }));
-    }
-  }, [input]);
-
-  // set gmaps Default lat & lng "-6.175392 & 106.827153"
-  useEffect(() => {
-    if (isNaN(parseFloat(address.latitude))) {
-      setAddress((prev) => ({ ...prev, latitude: "-6.175392" }));
-    }
-    if (isNaN(parseFloat(address.longitude))) {
-      setAddress((prev) => ({ ...prev, longitude: "106.827153" }));
-    }
-  }, [address]);
+  }, [isErrorCondition, errorCondition]);
 
   // column data
   const columnWarehousePalet: ColumnDef<any>[] = [
@@ -304,42 +217,12 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "nama",
+      accessorKey: "condition_name",
       header: "Name",
-      cell: ({ row }) => (
-        <div className="max-w-[250px]">{row.original.nama}</div>
-      ),
     },
     {
-      accessorKey: "no_hp",
-      header: "No. Hp",
-    },
-    {
-      accessorKey: "alamat",
-      header: "Address",
-      cell: ({ row }) => (
-        <div className="max-w-[300px]">{row.original.alamat}</div>
-      ),
-    },
-    {
-      accessorKey: "kecamatan",
-      header: "Kec.",
-    },
-    {
-      accessorKey: "kabupaten",
-      header: "Kab.",
-    },
-    {
-      accessorKey: "provinsi",
-      header: "Prov.",
-    },
-    {
-      accessorKey: "latitude",
-      header: "Lat.",
-    },
-    {
-      accessorKey: "longitude",
-      header: "Lng.",
+      accessorKey: "condition_slug",
+      header: "Slug",
     },
     {
       accessorKey: "action",
@@ -351,15 +234,15 @@ export const Client = () => {
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
               disabled={
-                isLoadingWarehouse || isPendingUpdate || isPendingCreate
+                isLoadingCondition || isPendingUpdate || isPendingCreate
               }
               onClick={(e) => {
                 e.preventDefault();
-                setWarehouseId(row.original.id);
+                setConditionId(row.original.id);
                 setOpenCreateEdit(true);
               }}
             >
-              {isLoadingWarehouse || isPendingUpdate || isPendingCreate ? (
+              {isLoadingCondition || isPendingUpdate || isPendingCreate ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Edit3 className="w-4 h-4" />
@@ -417,9 +300,7 @@ export const Client = () => {
             handleClose();
           }
         }} // handle close modal
-        warehouseId={warehouseId} // warehouseId
-        address={address} // address gmaps
-        setAddress={setAddress} // set address gmaps
+        conditionId={conditionId} // conditionId
         input={input} // input form
         setInput={setInput} // setInput Form
         handleClose={handleClose} // handle close for cancel
@@ -440,11 +321,11 @@ export const Client = () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Warehouse</BreadcrumbItem>
+          <BreadcrumbItem>Condition</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Warehouse Palet</h2>
+        <h2 className="text-xl font-bold">List Condition Palet</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -473,17 +354,17 @@ export const Client = () => {
                     setOpenCreateEdit(true);
                   }}
                   disabled={
-                    isLoadingWarehouse || isPendingUpdate || isPendingCreate
+                    isLoadingCondition || isPendingUpdate || isPendingCreate
                   }
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingWarehouse || isPendingUpdate || isPendingCreate ? (
+                  {isLoadingCondition || isPendingUpdate || isPendingCreate ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                   )}
-                  Add Warehouse
+                  Add Condition
                 </Button>
               </div>
             </div>
