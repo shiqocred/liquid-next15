@@ -21,12 +21,12 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useGetListStatusPalet } from "../_api/use-get-list-status-palet";
-import { useDeleteStatusPalet } from "../_api/use-delete-status-palet";
+import { useGetListBrandPalet } from "../_api/use-get-list-brand-palet";
+import { useDeleteBrandPalet } from "../_api/use-delete-brand-palet";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateStatusPalet } from "../_api/use-update-status-palet";
-import { useGetDetailStatusPalet } from "../_api/use-get-detail-status-palet";
-import { useCreateStatusPalet } from "../_api/use-create-status-palet";
+import { useUpdateBrandPalet } from "../_api/use-update-brand-palet";
+import { useGetDetailBrandPalet } from "../_api/use-get-detail-brand-palet";
+import { useCreateBrandPalet } from "../_api/use-create-brand-palet";
 import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
@@ -44,8 +44,8 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
 
-  // status Id for Edit
-  const [statusId, setStatusId] = useQueryState("statusId", {
+  // brand Id for Edit
+  const [brandId, setBrandId] = useQueryState("brandId", {
     defaultValue: "",
   });
 
@@ -68,18 +68,18 @@ export const Client = () => {
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Status",
+    "Delete Brand",
     "This action cannot be undone",
     "destructive"
   );
 
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } =
-    useDeleteStatusPalet();
+    useDeleteBrandPalet();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } =
-    useUpdateStatusPalet();
+    useUpdateBrandPalet();
   const { mutate: mutateCreate, isPending: isPendingCreate } =
-    useCreateStatusPalet();
+    useCreateBrandPalet();
 
   // get data utama
   const {
@@ -91,16 +91,16 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListStatusPalet({ p: page, q: searchValue });
+  } = useGetListBrandPalet({ p: page, q: searchValue });
 
   // get detail data
   const {
-    data: dataStatus,
-    isLoading: isLoadingStatus,
-    isSuccess: isSuccessStatus,
-    isError: isErrorStatus,
-    error: errorStatus,
-  } = useGetDetailStatusPalet({ id: statusId });
+    data: dataBrand,
+    isLoading: isLoadingBrand,
+    isSuccess: isSuccessBrand,
+    isError: isErrorBrand,
+    error: errorBrand,
+  } = useGetDetailBrandPalet({ id: brandId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -135,7 +135,7 @@ export const Client = () => {
   // handle close
   const handleClose = () => {
     setOpenCreateEdit(false);
-    setStatusId("");
+    setBrandId("");
     setInput((prev) => ({
       ...prev,
       name: "",
@@ -147,8 +147,8 @@ export const Client = () => {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      status_name: input.name,
-      status_slug: input.slug,
+      brand_name: input.name,
+      brand_slug: input.slug,
     };
     mutateCreate(
       { body },
@@ -164,16 +164,16 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      status_name: input.name,
-      status_slug: input.slug,
+      brand_name: input.name,
+      brand_slug: input.slug,
     };
     mutateUpdate(
-      { id: statusId, body },
+      { id: brandId, body },
       {
         onSuccess: (data) => {
           handleClose();
           queryClient.invalidateQueries({
-            queryKey: ["status-palet-detail", data.data.data.resource.id],
+            queryKey: ["brand-palet-detail", data.data.data.resource.id],
           });
         },
       }
@@ -182,26 +182,26 @@ export const Client = () => {
 
   // set data detail
   useEffect(() => {
-    if (isSuccessStatus && dataStatus) {
+    if (isSuccessBrand && dataBrand) {
       setInput({
-        name: dataStatus.data.data.resource.status_name ?? "",
-        slug: dataStatus.data.data.resource.status_slug ?? "",
+        name: dataBrand.data.data.resource.brand_name ?? "",
+        slug: dataBrand.data.data.resource.brand_slug ?? "",
       });
     }
-  }, [dataStatus]);
+  }, [dataBrand]);
 
   // isError get Detail
   useEffect(() => {
-    if (isErrorStatus && (errorStatus as AxiosError).status === 403) {
+    if (isErrorBrand && (errorBrand as AxiosError).status === 403) {
       toast.error(`Error 403: Restricted Access`);
     }
-    if (isErrorStatus && (errorStatus as AxiosError).status !== 403) {
+    if (isErrorBrand && (errorBrand as AxiosError).status !== 403) {
       toast.error(
-        `ERROR ${(errorStatus as AxiosError).status}: Status failed to get Data`
+        `ERROR ${(errorBrand as AxiosError).status}: Brand failed to get Data`
       );
-      console.log("ERROR_GET_STATUS:", errorStatus);
+      console.log("ERROR_GET_BRAND:", errorBrand);
     }
-  }, [isErrorStatus, errorStatus]);
+  }, [isErrorBrand, errorBrand]);
 
   // column data
   const columnWarehousePalet: ColumnDef<any>[] = [
@@ -215,11 +215,11 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "status_name",
+      accessorKey: "brand_name",
       header: "Name",
     },
     {
-      accessorKey: "status_slug",
+      accessorKey: "brand_slug",
       header: "Slug",
     },
     {
@@ -231,14 +231,14 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isLoadingStatus || isPendingUpdate || isPendingCreate}
+              disabled={isLoadingBrand || isPendingUpdate || isPendingCreate}
               onClick={(e) => {
                 e.preventDefault();
-                setStatusId(row.original.id);
+                setBrandId(row.original.id);
                 setOpenCreateEdit(true);
               }}
             >
-              {isLoadingStatus || isPendingUpdate || isPendingCreate ? (
+              {isLoadingBrand || isPendingUpdate || isPendingCreate ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Edit3 className="w-4 h-4" />
@@ -296,8 +296,8 @@ export const Client = () => {
             handleClose();
           }
         }} // handle close modal
-        isLoading={isLoadingStatus}
-        statusId={statusId} // statusId
+        isLoading={isLoadingBrand}
+        brandId={brandId} // brandId
         input={input} // input form
         setInput={setInput} // setInput Form
         handleClose={handleClose} // handle close for cancel
@@ -318,11 +318,11 @@ export const Client = () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Status</BreadcrumbItem>
+          <BreadcrumbItem>Brand</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Status Palet</h2>
+        <h2 className="text-xl font-bold">List Brand Palet</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -351,12 +351,12 @@ export const Client = () => {
                     setOpenCreateEdit(true);
                   }}
                   disabled={
-                    isLoadingStatus || isPendingUpdate || isPendingCreate
+                    isLoadingBrand || isPendingUpdate || isPendingCreate
                   }
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingStatus || isPendingUpdate || isPendingCreate ? (
+                  {isLoadingBrand || isPendingUpdate || isPendingCreate ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />

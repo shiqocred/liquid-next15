@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useDeleteConditionPalet = () => {
+export const useDeleteTransportationPalet = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/product-conditions/${id}`, {
+      const res = await axios.delete(`${baseUrl}/vehicle-types/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,18 +25,20 @@ export const useDeleteConditionPalet = () => {
       return res;
     },
     onSuccess: (data) => {
-      toast.success("Condition successfully Deleted");
-      queryClient.invalidateQueries({ queryKey: ["list-condition-palet"] });
+      toast.success("Transportation successfully Deleted");
       queryClient.invalidateQueries({
-        queryKey: ["condition-palet-detail", data.data.data.resource.id],
+        queryKey: ["list-transportation-palet"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["transportation-palet-detail", data.data.data.resource.id],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Condition failed to delete`);
-        console.log("ERROR_DELETE_CONDITION:", err);
+        toast.error(`ERROR ${err?.status}: Transportation failed to delete`);
+        console.log("ERROR_DELETE_TRANSPORTATION:", err);
       }
     },
   });

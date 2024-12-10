@@ -16,12 +16,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { Loader } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   isSticky?: boolean;
   maxHeight?: string;
+  isLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -29,6 +31,7 @@ export function DataTable<TData, TValue>({
   data,
   isSticky = false,
   maxHeight = "max-h-[75vh]",
+  isLoading = false,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -72,7 +75,17 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  <Loader className="size-6 animate-spin" />
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   className="border-0 border-b border-sky-200 hover:border-sky-400 hover:bg-transparent"

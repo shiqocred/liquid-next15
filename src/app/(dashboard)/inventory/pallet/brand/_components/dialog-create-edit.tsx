@@ -10,24 +10,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 import React from "react";
 import slug from "slug";
 
 const DialogCreateEdit = ({
   open,
   onCloseModal,
-  conditionId,
-  isLoading,
+  brandId,
   input,
   setInput,
+  isLoading,
   handleClose,
   handleCreate,
   handleUpdate,
 }: {
   open: boolean;
   onCloseModal: () => void;
-  conditionId: any;
+  brandId: any;
   isLoading: boolean;
   input: any;
   setInput: any;
@@ -39,17 +39,15 @@ const DialogCreateEdit = ({
     <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>
-            {conditionId ? "Edit Condition" : "Create Condition"}
-          </DialogTitle>
+          <DialogTitle>{brandId ? "Edit Brand" : "Create Brand"}</DialogTitle>
         </DialogHeader>
         {isLoading ? (
           <div className="w-full h-[210px] flex justify-center items-center">
-            <Loader2 className="size-6 animate-spin" />
+            <Loader className="size-6 animate-spin" />
           </div>
         ) : (
           <form
-            onSubmit={!conditionId ? handleCreate : handleUpdate}
+            onSubmit={!brandId ? handleCreate : handleUpdate}
             className="w-full flex flex-col gap-4"
           >
             <div className="border p-4 rounded border-sky-500 gap-4 flex flex-col">
@@ -57,7 +55,7 @@ const DialogCreateEdit = ({
                 <Label>Name</Label>
                 <Input
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
-                  placeholder="Condition name..."
+                  placeholder="Brand name..."
                   value={input.name}
                   // disabled={loadingSubmit}
                   onChange={(e) =>
@@ -73,7 +71,7 @@ const DialogCreateEdit = ({
                 <Label>Slug</Label>
                 <Input
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
-                  placeholder="condition-slug"
+                  placeholder="brand-slug"
                   value={input.slug}
                   disabled
                 />
@@ -93,14 +91,14 @@ const DialogCreateEdit = ({
               <Button
                 className={cn(
                   "text-black w-full",
-                  conditionId
+                  brandId
                     ? "bg-yellow-400 hover:bg-yellow-400/80"
                     : "bg-sky-400 hover:bg-sky-400/80"
                 )}
                 type="submit"
                 disabled={!input.name || !input.slug}
               >
-                {conditionId ? "Update" : "Create"}
+                {brandId ? "Update" : "Create"}
               </Button>
             </div>
           </form>

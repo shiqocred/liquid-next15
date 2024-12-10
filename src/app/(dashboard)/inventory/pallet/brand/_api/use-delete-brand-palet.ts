@@ -6,34 +6,37 @@ import { toast } from "sonner";
 import { useCookies } from "next-client-cookies";
 
 type RequestType = {
-  body: any;
+  id: string;
 };
 
 type Error = AxiosError;
 
-export const useCreateConditionPalet = () => {
+export const useDeleteBrandPalet = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/product-conditions`, body, {
+    mutationFn: async ({ id }) => {
+      const res = await axios.delete(`${baseUrl}/product-brands/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       return res;
     },
-    onSuccess: () => {
-      toast.success("Condition successfully created");
-      queryClient.invalidateQueries({ queryKey: ["list-condition-palet"] });
+    onSuccess: (data) => {
+      toast.success("Brand successfully Deleted");
+      queryClient.invalidateQueries({ queryKey: ["list-brand-palet"] });
+      queryClient.invalidateQueries({
+        queryKey: ["brand-palet-detail", data.data.data.resource.id],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Condition failed to create`);
-        console.log("ERROR_CREATE_CONDITION:", err);
+        toast.error(`ERROR ${err?.status}: Brand failed to delete`);
+        console.log("ERROR_DELETE_BRAND:", err);
       }
     },
   });

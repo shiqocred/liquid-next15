@@ -301,6 +301,7 @@ export const Client = () => {
           }
         }} // handle close modal
         conditionId={conditionId} // conditionId
+        isLoading={isLoadingCondition}
         input={input} // input form
         setInput={setInput} // setInput Form
         handleClose={handleClose} // handle close for cancel

@@ -21,12 +21,12 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useGetListStatusPalet } from "../_api/use-get-list-status-palet";
-import { useDeleteStatusPalet } from "../_api/use-delete-status-palet";
+import { useGetListTransportationPalet } from "../_api/use-get-list-transportation-palet";
+import { useDeleteTransportationPalet } from "../_api/use-delete-transportation-palet";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateStatusPalet } from "../_api/use-update-status-palet";
-import { useGetDetailStatusPalet } from "../_api/use-get-detail-status-palet";
-import { useCreateStatusPalet } from "../_api/use-create-status-palet";
+import { useUpdateTransportationPalet } from "../_api/use-update-transportation-palet";
+import { useGetDetailTransportationPalet } from "../_api/use-get-detail-transportation-palet";
+import { useCreateTransportationPalet } from "../_api/use-create-transportation-palet";
 import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
@@ -44,15 +44,20 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
 
-  // status Id for Edit
-  const [statusId, setStatusId] = useQueryState("statusId", {
-    defaultValue: "",
-  });
+  // transportation Id for Edit
+  const [transportationId, setTransportationId] = useQueryState(
+    "transportationId",
+    {
+      defaultValue: "",
+    }
+  );
 
   // data form create edit
   const [input, setInput] = useState({
     name: "",
-    slug: "",
+    length: "",
+    width: "",
+    height: "",
   });
 
   // data search, page
@@ -68,18 +73,18 @@ export const Client = () => {
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Status",
+    "Delete Transportation",
     "This action cannot be undone",
     "destructive"
   );
 
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } =
-    useDeleteStatusPalet();
+    useDeleteTransportationPalet();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } =
-    useUpdateStatusPalet();
+    useUpdateTransportationPalet();
   const { mutate: mutateCreate, isPending: isPendingCreate } =
-    useCreateStatusPalet();
+    useCreateTransportationPalet();
 
   // get data utama
   const {
@@ -91,16 +96,16 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListStatusPalet({ p: page, q: searchValue });
+  } = useGetListTransportationPalet({ p: page, q: searchValue });
 
   // get detail data
   const {
-    data: dataStatus,
-    isLoading: isLoadingStatus,
-    isSuccess: isSuccessStatus,
-    isError: isErrorStatus,
-    error: errorStatus,
-  } = useGetDetailStatusPalet({ id: statusId });
+    data: dataTransportation,
+    isLoading: isLoadingTransportation,
+    isSuccess: isSuccessTransportation,
+    isError: isErrorTransportation,
+    error: errorTransportation,
+  } = useGetDetailTransportationPalet({ id: transportationId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -135,20 +140,23 @@ export const Client = () => {
   // handle close
   const handleClose = () => {
     setOpenCreateEdit(false);
-    setStatusId("");
-    setInput((prev) => ({
-      ...prev,
+    setTransportationId("");
+    setInput({
       name: "",
-      slug: "",
-    }));
+      length: "",
+      width: "",
+      height: "",
+    });
   };
 
   // handle create
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      status_name: input.name,
-      status_slug: input.slug,
+      vehicle_name: input.name,
+      cargo_length: input.length,
+      cargo_height: input.height,
+      cargo_width: input.width,
     };
     mutateCreate(
       { body },
@@ -164,16 +172,21 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      status_name: input.name,
-      status_slug: input.slug,
+      vehicle_name: input.name,
+      cargo_length: input.length,
+      cargo_height: input.height,
+      cargo_width: input.width,
     };
     mutateUpdate(
-      { id: statusId, body },
+      { id: transportationId, body },
       {
         onSuccess: (data) => {
           handleClose();
           queryClient.invalidateQueries({
-            queryKey: ["status-palet-detail", data.data.data.resource.id],
+            queryKey: [
+              "transportation-palet-detail",
+              data.data.data.resource.id,
+            ],
           });
         },
       }
@@ -182,26 +195,49 @@ export const Client = () => {
 
   // set data detail
   useEffect(() => {
-    if (isSuccessStatus && dataStatus) {
+    if (isSuccessTransportation && dataTransportation) {
       setInput({
-        name: dataStatus.data.data.resource.status_name ?? "",
-        slug: dataStatus.data.data.resource.status_slug ?? "",
+        name: dataTransportation.data.data.resource.vehicle_name ?? "",
+        length: dataTransportation.data.data.resource.cargo_length ?? "",
+        height: dataTransportation.data.data.resource.cargo_height ?? "",
+        width: dataTransportation.data.data.resource.cargo_width ?? "",
       });
     }
-  }, [dataStatus]);
+  }, [dataTransportation]);
 
   // isError get Detail
   useEffect(() => {
-    if (isErrorStatus && (errorStatus as AxiosError).status === 403) {
+    if (
+      isErrorTransportation &&
+      (errorTransportation as AxiosError).status === 403
+    ) {
       toast.error(`Error 403: Restricted Access`);
     }
-    if (isErrorStatus && (errorStatus as AxiosError).status !== 403) {
+    if (
+      isErrorTransportation &&
+      (errorTransportation as AxiosError).status !== 403
+    ) {
       toast.error(
-        `ERROR ${(errorStatus as AxiosError).status}: Status failed to get Data`
+        `ERROR ${
+          (errorTransportation as AxiosError).status
+        }: Brand failed to get Data`
       );
-      console.log("ERROR_GET_STATUS:", errorStatus);
+      console.log("ERROR_GET_BRAND:", errorTransportation);
     }
-  }, [isErrorStatus, errorStatus]);
+  }, [isErrorTransportation, errorTransportation]);
+
+  // set default value !isNaN
+  useEffect(() => {
+    if (isNaN(parseFloat(input.height))) {
+      setInput((prev) => ({ ...prev, height: "0" }));
+    }
+    if (isNaN(parseFloat(input.length))) {
+      setInput((prev) => ({ ...prev, length: "0" }));
+    }
+    if (isNaN(parseFloat(input.width))) {
+      setInput((prev) => ({ ...prev, width: "0" }));
+    }
+  }, [input]);
 
   // column data
   const columnWarehousePalet: ColumnDef<any>[] = [
@@ -215,12 +251,20 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "status_name",
+      accessorKey: "vehicle_name",
       header: "Name",
     },
     {
-      accessorKey: "status_slug",
-      header: "Slug",
+      accessorKey: "cargo_length",
+      header: "Length",
+    },
+    {
+      accessorKey: "cargo_height",
+      header: "Height",
+    },
+    {
+      accessorKey: "cargo_width",
+      header: "Width",
     },
     {
       accessorKey: "action",
@@ -231,14 +275,16 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isLoadingStatus || isPendingUpdate || isPendingCreate}
+              disabled={
+                isLoadingTransportation || isPendingUpdate || isPendingCreate
+              }
               onClick={(e) => {
                 e.preventDefault();
-                setStatusId(row.original.id);
+                setTransportationId(row.original.id);
                 setOpenCreateEdit(true);
               }}
             >
-              {isLoadingStatus || isPendingUpdate || isPendingCreate ? (
+              {isLoadingTransportation || isPendingUpdate || isPendingCreate ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Edit3 className="w-4 h-4" />
@@ -296,8 +342,8 @@ export const Client = () => {
             handleClose();
           }
         }} // handle close modal
-        isLoading={isLoadingStatus}
-        statusId={statusId} // statusId
+        isLoading={isLoadingTransportation}
+        transportationId={transportationId} // transportationId
         input={input} // input form
         setInput={setInput} // setInput Form
         handleClose={handleClose} // handle close for cancel
@@ -318,11 +364,11 @@ export const Client = () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Status</BreadcrumbItem>
+          <BreadcrumbItem>Transportation</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Status Palet</h2>
+        <h2 className="text-xl font-bold">List Transportation Palet</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -351,17 +397,21 @@ export const Client = () => {
                     setOpenCreateEdit(true);
                   }}
                   disabled={
-                    isLoadingStatus || isPendingUpdate || isPendingCreate
+                    isLoadingTransportation ||
+                    isPendingUpdate ||
+                    isPendingCreate
                   }
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingStatus || isPendingUpdate || isPendingCreate ? (
+                  {isLoadingTransportation ||
+                  isPendingUpdate ||
+                  isPendingCreate ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                   )}
-                  Add Status
+                  Add Transportation
                 </Button>
               </div>
             </div>

@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { useCookies } from "next-client-cookies";
 
-export const useGetDetailConditionPalet = ({ id }: any) => {
+export const useGetDetailStatusPalet = ({ id }: any) => {
   const accessToken = useCookies().get("accessToken");
   const query = useQuery({
-    queryKey: ["condition-palet-detail", id],
+    queryKey: ["status-palet-detail", id],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/product-conditions/${id}`, {
+      const res = await axios.get(`${baseUrl}/product-statuses/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

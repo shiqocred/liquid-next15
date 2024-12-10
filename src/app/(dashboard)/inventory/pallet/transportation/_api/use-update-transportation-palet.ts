@@ -12,13 +12,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useUpdateConditionPalet = () => {
+export const useUpdateTransportationPalet = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/product-conditions/${id}`, body, {
+      const res = await axios.put(`${baseUrl}/vehicle-types/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -26,15 +26,17 @@ export const useUpdateConditionPalet = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Condition successfully updated");
-      queryClient.invalidateQueries({ queryKey: ["list-condition-palet"] });
+      toast.success("Transportation successfully updated");
+      queryClient.invalidateQueries({
+        queryKey: ["list-transportation-palet"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Condition failed to update`);
-        console.log("ERROR_UPDATE_CONDITIONE:", err);
+        toast.error(`ERROR ${err?.status}: Transportation failed to update`);
+        console.log("ERROR_UPDATE_TRANSPORTATION:", err);
       }
     },
   });
