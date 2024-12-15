@@ -1,0 +1,350 @@
+"use client";
+
+import { PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/use-debounce";
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import Forbidden from "@/components/403";
+import { AxiosError } from "axios";
+import Loading from "@/app/(dashboard)/loading";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/data-table";
+import { useGetListMigrateColor } from "../_api/use-get-list-migrate-color";
+import Pagination from "@/components/pagination";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import dynamic from "next/dynamic";
+import { useGetDetailMigrateColor } from "../_api/use-get-detail-migrate-color";
+import { useExportDetailMigrateColor } from "../_api/use-export-detail-migrate-color";
+import { toast } from "sonner";
+import { format } from "date-fns";
+
+const DialogDetail = dynamic(() => import("./dialog-detail"), {
+  ssr: false,
+});
+
+export const Client = () => {
+  // sheet detail
+  const [openDetail, setOpenDetail] = useQueryState(
+    "dialog",
+    parseAsBoolean.withDefault(false)
+  );
+
+  // migrateColorId for detail
+  const [migrateColorId, setMigrateColorId] = useQueryState("migrateColorId", {
+    defaultValue: "",
+  });
+
+  // data search, page
+  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
+  const searchValue = useDebounce(dataSearch);
+  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
+  const [metaPage, setMetaPage] = useState({
+    last: 1, //page terakhir
+    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
+    total: 1, //total data
+    perPage: 1,
+  });
+
+  // mutate DELETE, UPDATE, CREATE
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportDetailMigrateColor();
+
+  // get data utama
+  const {
+    data,
+    refetch,
+    isLoading,
+    isRefetching,
+    isPending,
+    error,
+    isError,
+    isSuccess,
+  } = useGetListMigrateColor({ p: page, q: searchValue });
+
+  // get detail data
+  const {
+    data: dataMigrateColor,
+    isLoading: isLoadingMigrateColor,
+    refetch: refetchMigrateColor,
+    isRefetching: isRefetchingMigrateColor,
+    isError: isErrorMigrateColor,
+    error: errorMigrateColor,
+  } = useGetDetailMigrateColor({ id: migrateColorId });
+
+  // memo data utama
+  const dataList: any[] = useMemo(() => {
+    return data?.data.data.resource.data;
+  }, [data]);
+
+  // load data
+  const loading = isLoading || isRefetching || isPending;
+
+  // memo product detail list
+  const dataListDetail: any[] = useMemo(() => {
+    return dataMigrateColor?.data.data.resource.migrates;
+  }, [dataMigrateColor]);
+
+  // memo product detail list
+  const dataMetaDetail: any = useMemo(() => {
+    return dataMigrateColor?.data.data.resource;
+  }, [dataMigrateColor]);
+
+  // get pagetination
+  useEffect(() => {
+    if (isSuccess && data) {
+      setPage(data?.data.data.resource.current_page);
+      setMetaPage({
+        last: data?.data.data.resource.last_page ?? 1,
+        from: data?.data.data.resource.from ?? 0,
+        total: data?.data.data.resource.total ?? 0,
+        perPage: data?.data.data.resource.per_page ?? 0,
+      });
+    }
+  }, [data]);
+
+  // handle close
+  const handleClose = () => {
+    setOpenDetail(false);
+    setMigrateColorId("");
+  };
+
+  // handle export
+  const handleExport = async () => {
+    mutateExport(
+      { id: migrateColorId },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
+  // isError get Detail
+  useEffect(() => {
+    if (
+      isErrorMigrateColor &&
+      (errorMigrateColor as AxiosError).status === 403
+    ) {
+      toast.error(`Error 403: Restricted Access`);
+    }
+    if (
+      isErrorMigrateColor &&
+      (errorMigrateColor as AxiosError).status !== 403
+    ) {
+      toast.error(
+        `ERROR ${
+          (errorMigrateColor as AxiosError).status
+        }: Migrate Color failed to get Data`
+      );
+      console.log("ERROR_GET_MIGRATE_COLOR:", errorMigrateColor);
+    }
+  }, [isErrorMigrateColor, errorMigrateColor]);
+
+  // column data
+  const columnListMigrateColor: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPage.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "code_document_migrate",
+      header: "Migrate Document",
+    },
+    {
+      accessorKey: "created_at",
+      header: "Date",
+      cell: ({ row }) =>
+        format(new Date(row.original.created_at), "iiii, dd MMMM yyyy"),
+    },
+    {
+      accessorKey: "total_product_document_migrate",
+      header: () => <div className="text-center">Qty</div>,
+      cell: ({ row }) => (
+        <div className="text-center">
+          {row.original.total_product_document_migrate.toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "destiny_document_migrate",
+      header: "Destination",
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setOpenDetail(true);
+                setMigrateColorId(row.original.id);
+              }}
+            >
+              <ReceiptText className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
+  ];
+
+  // column data detail
+  const columnMigrateColorDetail: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(1 + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "product_color",
+      header: "Product Color",
+    },
+    {
+      accessorKey: "product_total",
+      header: () => <div className="text-center">Qty</div>,
+      cell: ({ row }) => (
+        <div className="text-center">
+          {row.original.product_total.toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "status_migrate",
+      header: () => <div className="text-center">Status</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+          <Badge className="rounded text-black font-normal capitalize bg-green-400/80 hover:bg-green-400/80">
+            {row.original.status_migrate.split("_").join(" ")}
+          </Badge>
+        </div>
+      ),
+    },
+  ];
+
+  // loading
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <Loading />;
+  }
+
+  if (isError && (error as AxiosError)?.status === 403) {
+    return (
+      <div className="flex flex-col items-start h-full bg-gray-100 w-full relative p-4 gap-4">
+        <Forbidden />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <DialogDetail
+        open={openDetail}
+        onCloseModal={() => {
+          if (openDetail) {
+            handleClose();
+          }
+        }}
+        data={dataMetaDetail}
+        isLoading={isLoadingMigrateColor}
+        refetch={refetchMigrateColor}
+        isRefetching={isRefetchingMigrateColor}
+        columns={columnMigrateColorDetail}
+        dataTable={dataListDetail ?? []}
+        isPendingExport={isPendingExport}
+        handleExport={handleExport}
+      />
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>Outbond</BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>Migrate Color</BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>List</BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
+        <h2 className="text-xl font-bold">List Migrate</h2>
+        <div className="flex flex-col w-full gap-4">
+          <div className="flex gap-2 items-center w-full justify-between">
+            <div className="flex items-center gap-3 w-full">
+              <Input
+                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
+                value={dataSearch}
+                onChange={(e) => setDataSearch(e.target.value)}
+                placeholder="Search..."
+                autoFocus
+              />
+              <TooltipProviderPage value={"Reload Data"}>
+                <Button
+                  onClick={() => refetch()}
+                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                  variant={"outline"}
+                >
+                  <RefreshCw
+                    className={cn("w-4 h-4", loading ? "animate-spin" : "")}
+                  />
+                </Button>
+              </TooltipProviderPage>
+              <div className="flex gap-4 items-center ml-auto">
+                <Button
+                  asChild
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  variant={"outline"}
+                >
+                  <Link href={"/outbond/migrate-color/list/create"}>
+                    <PlusCircle className={"w-4 h-4 mr-1"} />
+                    New Migrate
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DataTable columns={columnListMigrateColor} data={dataList ?? []} />
+          <Pagination
+            pagination={{ ...metaPage, current: page }}
+            setPagination={setPage}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -5,10 +5,10 @@ import { protect } from "@/lib/protect";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Staging Product",
+  title: "Create QCD",
 };
 
-const StagingProductPage = async () => {
+const CreateQCDPage = async () => {
   const user = await protect();
 
   if (!user) redirect("/login");
@@ -19,4 +19,4 @@ const StagingProductPage = async () => {
   );
 };
 
-export default StagingProductPage;
+export default CreateQCDPage;

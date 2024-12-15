@@ -46,20 +46,20 @@ const Maps = ({
 }: {
   input: {
     address: string;
-    kecamatan: string;
-    kabupaten: string;
-    provinsi: string;
-    latitude: string;
-    longitude: string;
+    kecamatan?: string;
+    kabupaten?: string;
+    provinsi?: string;
+    latitude?: string;
+    longitude?: string;
   };
   setInput: Dispatch<
     SetStateAction<{
       address: string;
-      kecamatan: string;
-      kabupaten: string;
-      provinsi: string;
-      latitude: string;
-      longitude: string;
+      kecamatan?: string;
+      kabupaten?: string;
+      provinsi?: string;
+      latitude?: string;
+      longitude?: string;
     }>
   >;
 }) => {
@@ -340,7 +340,12 @@ const Maps = ({
 
   //   get address every change lat lng
   useEffect(() => {
-    if (latDebounce !== "0" && lngDebounce !== "0") {
+    if (
+      latDebounce &&
+      latDebounce !== "0" &&
+      lngDebounce &&
+      lngDebounce !== "0"
+    ) {
       handleLatLng(parseFloat(latDebounce), parseFloat(lngDebounce));
     }
   }, [latDebounce, lngDebounce]);

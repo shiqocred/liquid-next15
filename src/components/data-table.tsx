@@ -32,7 +32,7 @@ export function DataTable<TData, TValue>({
   isSticky = false,
   maxHeight = "max-h-[75vh]",
   isLoading = false,
-}: DataTableProps<TData, TValue>) {
+}: Readonly<DataTableProps<TData, TValue>>) {
   const table = useReactTable({
     data,
     columns,
@@ -79,10 +79,12 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className={cn(" text-center", isSticky ? "h-[50vh]" : "h-24")}
                 >
-                  <Loader className="size-6 animate-spin" />
-                  Loading...
+                  <div className="flex flex-col justify-center items-center gap-2 w-full">
+                    <Loader className="size-6 animate-spin" />
+                    Loading...
+                  </div>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (

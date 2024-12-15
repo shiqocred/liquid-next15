@@ -336,7 +336,7 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPage.from + row.index).toLocaleString()}
+          {(1 + row.index).toLocaleString()}
         </div>
       ),
     },
