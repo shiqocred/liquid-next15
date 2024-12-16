@@ -6,37 +6,41 @@ import { toast } from "sonner";
 import { useCookies } from "next-client-cookies";
 
 type RequestType = {
-  id: any;
   body: any;
 };
 
 type Error = AxiosError;
 
-export const useUpdatePriceProduct = () => {
+export const useAddProduct = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/sales/update-price/${id}`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ body }) => {
+      const res = await axios.post(
+        `${baseUrl}/sale-document/add-product`,
+        body,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("Price Product successfully Updated");
+      toast.success("Product successfully added");
+      queryClient.invalidateQueries({ queryKey: ["list-product-cashier"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-data-cashier"],
+        queryKey: ["list-detail-cashier"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Price Product failed to update`);
-        console.log("ERROR_UPDATE_PRICE_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to add`);
+        console.log("ERROR_ADD_PRODUCT:", err);
       }
     },
   });

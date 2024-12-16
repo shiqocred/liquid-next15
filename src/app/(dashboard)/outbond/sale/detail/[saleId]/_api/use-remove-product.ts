@@ -6,19 +6,18 @@ import { toast } from "sonner";
 import { useCookies } from "next-client-cookies";
 
 type RequestType = {
-  id: any;
-  body: any;
+  id: string;
 };
 
 type Error = AxiosError;
 
-export const useUpdatePriceProduct = () => {
+export const useRemoveProduct = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/sales/update-price/${id}`, body, {
+    mutationFn: async ({ id }) => {
+      const res = await axios.delete(`${baseUrl}/sales/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -26,17 +25,18 @@ export const useUpdatePriceProduct = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Price Product successfully Updated");
+      toast.success("Product successfully removed");
+      queryClient.invalidateQueries({ queryKey: ["list-product-cashier"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-data-cashier"],
+        queryKey: ["list-detail-cashier"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Price Product failed to update`);
-        console.log("ERROR_UPDATE_PRICE_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to remove`);
+        console.log("ERROR_REMOVE_PRODUCT:", err);
       }
     },
   });

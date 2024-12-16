@@ -9,16 +9,15 @@ type RequestType = {
   id: any;
   body: any;
 };
-
 type Error = AxiosError;
 
-export const useUpdatePriceProduct = () => {
+export const useUpdateCartonBox = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/sales/update-price/${id}`, body, {
+      const res = await axios.put(`${baseUrl}/sale-documents/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -26,17 +25,15 @@ export const useUpdatePriceProduct = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Price Product successfully Updated");
-      queryClient.invalidateQueries({
-        queryKey: ["list-data-cashier"],
-      });
+      toast.success("Carton Box successfully updated");
+      queryClient.invalidateQueries({ queryKey: ["list-detail-cashier"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Price Product failed to update`);
-        console.log("ERROR_UPDATE_PRICE_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Carton Box failed to update`);
+        console.log("ERROR_UPDATE_CARTON_BOX:", err);
       }
     },
   });

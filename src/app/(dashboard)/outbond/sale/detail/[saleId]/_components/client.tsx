@@ -9,10 +9,14 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   CircleDollarSign,
+  FileDown,
   Loader2,
+  Package,
   Percent,
   PercentCircle,
+  Plus,
   PlusCircle,
+  Printer,
   RefreshCw,
   ScanBarcode,
   Search,
@@ -32,7 +36,7 @@ import { parseAsInteger, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { useGetListChasier } from "../_api/use-get-list-cashier";
+import { useGetDetailChasier } from "../_api/use-get-detail-cashier";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
@@ -42,19 +46,18 @@ import Pagination from "@/components/pagination";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useAddProduct } from "../_api/use-add-product";
 import { useRemoveProduct } from "../_api/use-remove-product";
-import { useSubmit } from "../_api/use-submit";
+import { useUpdateCartonBox } from "../_api/use-update-carton-box";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useGetListBuyer } from "../_api/use-get-list-buyer";
 import dynamic from "next/dynamic";
 import { useGetListProduct } from "../_api/use-get-list-product";
 import { useGaborProduct } from "../_api/use-gabor-product";
 import { useUpdatePriceProduct } from "../_api/use-update-price-product";
+import { Separator } from "@/components/ui/separator";
+import { useParams } from "next/navigation";
+import { useExport } from "../_api/use-export";
 
-const DialogBuyer = dynamic(() => import("./dialog-buyer"), {
-  ssr: false,
-});
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
 });
@@ -64,27 +67,26 @@ const DialogGabor = dynamic(() => import("./dialog-gabor"), {
 const DialogUpdatePrice = dynamic(() => import("./dialog-update-price"), {
   ssr: false,
 });
-const DialogProceed = dynamic(() => import("./dialog-proceed"), {
+const DialogCarton = dynamic(() => import("./dialog-carton"), {
+  ssr: false,
+});
+const DialogExportData = dynamic(() => import("./dialog-export-data"), {
+  ssr: false,
+});
+const DialogExportProduct = dynamic(() => import("./dialog-export-product"), {
   ssr: false,
 });
 
 export const Client = () => {
-  const [isComplete, setIsComplete] = useState(false);
+  const { saleId } = useParams();
 
-  const [isProceed, setIsProceed] = useState(false);
   const [isUpdatePrice, setIsUpdatePrice] = useState(false);
   const [isGabor, setIsGabor] = useState(false);
-  const [isBuyer, setIsBuyer] = useState(false);
+  const [isCarton, setIsCarton] = useState(false);
   const [isProduct, setIsProduct] = useState(false);
+  const [isExportData, setIsExportData] = useState(false);
+  const [isExportProduct, setIsExportProduct] = useState(false);
 
-  const addRef = useRef<HTMLInputElement | null>(null);
-
-  const [input, setInput] = useState({
-    discount: "0",
-    buyer: "",
-    buyerId: "",
-    price: "0",
-  });
   const [inputEdit, setInputEdit] = useState({
     id: "",
     price: "0",
@@ -92,31 +94,10 @@ export const Client = () => {
   const [inputProceed, setInputProceed] = useState({
     qty: "0",
     unit: "0",
-    voucher: "0",
   });
+  const [dataExport, setDataExport] = useState<any>(null);
 
   // search, debounce, paginate strat ----------------------------------------------------------------
-
-  const [addProductSearch, setAddProductSearch] = useState("");
-  const searchAddProductValue = useDebounce(addProductSearch);
-
-  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage, setMetaPage] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
-
-  const [buyerSearch, setBuyerSearch] = useState("");
-  const searchBuyerValue = useDebounce(buyerSearch);
-  const [pageBuyer, setPageBuyer] = useState(1);
-  const [metaPageBuyer, setMetaPageBuyer] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
 
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
@@ -131,12 +112,6 @@ export const Client = () => {
   // search, debounce, paginate end ----------------------------------------------------------------
 
   // confirm strat ----------------------------------------------------------------
-
-  const [SubmitDialog, confirmSubmit] = useConfirm(
-    "Create Sale",
-    "This action cannot be undone",
-    "liquid"
-  );
 
   const [DeleteProductDialog, confirmDeleteProduct] = useConfirm(
     "Delete Product",
@@ -154,28 +129,22 @@ export const Client = () => {
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
 
-  const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
+  const { mutate: mutateUpdateCarton, isPending: isPendingCarton } =
+    useUpdateCartonBox();
 
   const { mutate: mutateGabor, isPending: isPendingGabor } = useGaborProduct();
 
   const { mutate: mutateUpdatePrice, isPending: isPendingUpdatePrice } =
     useUpdatePriceProduct();
 
+  const { mutate: mutateExport, isPending: isPendingExport } = useExport();
+
   // mutate end ----------------------------------------------------------------
 
   // query strat ----------------------------------------------------------------
 
   const { data, refetch, isRefetching, error, isError, isSuccess } =
-    useGetListChasier({ p: page });
-
-  const {
-    data: dataBuyer,
-    refetch: refetchBuyer,
-    isRefetching: isRefetchingBuyer,
-    error: errorBuyer,
-    isError: isErrorBuyer,
-    isSuccess: isSuccessBuyer,
-  } = useGetListBuyer({ p: pageBuyer, q: searchBuyerValue });
+    useGetDetailChasier({ id: saleId });
 
   const {
     data: dataProduct,
@@ -195,12 +164,8 @@ export const Client = () => {
   }, [data]);
 
   const dataList: any[] = useMemo(() => {
-    return data?.data.data.resource.data;
+    return data?.data.data.resource.sales;
   }, [data]);
-
-  const dataListBuyer: any[] = useMemo(() => {
-    return dataBuyer?.data.data.resource.data;
-  }, [dataBuyer]);
 
   const dataListProduct: any[] = useMemo(() => {
     return dataProduct?.data.data.resource.data;
@@ -211,33 +176,13 @@ export const Client = () => {
   // paginate strat ----------------------------------------------------------------
 
   useEffect(() => {
-    setPaginate({
-      isSuccess: isSuccess,
-      data: data,
-      dataPaginate: data?.data.data.resource,
-      setPage: setPage,
-      setMetaPage: setMetaPage,
+    setInputProceed({
+      qty: Math.round(data?.data.data.resource.cardbox_qty).toString() ?? "0",
+      unit:
+        Math.round(data?.data.data.resource.cardbox_unit_price).toString() ??
+        "0",
     });
-    setInput((prev) => ({
-      ...prev,
-      buyer: data?.data.data.resource.sale_buyer_name,
-      buyerId: data?.data.data.resource.sale_buyer_id,
-      discount: Math.round(
-        data?.data.data.resource.data?.[0]?.new_discount_sale ?? "0"
-      ).toString(),
-      price: Math.round(data?.data.data.resource.total_sale ?? "0").toString(),
-    }));
   }, [data]);
-
-  useEffect(() => {
-    setPaginate({
-      isSuccess: isSuccessBuyer,
-      data: dataBuyer,
-      dataPaginate: dataBuyer?.data.data.resource,
-      setPage: setPageBuyer,
-      setMetaPage: setMetaPageBuyer,
-    });
-  }, [dataBuyer]);
 
   useEffect(() => {
     setPaginate({
@@ -255,22 +200,10 @@ export const Client = () => {
 
   const handleAddProduct = (barcode: string) => {
     const body = {
-      buyer_id: input.buyerId,
-      new_discount_sale: input.discount,
       sale_barcode: barcode,
-      voucher: "",
+      sale_document_id: saleId,
     };
-    mutateAddProduct(
-      { body },
-      {
-        onSuccess: () => {
-          if (addRef.current) {
-            addRef.current.focus();
-          }
-          setAddProductSearch("");
-        },
-      }
-    );
+    mutateAddProduct({ body });
   };
 
   const handleRemoveProduct = async (id: any) => {
@@ -303,41 +236,42 @@ export const Client = () => {
     );
   };
 
-  const handleSubmit = async () => {
-    setIsComplete(true);
+  const handleUpdateCarton = async () => {
+    mutateUpdateCarton(
+      {
+        id: saleId,
+        body: {
+          cardbox_qty: inputProceed.qty,
+          cardbox_unit_price: inputProceed.unit,
+        },
+      },
+      {
+        onSuccess: () => {
+          handleCloseUpdateCarton();
+        },
+      }
+    );
+  };
 
-    const ok = await confirmSubmit();
-
-    if (!ok) return;
-
-    const body = {
-      cardbox_qty: inputProceed.qty,
-      cardbox_unit_price: inputProceed.unit,
-      total_price_document_sale:
-        parseFloat(dataRes?.total_sale ?? 0) +
-        parseFloat(inputProceed.qty) * parseFloat(inputProceed.unit) -
-        parseFloat(inputProceed.voucher),
-      voucher: inputProceed.voucher,
-    };
-
-    mutateSubmit({ body });
+  const handleExport = async (type: "data" | "product") => {
+    mutateExport(
+      { barcode: dataRes?.code_document_sale },
+      {
+        onSuccess: (res) => {
+          if (type === "data") {
+            setIsExportData(true);
+          } else {
+            setIsExportProduct(true);
+          }
+          setDataExport(res.data);
+        },
+      }
+    );
   };
 
   // handling action end ----------------------------------------------------------------
 
   // handling close strat ----------------------------------------------------------------
-
-  const handleCloseBuyer = () => {
-    setIsBuyer(false);
-    setBuyerSearch("");
-    setPageBuyer(1);
-    setMetaPageBuyer({
-      from: 0,
-      last: 0,
-      perPage: 0,
-      total: 0,
-    });
-  };
 
   const handleCloseProduct = () => {
     setIsProduct(false);
@@ -366,14 +300,15 @@ export const Client = () => {
       price: "0",
     });
   };
+  const handleCloseUpdateCarton = () => {
+    setIsCarton(false);
+    setInputProceed({
+      qty: "0",
+      unit: "0",
+    });
+  };
 
   // handling close end ----------------------------------------------------------------
-
-  useEffect(() => {
-    if (isNaN(parseFloat(input.discount))) {
-      setInput((prev) => ({ ...prev, discount: "0" }));
-    }
-  }, [input]);
 
   useEffect(() => {
     if (isNaN(parseFloat(inputEdit.price))) {
@@ -382,9 +317,6 @@ export const Client = () => {
   }, [inputEdit]);
 
   useEffect(() => {
-    if (isNaN(parseFloat(inputProceed.voucher))) {
-      setInputProceed((prev) => ({ ...prev, voucher: "0" }));
-    }
     if (isNaN(parseFloat(inputProceed.qty))) {
       setInputProceed((prev) => ({ ...prev, qty: "0" }));
     }
@@ -392,24 +324,6 @@ export const Client = () => {
       setInputProceed((prev) => ({ ...prev, unit: "0" }));
     }
   }, [inputProceed]);
-
-  // handle add by input
-  useEffect(() => {
-    if (searchAddProductValue) {
-      handleAddProduct(searchAddProductValue);
-    }
-  }, [searchAddProductValue]);
-
-  // handle error buyer
-  useEffect(() => {
-    alertError({
-      isError: isErrorBuyer,
-      error: errorBuyer as AxiosError,
-      data: "Buyer",
-      action: "get data",
-      method: "GET",
-    });
-  }, [isErrorBuyer, errorBuyer]);
 
   // handle error product
   useEffect(() => {
@@ -428,7 +342,7 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPage.from + row.index).toLocaleString()}
+          {(1 + row.index).toLocaleString()}
         </div>
       ),
     },
@@ -460,7 +374,7 @@ export const Client = () => {
           <Button
             className="items-center border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50"
             variant={"outline"}
-            disabled={isPendingUpdatePrice || isPendingSubmit}
+            disabled={isPendingUpdatePrice}
             type="button"
             onClick={() => {
               setIsUpdatePrice(true);
@@ -481,7 +395,7 @@ export const Client = () => {
             className="items-center border-violet-400 text-violet-700 hover:text-violet-700 hover:bg-violet-50"
             variant={"outline"}
             type="button"
-            disabled={isPendingGabor || isPendingSubmit}
+            disabled={isPendingGabor}
             onClick={() => {
               setIsGabor(true);
               setInputEdit({
@@ -501,7 +415,7 @@ export const Client = () => {
             className="items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
             variant={"outline"}
             type="button"
-            disabled={isPendingRemoveProduct || isPendingSubmit}
+            disabled={isPendingRemoveProduct}
             onClick={() => {
               handleRemoveProduct(row.original.id);
             }}
@@ -513,63 +427,6 @@ export const Client = () => {
             )}
             <div>Delete</div>
           </Button>
-        </div>
-      ),
-    },
-  ];
-
-  const columnBuyer: ColumnDef<any>[] = [
-    {
-      header: () => <div className="text-center">No</div>,
-      id: "id",
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {(metaPageBuyer.from + row.index).toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "name_buyer",
-      header: "Buyer Name",
-      cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.name_buyer}</div>
-      ),
-    },
-    {
-      accessorKey: "phone_buyer",
-      header: "No. Hp",
-    },
-    {
-      accessorKey: "address_buyer",
-      header: "Address",
-      cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.address_buyer}</div>
-      ),
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => (
-        <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={"Select"}>
-            <Button
-              className="items-center border-sky-400 text-black hover:bg-sky-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={dataList?.length > 0}
-              onClick={(e) => {
-                e.preventDefault();
-                handleCloseBuyer();
-                setInput((prev) => ({
-                  ...prev,
-                  buyer: row.original.name_buyer,
-                  buyerId: row.original.id,
-                }));
-              }}
-              type="button"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-            </Button>
-          </TooltipProviderPage>
         </div>
       ),
     },
@@ -628,21 +485,6 @@ export const Client = () => {
     },
   ];
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!isComplete) {
-        event.preventDefault();
-        event.returnValue = ""; // Beberapa browser memerlukan nilai kosong untuk menampilkan dialog.
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isComplete]);
-
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -663,40 +505,37 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
-      <SubmitDialog />
       <DeleteProductDialog />
-      <DialogProceed
-        open={isProceed}
-        onCloseModal={() => setIsProceed(false)}
-        data={{
-          barcode: dataRes?.code_document_sale ?? "-",
-          buyer: input.buyer ?? "-",
-          discount: input.discount ?? "0",
-          totalProduct: dataList?.length ?? 0,
-          totalPrice: dataRes?.total_sale ?? 0,
-          voucher: inputProceed.voucher ?? "0",
-          cartonQty: inputProceed.qty ?? "0",
-          cartonUnit: inputProceed.unit ?? "0",
-        }}
-        setData={setInputProceed}
-        handleSubmit={handleSubmit}
-      />
-      <DialogBuyer
-        open={isBuyer}
+      <DialogExportData
+        open={isExportData}
         onCloseModal={() => {
-          if (isBuyer) {
-            handleCloseBuyer();
+          if (isExportData) {
+            setIsExportData(false);
+          }
+          setDataExport(null);
+        }}
+        data={dataExport}
+      />
+      <DialogExportProduct
+        open={isExportProduct}
+        onCloseModal={() => {
+          if (isExportProduct) {
+            setIsExportProduct(false);
+          }
+          setDataExport(null);
+        }}
+        data={dataExport}
+      />
+      <DialogCarton
+        open={isCarton}
+        onCloseModal={() => {
+          if (isCarton) {
+            setIsCarton(false);
           }
         }}
-        search={buyerSearch}
-        setSearch={setBuyerSearch}
-        refetch={refetchBuyer}
-        isRefetching={isRefetchingBuyer}
-        columns={columnBuyer}
-        dataTable={dataListBuyer}
-        page={pageBuyer}
-        metaPage={metaPageBuyer}
-        setPage={setPageBuyer}
+        input={inputProceed}
+        setInput={setInputProceed}
+        handleSubmit={handleUpdateCarton}
       />
       <DialogProduct
         open={isProduct}
@@ -748,7 +587,7 @@ export const Client = () => {
               <BreadcrumbLink href="/outbond/sale">Sale</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>Cashier</BreadcrumbItem>
+            <BreadcrumbItem>Detail</BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
@@ -757,159 +596,161 @@ export const Client = () => {
               <ArrowLeft className="w-5 h-5 text-black" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-semibold">Cashier</h1>
+          <h1 className="text-2xl font-semibold">Detail Sale</h1>
         </div>
-        <div className="grid w-full grid-cols-7 relative gap-4">
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
-            <div className="flex items-center gap-4 pb-3 mb-3 border-gray-500 border-b w-full">
+        <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+          <div className="flex items-center justify-between pb-3 mb-5 border-gray-500 border-b w-full">
+            <div className="flex items-center gap-4">
               <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
                 <ScanBarcode className="size-4" />
               </div>
-              <h5 className="font-bold">Barcode</h5>
+              <h5 className="font-bold text-xl">
+                {dataRes?.code_document_sale}
+              </h5>
             </div>
-            <div className="flex items-center h-10 text-base px-3">
-              {dataRes?.code_document_sale}
+            <div className="flex gap-4 items-center">
+              <TooltipProviderPage value={"Reload Data"}>
+                <Button
+                  onClick={() => refetch()}
+                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                  variant={"outline"}
+                  disabled={isRefetching}
+                >
+                  <RefreshCw
+                    className={cn(
+                      "w-4 h-4",
+                      isRefetching ? "animate-spin" : ""
+                    )}
+                  />
+                </Button>
+              </TooltipProviderPage>
+              <TooltipProviderPage value={"Add Product"} align="end">
+                <Button
+                  onClick={() => setIsProduct(true)}
+                  className="items-center w-9 px-0 flex-none h-9 bg-sky-400/80 text-black hover:bg-sky-400"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </TooltipProviderPage>
             </div>
           </div>
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-1">
-            <div className="flex items-center gap-4 pb-3 mb-3 border-gray-500 border-b w-full">
-              <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
-                <Percent className="size-4" />
-              </div>
-              <h5 className="font-bold">Disc.</h5>
-            </div>
-            {dataList?.length === 0 ? (
-              <div className="flex items-center gap-2 border-b border-gray-500 border-dashed">
-                <Input
-                  disabled={dataList?.length > 0 || isPendingSubmit}
-                  value={input.discount}
-                  type="number"
-                  onChange={(e) =>
-                    e.target.value.startsWith("0")
-                      ? e.target.value.replace(/^0+/, "")
-                      : e.target.value
-                  }
-                  className="border-none focus-visible:ring-0 shadow-none"
-                />
-                <Percent className="size-4" />
-              </div>
-            ) : (
-              <div className="flex items-center h-10 justify-center">
-                <p className="tracking-wide text-lg font-semibold">
-                  {input.discount}%
+          <div className="flex w-full gap-4">
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Buyer</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer_name_document_sale}
                 </p>
               </div>
-            )}
-          </div>
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
-            <div className="flex items-center gap-4 pb-3 mb-3 border-gray-500 border-b w-full">
-              <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
-                <BriefcaseBusiness className="size-4" />
+              <div className="flex flex-col">
+                <p className="text-sm">Buyer Phone</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer_phone_document_sale}
+                </p>
               </div>
-              <h5 className="font-bold">Buyer</h5>
+              <div className="flex flex-col">
+                <p className="text-sm">Buyer Address</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer_address_document_sale}
+                </p>
+              </div>
             </div>
-            <Button
-              type="button"
-              onClick={() => setIsBuyer(true)}
-              disabled={dataRes?.sale_buyer_name || isPendingSubmit}
-              className="bg-transparent h-10 text-base hover:bg-transparent text-black shadow-none justify-between group disabled:opacity-100"
-            >
-              {input.buyer ? input.buyer : "Not Selected"}
-              {!dataRes?.sale_buyer_name && (
-                <div className="size-9 flex items-center justify-center rounded-full group-hover:bg-sky-100">
-                  <ArrowLeftRight className="size-4" />
-                </div>
-              )}
-            </Button>
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Total Product</p>
+                <p className="font-semibold">
+                  {dataRes?.total_product_document_sale}
+                </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Total Diskon</p>
+                <p className="font-semibold">{dataRes?.new_discount_sale}%</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Total Voucher</p>
+                <p className="font-semibold">
+                  {formatRupiah(dataRes?.voucher)}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-500 w-full pt-3 mt-5">
+            <div className="flex flex-col">
+              <p className="text-sm">Total Product Price</p>
+              <p className="font-semibold">
+                {formatRupiah(dataRes?.total_price_document_sale)}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+          <div className="flex items-center justify-between pb-3 mb-5 border-gray-500 border-b w-full">
+            <div className="flex items-center gap-4">
+              <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
+                <Package className="size-4" />
+              </div>
+              <h5 className="font-bold text-xl">Carton Box</h5>
+            </div>
+            <TooltipProviderPage value={"Edit Carton Box"} align="end">
+              <Button
+                onClick={() => setIsCarton(true)}
+                className="items-center w-9 px-0 flex-none h-9 bg-yellow-400/80 text-black hover:bg-yellow-400"
+              >
+                <ArrowLeftRight className="size-4" />
+              </Button>
+            </TooltipProviderPage>
+          </div>
+          <div className="flex w-full gap-4">
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Qty</p>
+                <p className="font-semibold">{dataRes?.cardbox_qty}</p>
+              </div>
+            </div>
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Per Unit</p>
+                <p className="font-semibold">
+                  {formatRupiah(dataRes?.cardbox_unit_price)}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-500 w-full pt-3 mt-5">
+            <div className="flex flex-col">
+              <p className="text-sm">Total Carton Box Price</p>
+              <p className="font-semibold">
+                {formatRupiah(dataRes?.cardbox_total_price)}
+              </p>
+            </div>
           </div>
         </div>
         <div className="flex items-center justify-between w-full bg-sky-400/80 rounded-md overflow-hidden shadow p-5">
-          <div className="flex items-center gap-1">
-            <p className="font-semibold text-sm">
-              Proceed to complete the transaction
-            </p>
-            <TooltipProviderPage
-              value={
-                <div className="flex flex-col">
-                  <p>- Filling in the discount voucher </p>
-                  <p>- Configuring the carton box</p>
-                </div>
-              }
-            >
-              <AlertCircle className="size-3" />
-            </TooltipProviderPage>
-          </div>
-          <Button
-            type="button"
-            onClick={() => setIsProceed(true)}
-            disabled={isPendingSubmit}
-            className="bg-white text-black hover:bg-sky-50"
-          >
-            Proceed
-            <ArrowRightCircle className="size-4 ml-1" />
-          </Button>
-        </div>
-        <div className="flex w-full gap-4">
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5">
-            <div
-              className={cn(
-                "w-full flex justify-between items-center relative group",
-                !input.buyer && "cursor-not-allowed"
-              )}
-            >
-              <Label
-                htmlFor="search"
-                className="flex gap-2 absolute left-2 items-center"
-              >
-                <Badge className="bg-black text-xs hover:bg-black rounded-full text-white">
-                  Add Product
-                </Badge>
-              </Label>
-              <TooltipProviderPage
-                className={cn(!input.buyer ? "opacity-100" : "opacity-0")}
-                value={<p>Select Buyer First.</p>}
-              >
-                <Input
-                  id="search"
-                  ref={addRef}
-                  className="rounded-r-none border-r-0 pl-28 focus-visible:ring-0 focus-visible:border focus-visible:border-sky-300 border-sky-300/80 disabled:opacity-100"
-                  autoFocus
-                  autoComplete="off"
-                  disabled={!input.buyer || isPendingSubmit}
-                  value={addProductSearch}
-                  onChange={(e) => setAddProductSearch(e.target.value)}
-                />
-              </TooltipProviderPage>
-              <Button
-                disabled={!input.buyer || isPendingSubmit}
-                onClick={() => setIsProduct(true)}
-                className="bg-sky-300/80 w-10 p-0 hover:bg-sky-300 text-black rounded-l-none border border-sky-300/80 hover:border-sky-300 focus-visible:ring-0 disabled:opacity-100"
-              >
-                <Search className="w-4 h-4" />
-              </Button>
+          <div className="flex items-center gap-4 text-lg">
+            <div className="h-full pr-4 border-r border-black flex items-center whitespace-nowrap">
+              <p className="font-semibold">Grand Total</p>
             </div>
-          </div>
-          <div className="flex flex-none bg-white rounded-md overflow-hidden shadow p-5">
-            <TooltipProviderPage value={"Reload Data"}>
-              <Button
-                onClick={() => refetch()}
-                className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
-                variant={"outline"}
-                disabled={isPendingSubmit || isRefetching}
-              >
-                <RefreshCw
-                  className={cn("w-4 h-4", isRefetching ? "animate-spin" : "")}
-                />
-              </Button>
-            </TooltipProviderPage>
-          </div>
-          <div className="flex items-center w-full bg-white rounded-md overflow-hidden shadow p-5">
-            <div className="size-9 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow mr-2">
-              <BadgeDollarSign className="size-5" />
-            </div>
-            <p className="font-semibold">
-              {formatRupiah(dataRes?.total_sale ?? 0)}
+            <p className="font-semibold w-full text-center">
+              {formatRupiah(dataRes?.grand_total)}
             </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button
+              type="button"
+              onClick={() => handleExport("product")}
+              className="bg-white text-black hover:bg-sky-50"
+            >
+              <Printer className="size-4 ml-1" />
+              Export By Product
+            </Button>
+            <Button
+              type="button"
+              onClick={() => handleExport("data")}
+              className="bg-white text-black hover:bg-sky-50"
+            >
+              <FileDown className="size-4 ml-1" />
+              Export Data
+            </Button>
           </div>
         </div>
         <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
@@ -917,10 +758,6 @@ export const Client = () => {
             isLoading={isRefetching}
             columns={columnSales}
             data={dataList ?? []}
-          />
-          <Pagination
-            pagination={{ ...metaPage, current: page }}
-            setPagination={setPage}
           />
         </div>
       </div>

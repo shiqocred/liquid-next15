@@ -28,7 +28,7 @@ export const useUpdatePriceProduct = () => {
     onSuccess: () => {
       toast.success("Price Product successfully Updated");
       queryClient.invalidateQueries({
-        queryKey: ["list-data-cashier"],
+        queryKey: ["list-detail-cashier"],
       });
     },
     onError: (err) => {
