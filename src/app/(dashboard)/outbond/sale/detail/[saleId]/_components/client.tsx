@@ -1,28 +1,21 @@
 "use client";
 
 import {
-  AlertCircle,
   ArrowLeft,
   ArrowLeftRight,
-  ArrowRightCircle,
-  BadgeDollarSign,
-  BriefcaseBusiness,
-  CheckCircle2,
   CircleDollarSign,
   FileDown,
   Loader2,
   Package,
-  Percent,
   PercentCircle,
   Plus,
   PlusCircle,
   Printer,
   RefreshCw,
   ScanBarcode,
-  Search,
   Trash2,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -32,8 +25,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsInteger, useQueryState } from "nuqs";
-import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { useGetDetailChasier } from "../_api/use-get-detail-cashier";
@@ -42,19 +33,15 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import Pagination from "@/components/pagination";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useAddProduct } from "../_api/use-add-product";
 import { useRemoveProduct } from "../_api/use-remove-product";
 import { useUpdateCartonBox } from "../_api/use-update-carton-box";
 import Link from "next/link";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import dynamic from "next/dynamic";
 import { useGetListProduct } from "../_api/use-get-list-product";
 import { useGaborProduct } from "../_api/use-gabor-product";
 import { useUpdatePriceProduct } from "../_api/use-update-price-product";
-import { Separator } from "@/components/ui/separator";
 import { useParams } from "next/navigation";
 import { useExport } from "../_api/use-export";
 
@@ -176,12 +163,14 @@ export const Client = () => {
   // paginate strat ----------------------------------------------------------------
 
   useEffect(() => {
-    setInputProceed({
-      qty: Math.round(data?.data.data.resource.cardbox_qty).toString() ?? "0",
-      unit:
-        Math.round(data?.data.data.resource.cardbox_unit_price).toString() ??
-        "0",
-    });
+    if (isSuccess && data) {
+      setInputProceed({
+        qty: Math.round(data?.data.data.resource.cardbox_qty).toString() ?? "0",
+        unit:
+          Math.round(data?.data.data.resource.cardbox_unit_price).toString() ??
+          "0",
+      });
+    }
   }, [data]);
 
   useEffect(() => {
@@ -694,6 +683,7 @@ export const Client = () => {
             <TooltipProviderPage value={"Edit Carton Box"} align="end">
               <Button
                 onClick={() => setIsCarton(true)}
+                disabled={isPendingCarton}
                 className="items-center w-9 px-0 flex-none h-9 bg-yellow-400/80 text-black hover:bg-yellow-400"
               >
                 <ArrowLeftRight className="size-4" />
@@ -738,6 +728,7 @@ export const Client = () => {
             <Button
               type="button"
               onClick={() => handleExport("product")}
+              disabled={isPendingExport}
               className="bg-white text-black hover:bg-sky-50"
             >
               <Printer className="size-4 ml-1" />
@@ -746,6 +737,7 @@ export const Client = () => {
             <Button
               type="button"
               onClick={() => handleExport("data")}
+              disabled={isPendingExport}
               className="bg-white text-black hover:bg-sky-50"
             >
               <FileDown className="size-4 ml-1" />
