@@ -13,10 +13,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import {
   Barcode,
-  FileDown,
   Loader,
-  Loader2,
-  MapPinned,
   RefreshCw,
   ScanBarcodeIcon,
   Users2,

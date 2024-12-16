@@ -119,7 +119,6 @@ export const Client = () => {
 
   const {
     data: dataSelect,
-    isLoading: isLoadingSelect,
     error: errorSelect,
     isError: isErrorSelect,
   } = useGetSelectPanelSPV();
@@ -335,14 +334,24 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isLoadingFormat || isPendingUpdate || isPendingCreate}
+              disabled={
+                isLoadingFormat ||
+                isPendingUpdate ||
+                isPendingCreate ||
+                isPendingSubmit ||
+                isPendingDelete
+              }
               onClick={(e) => {
                 e.preventDefault();
                 setFormatId(row.original.id);
                 setOpenCreateEdit(true);
               }}
             >
-              {isLoadingFormat || isPendingUpdate || isPendingCreate ? (
+              {isLoadingFormat ||
+              isPendingUpdate ||
+              isPendingCreate ||
+              isPendingSubmit ||
+              isPendingDelete ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Edit3 className="w-4 h-4" />
@@ -353,14 +362,24 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isLoadingFormat || isPendingUpdate || isPendingCreate}
+              disabled={
+                isLoadingFormat ||
+                isPendingUpdate ||
+                isPendingCreate ||
+                isPendingSubmit ||
+                isPendingDelete
+              }
               onClick={(e) => {
                 e.preventDefault();
                 setFormatId(row.original.id);
                 setOpenDetail(true);
               }}
             >
-              {isLoadingFormat || isPendingUpdate || isPendingCreate ? (
+              {isLoadingFormat ||
+              isPendingUpdate ||
+              isPendingCreate ||
+              isPendingSubmit ||
+              isPendingDelete ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <ReceiptText className="w-4 h-4" />
@@ -371,13 +390,23 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingDelete}
+              disabled={
+                isLoadingFormat ||
+                isPendingUpdate ||
+                isPendingCreate ||
+                isPendingSubmit ||
+                isPendingDelete
+              }
               onClick={(e) => {
                 e.preventDefault();
                 handleDelete(row.original.id);
               }}
             >
-              {isPendingDelete ? (
+              {isLoadingFormat ||
+              isPendingUpdate ||
+              isPendingCreate ||
+              isPendingSubmit ||
+              isPendingDelete ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Trash2 className="w-4 h-4" />
@@ -525,12 +554,20 @@ export const Client = () => {
                     setOpenMatchUser(true);
                   }}
                   disabled={
-                    isLoadingFormat || isPendingUpdate || isPendingCreate
+                    isLoadingFormat ||
+                    isPendingUpdate ||
+                    isPendingCreate ||
+                    isPendingSubmit ||
+                    isPendingDelete
                   }
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingFormat || isPendingUpdate || isPendingCreate ? (
+                  {isLoadingFormat ||
+                  isPendingUpdate ||
+                  isPendingCreate ||
+                  isPendingSubmit ||
+                  isPendingDelete ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <Link2Icon className={"w-4 h-4 mr-1"} />
@@ -543,12 +580,20 @@ export const Client = () => {
                     setOpenCreateEdit(true);
                   }}
                   disabled={
-                    isLoadingFormat || isPendingUpdate || isPendingCreate
+                    isLoadingFormat ||
+                    isPendingUpdate ||
+                    isPendingCreate ||
+                    isPendingSubmit ||
+                    isPendingDelete
                   }
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingFormat || isPendingUpdate || isPendingCreate ? (
+                  {isLoadingFormat ||
+                  isPendingUpdate ||
+                  isPendingCreate ||
+                  isPendingSubmit ||
+                  isPendingDelete ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />
