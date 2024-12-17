@@ -4,18 +4,18 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowLeftRight,
-  ArrowRightCircle,
-  BadgeDollarSign,
   BriefcaseBusiness,
   CheckCircle2,
   CircleDollarSign,
   Loader2,
-  Percent,
+  Package,
   PercentCircle,
   PlusCircle,
   RefreshCw,
   ScanBarcode,
   Search,
+  Send,
+  TicketPercent,
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -64,14 +64,23 @@ const DialogGabor = dynamic(() => import("./dialog-gabor"), {
 const DialogUpdatePrice = dynamic(() => import("./dialog-update-price"), {
   ssr: false,
 });
-const DialogProceed = dynamic(() => import("./dialog-proceed"), {
+const DialogVoucher = dynamic(() => import("./dialog-voucher"), {
+  ssr: false,
+});
+const DialogDiscount = dynamic(() => import("./dialog-discount"), {
+  ssr: false,
+});
+const DialogCarton = dynamic(() => import("./dialog-carton"), {
   ssr: false,
 });
 
 export const Client = () => {
   const [isComplete, setIsComplete] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
-  const [isProceed, setIsProceed] = useState(false);
+  const [isOpenCarton, setIsOpenCarton] = useState(false);
+  const [isOpenDiscount, setIsOpenDiscount] = useState(false);
+  const [isOpenVoucher, setIsOpenVoucher] = useState(false);
   const [isUpdatePrice, setIsUpdatePrice] = useState(false);
   const [isGabor, setIsGabor] = useState(false);
   const [isBuyer, setIsBuyer] = useState(false);
@@ -82,17 +91,17 @@ export const Client = () => {
   const [input, setInput] = useState({
     discount: "0",
     buyer: "",
+    buyerPhone: "",
+    buyerAddress: "",
     buyerId: "",
     price: "0",
+    cartonQty: "0",
+    cartonUnit: "0",
+    voucher: "0",
   });
   const [inputEdit, setInputEdit] = useState({
     id: "",
     price: "0",
-  });
-  const [inputProceed, setInputProceed] = useState({
-    qty: "0",
-    unit: "0",
-    voucher: "0",
   });
 
   // search, debounce, paginate strat ----------------------------------------------------------------
@@ -220,6 +229,8 @@ export const Client = () => {
     });
     setInput((prev) => ({
       ...prev,
+      buyerAddress: data?.data.data.resource.buyer_address,
+      buyerPhone: data?.data.data.resource.buyer_phone,
       buyer: data?.data.data.resource.sale_buyer_name,
       buyerId: data?.data.data.resource.sale_buyer_id,
       discount: Math.round(
@@ -268,6 +279,7 @@ export const Client = () => {
             addRef.current.focus();
           }
           setAddProductSearch("");
+          handleCloseProduct();
         },
       }
     );
@@ -311,13 +323,13 @@ export const Client = () => {
     if (!ok) return;
 
     const body = {
-      cardbox_qty: inputProceed.qty,
-      cardbox_unit_price: inputProceed.unit,
+      cardbox_qty: input.cartonQty,
+      cardbox_unit_price: input.cartonUnit,
       total_price_document_sale:
         parseFloat(dataRes?.total_sale ?? 0) +
-        parseFloat(inputProceed.qty) * parseFloat(inputProceed.unit) -
-        parseFloat(inputProceed.voucher),
-      voucher: inputProceed.voucher,
+        parseFloat(input.cartonQty) * parseFloat(input.cartonUnit) -
+        parseFloat(input.voucher),
+      voucher: input.voucher,
     };
 
     mutateSubmit({ body });
@@ -381,18 +393,6 @@ export const Client = () => {
     }
   }, [inputEdit]);
 
-  useEffect(() => {
-    if (isNaN(parseFloat(inputProceed.voucher))) {
-      setInputProceed((prev) => ({ ...prev, voucher: "0" }));
-    }
-    if (isNaN(parseFloat(inputProceed.qty))) {
-      setInputProceed((prev) => ({ ...prev, qty: "0" }));
-    }
-    if (isNaN(parseFloat(inputProceed.unit))) {
-      setInputProceed((prev) => ({ ...prev, unit: "0" }));
-    }
-  }, [inputProceed]);
-
   // handle add by input
   useEffect(() => {
     if (searchAddProductValue) {
@@ -421,6 +421,12 @@ export const Client = () => {
       method: "GET",
     });
   }, [isErrorProduct, errorProduct]);
+
+  useEffect(() => {
+    if (!input.buyerId && isProduct) {
+      setIsProduct(false);
+    }
+  }, [input]);
 
   const columnSales: ColumnDef<any>[] = [
     {
@@ -563,6 +569,8 @@ export const Client = () => {
                   ...prev,
                   buyer: row.original.name_buyer,
                   buyerId: row.original.id,
+                  buyerPhone: row.original.phone_buyer,
+                  buyerAddress: row.original.address_buyer,
                 }));
               }}
               type="button"
@@ -611,7 +619,6 @@ export const Client = () => {
               variant={"outline"}
               onClick={(e) => {
                 e.preventDefault();
-                handleCloseProduct();
                 handleAddProduct(row.original.barcode);
               }}
               type="button"
@@ -630,7 +637,7 @@ export const Client = () => {
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!isComplete) {
+      if (!isComplete && isDirty) {
         event.preventDefault();
         event.returnValue = ""; // Beberapa browser memerlukan nilai kosong untuk menampilkan dialog.
       }
@@ -641,7 +648,7 @@ export const Client = () => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [isComplete]);
+  }, [isComplete, isDirty]);
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -665,21 +672,40 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
       <SubmitDialog />
       <DeleteProductDialog />
-      <DialogProceed
-        open={isProceed}
-        onCloseModal={() => setIsProceed(false)}
-        data={{
-          barcode: dataRes?.code_document_sale ?? "-",
-          buyer: input.buyer ?? "-",
-          discount: input.discount ?? "0",
-          totalProduct: dataList?.length ?? 0,
-          totalPrice: dataRes?.total_sale ?? 0,
-          voucher: inputProceed.voucher ?? "0",
-          cartonQty: inputProceed.qty ?? "0",
-          cartonUnit: inputProceed.unit ?? "0",
+      <DialogCarton
+        open={isOpenCarton}
+        onCloseModal={() => {
+          if (isOpenCarton) {
+            setIsOpenCarton(false);
+          }
         }}
-        setData={setInputProceed}
-        handleSubmit={handleSubmit}
+        carton={input}
+        setCarton={setInput}
+        isDirty={isDirty}
+        setIsDirty={setIsDirty}
+      />
+      <DialogDiscount
+        open={isOpenDiscount}
+        onCloseModal={() => {
+          if (isOpenDiscount) {
+            setIsOpenDiscount(false);
+          }
+        }}
+        discount={input.discount}
+        setDiscount={setInput}
+      />
+      <DialogVoucher
+        open={isOpenVoucher}
+        onCloseModal={() => {
+          if (isOpenVoucher) {
+            setIsOpenVoucher(false);
+          }
+        }}
+        data={dataRes?.total_sale}
+        voucher={input.voucher}
+        setVoucher={setInput}
+        isDirty={isDirty}
+        setIsDirty={setIsDirty}
       />
       <DialogBuyer
         open={isBuyer}
@@ -759,94 +785,171 @@ export const Client = () => {
           </Link>
           <h1 className="text-2xl font-semibold">Cashier</h1>
         </div>
-        <div className="grid w-full grid-cols-7 relative gap-4">
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
-            <div className="flex items-center gap-4 pb-3 mb-3 border-gray-500 border-b w-full">
+        <div className="w-full flex gap-2 items-center bg-red-100 rounded border border-red-200 text-sm p-3">
+          <AlertCircle className="size-4 flex-none" />
+          <p>
+            The discount is applied before any products are on sale. If you want
+            to change the discount, please clear the sale products first.
+          </p>
+        </div>
+        <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+          <div className="flex items-center justify-between pb-3 mb-5 border-gray-500 border-b w-full">
+            <div className="flex items-center gap-4">
               <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
                 <ScanBarcode className="size-4" />
               </div>
-              <h5 className="font-bold">Barcode</h5>
+              <h5 className="font-bold text-xl">
+                {dataRes?.code_document_sale}
+              </h5>
             </div>
-            <div className="flex items-center h-10 text-base px-3">
-              {dataRes?.code_document_sale}
+            <div className="flex items-center gap-2">
+              {!dataRes?.sale_buyer_name && (
+                <Button
+                  type="button"
+                  onClick={() => setIsBuyer(true)}
+                  className="bg-sky-400/80 hover:bg-sky-400 text-black"
+                >
+                  <BriefcaseBusiness className="size-4 mr-1" />
+                  Buyer
+                </Button>
+              )}
+              {metaPage.total === 0 && (
+                <Button
+                  type={"button"}
+                  onClick={() => setIsOpenDiscount(true)}
+                  className="bg-yellow-400/80 hover:bg-yellow-400 text-black"
+                >
+                  <PercentCircle className="size-4 mr-1" />
+                  Discount
+                </Button>
+              )}
+              <Button
+                type={"button"}
+                onClick={() => setIsOpenVoucher(true)}
+                className="bg-violet-400/80 hover:bg-violet-400 text-black"
+              >
+                <TicketPercent className="size-4 mr-1" />
+                Voucher
+              </Button>
             </div>
           </div>
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-1">
-            <div className="flex items-center gap-4 pb-3 mb-3 border-gray-500 border-b w-full">
-              <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
-                <Percent className="size-4" />
-              </div>
-              <h5 className="font-bold">Disc.</h5>
-            </div>
-            {dataList?.length === 0 ? (
-              <div className="flex items-center gap-2 border-b border-gray-500 border-dashed">
-                <Input
-                  disabled={dataList?.length > 0 || isPendingSubmit}
-                  value={input.discount}
-                  type="number"
-                  onChange={(e) =>
-                    e.target.value.startsWith("0")
-                      ? e.target.value.replace(/^0+/, "")
-                      : e.target.value
-                  }
-                  className="border-none focus-visible:ring-0 shadow-none"
-                />
-                <Percent className="size-4" />
-              </div>
-            ) : (
-              <div className="flex items-center h-10 justify-center">
-                <p className="tracking-wide text-lg font-semibold">
-                  {input.discount}%
+          <div className="flex w-full gap-4">
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Buyer</p>
+                <p className="font-semibold">
+                  {input.buyer ? input.buyer : "-"}
                 </p>
               </div>
-            )}
-          </div>
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
-            <div className="flex items-center gap-4 pb-3 mb-3 border-gray-500 border-b w-full">
-              <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
-                <BriefcaseBusiness className="size-4" />
+              <div className="flex flex-col">
+                <p className="text-sm">Buyer Phone</p>
+                <p className="font-semibold">
+                  {input.buyerPhone ? input.buyerPhone : "-"}
+                </p>
               </div>
-              <h5 className="font-bold">Buyer</h5>
+              <div className="flex flex-col">
+                <p className="text-sm">Buyer Address</p>
+                <p className="font-semibold">
+                  {input.buyerAddress ? input.buyerAddress : "-"}
+                </p>
+              </div>
             </div>
-            <Button
-              type="button"
-              onClick={() => setIsBuyer(true)}
-              disabled={dataRes?.sale_buyer_name || isPendingSubmit}
-              className="bg-transparent h-10 text-base hover:bg-transparent text-black shadow-none justify-between group disabled:opacity-100"
-            >
-              {input.buyer ? input.buyer : "Not Selected"}
-              {!dataRes?.sale_buyer_name && (
-                <div className="size-9 flex items-center justify-center rounded-full group-hover:bg-sky-100">
-                  <ArrowLeftRight className="size-4" />
-                </div>
-              )}
-            </Button>
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Total Product</p>
+                <p className="font-semibold">
+                  {metaPage.total.toLocaleString()}
+                </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Total Diskon</p>
+                <p className="font-semibold">{input.discount}%</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Total Voucher</p>
+                <p className="font-semibold">
+                  {formatRupiah(parseFloat(input.voucher ?? "0"))}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-500 w-full pt-3 mt-5">
+            <div className="flex flex-col">
+              <p className="text-sm">Total Product Price</p>
+              <p className="font-semibold">
+                {formatRupiah(dataRes?.total_sale)}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center justify-between w-full bg-sky-400/80 rounded-md overflow-hidden shadow p-5">
-          <div className="flex items-center gap-1">
-            <p className="font-semibold text-sm">
-              Proceed to complete the transaction
-            </p>
-            <TooltipProviderPage
-              value={
-                <div className="flex flex-col">
-                  <p>- Filling in the discount voucher </p>
-                  <p>- Configuring the carton box</p>
-                </div>
-              }
-            >
-              <AlertCircle className="size-3" />
+        <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+          <div className="flex items-center justify-between pb-3 mb-5 border-gray-500 border-b w-full">
+            <div className="flex items-center gap-4">
+              <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
+                <Package className="size-4" />
+              </div>
+              <h5 className="font-bold text-xl">Carton Box</h5>
+            </div>
+            <TooltipProviderPage value={"Edit Carton Box"} align="end">
+              <Button
+                type={"button"}
+                onClick={() => setIsOpenCarton(true)}
+                className="items-center w-9 px-0 flex-none h-9 bg-yellow-400/80 text-black hover:bg-yellow-400"
+              >
+                <ArrowLeftRight className="size-4" />
+              </Button>
             </TooltipProviderPage>
+          </div>
+          <div className="flex w-full gap-4">
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Qty</p>
+                <p className="font-semibold">{input.cartonQty}</p>
+              </div>
+            </div>
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Per Unit</p>
+                <p className="font-semibold">
+                  {formatRupiah(parseFloat(input.cartonUnit))}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-500 w-full pt-3 mt-5">
+            <div className="flex flex-col">
+              <p className="text-sm">Total Carton Box Price</p>
+              <p className="font-semibold">
+                {formatRupiah(
+                  parseFloat(input.cartonQty) * parseFloat(input.cartonUnit)
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between w-full bg-sky-300/80 rounded-md overflow-hidden shadow p-5">
+          <div className="flex items-center gap-4 text-lg">
+            <div className="h-full pr-4 border-r border-black flex items-center whitespace-nowrap">
+              <p className="font-semibold">Grand Total</p>
+            </div>
+            <p className="font-semibold w-full text-center">
+              {formatRupiah(
+                parseFloat(dataRes?.total_sale) +
+                  parseFloat(input.cartonQty) * parseFloat(input.cartonUnit) -
+                  parseFloat(input.voucher)
+              )}
+            </p>
           </div>
           <Button
             type="button"
-            onClick={() => setIsProceed(true)}
-            disabled={isPendingSubmit}
-            className="bg-white text-black hover:bg-sky-50"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            className="bg-white/80 hover:bg-white text-black"
           >
-            Proceed
-            <ArrowRightCircle className="size-4 ml-1" />
+            <Send className="size-4 mr-1" />
+            Sale
           </Button>
         </div>
         <div className="flex w-full gap-4">
@@ -902,14 +1005,6 @@ export const Client = () => {
                 />
               </Button>
             </TooltipProviderPage>
-          </div>
-          <div className="flex items-center w-full bg-white rounded-md overflow-hidden shadow p-5">
-            <div className="size-9 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow mr-2">
-              <BadgeDollarSign className="size-5" />
-            </div>
-            <p className="font-semibold">
-              {formatRupiah(dataRes?.total_sale ?? 0)}
-            </p>
           </div>
         </div>
         <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">

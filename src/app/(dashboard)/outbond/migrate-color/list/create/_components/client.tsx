@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  AlertCircle,
   ArrowLeft,
   ArrowLeftRight,
+  Ban,
   CheckCircle2,
   Loader2,
   MapPinned,
@@ -11,8 +11,8 @@ import {
   Palette,
   Plus,
   PlusCircle,
-  ReceiptText,
   Send,
+  Trash2,
   Triangle,
   Truck,
 } from "lucide-react";
@@ -41,9 +41,9 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useGetListDestinationMigrateColor } from "../_api/use-get-list-list-destination-migrate-color";
-import { useAddFilterCreateQCD } from "../_api/use-add-filter-create-qcd";
-import { useSubmitQCD } from "../_api/use-submit-qcd";
+import { useGetSelect } from "../_api/use-get-select";
+import { useAddMigrateColor } from "../_api/use-add-migrate-color";
+import { useSubmitMigrateColor } from "../_api/use-submit";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -54,9 +54,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useRemoveMigrateColor } from "../_api/use-remove-migrate-color";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenDestination, setIsOpenDestination] = useState(false);
+  const [isOpenColor, setIsOpenColor] = useState(false);
 
   const [input, setInput] = useState({
     destination: "",
@@ -65,12 +68,17 @@ export const Client = () => {
     qty: "0",
   });
 
-  const { mutate: mutateAddFilter, isPending: isPendingAddFilter } =
-    useAddFilterCreateQCD();
-  const {
-    // mutate: mutateSubmit,
-    isPending: isPendingDoneCheckAll,
-  } = useSubmitQCD();
+  const { mutate: mutateAddColor, isPending: isPendingAddColor } =
+    useAddMigrateColor();
+  const { mutate: mutateRemoveColor, isPending: isPendingRemoveColor } =
+    useRemoveMigrateColor();
+  const { mutate: mutateSubmit, isPending: isSubmit } = useSubmitMigrateColor();
+
+  const [DeleteMigrateDialog, confirmDeleteMigrate] = useConfirm(
+    "Delete Migrate",
+    "This action cannot be undone",
+    "destructive"
+  );
 
   const {
     data,
@@ -84,36 +92,69 @@ export const Client = () => {
   } = useGetListColorMigrate();
 
   const {
-    data: dataDestination,
+    data: dataSelect,
     // refetch: refetchFiltered,
     // isSuccess: isSuccessFiltered,
-  } = useGetListDestinationMigrateColor();
+  } = useGetSelect();
 
   const dataList: any = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
 
   const dataListDestination: any[] = useMemo(() => {
-    return dataDestination?.data.data.resource.data;
-  }, [dataDestination]);
+    return dataSelect?.data.data.resource.destinations;
+  }, [dataSelect]);
+
+  const dataListColor: any[] = useMemo(() => {
+    return (
+      dataSelect?.data.data.resource.color &&
+      Object.entries(dataSelect?.data.data.resource.color).map(
+        ([key, value]) => ({
+          name: key.toLowerCase(), // Convert key to lowercase
+          value: value,
+        })
+      )
+    );
+  }, [dataSelect]);
 
   // const loading = isLoading || isRefetching || isPending;
 
-  const handleAddFilter = (id: any) => {
-    mutateAddFilter({ id });
+  const handleAddColor = () => {
+    const body = {
+      destiny_document_migrate: input.destination,
+      product_color: input.color,
+      product_total: input.qty,
+    };
+    mutateAddColor(
+      { body },
+      {
+        onSuccess: () => {
+          setInput({ destination: "", color: "", count: 0, qty: "0" });
+        },
+      }
+    );
   };
 
-  // const handleSubmit = async (e: FormEvent) => {
-  //   e.preventDefault();
-  //   const body = {};
-  //   mutateSubmit({ body });
-  // };
+  const handleRemoveColor = async (id: any) => {
+    const ok = await confirmDeleteMigrate();
+
+    if (!ok) return;
+
+    mutateRemoveColor({ id });
+  };
+
+  const handleSubmit = async () => {
+    mutateSubmit({});
+  };
 
   // autoFill 0
   useEffect(() => {
-    // if (isNaN(parseFloat(input.custom))) {
-    //   setInput((prev) => ({ ...prev, custom: "0" }));
-    // }
+    if (isNaN(parseFloat(input.qty)) || parseFloat(input.qty) < 0) {
+      setInput((prev) => ({ ...prev, qty: "0" }));
+    }
+    if (parseFloat(input.qty) > input.count) {
+      setInput((prev) => ({ ...prev, qty: prev.count.toString() }));
+    }
   }, [input]);
 
   const columnColorMigrate: ColumnDef<any>[] = [
@@ -159,20 +200,20 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>Detail</p>}>
+          <TooltipProviderPage value={<p>Remove</p>}>
             <Button
-              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingAddFilter || isPendingDoneCheckAll}
+              disabled={isPendingAddColor || isSubmit || isPendingRemoveColor}
               onClick={(e) => {
                 e.preventDefault();
-                handleAddFilter(row.original.id);
+                handleRemoveColor(row.original.id);
               }}
             >
-              {isPendingAddFilter ? (
+              {isPendingRemoveColor ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <ReceiptText className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" />
               )}
             </Button>
           </TooltipProviderPage>
@@ -201,6 +242,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <DeleteMigrateDialog />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -218,10 +260,6 @@ export const Client = () => {
           <BreadcrumbItem>Create</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="w-full px-5 py-3 rounded bg-red-300 flex items-center">
-        <AlertCircle className="size-4 mr-1" />
-        <p>Nunggu api select</p>
-      </div>
       <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
         <Link href="/outbond/migrate-color/list">
           <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
@@ -230,59 +268,164 @@ export const Client = () => {
         </Link>
         <h1 className="text-2xl font-semibold">Create Migrate</h1>
       </div>
-      <div className="grid grid-cols-5 gap-4 w-full">
-        <div className="col-span-2 bg-white px-5 py-3 rounded-md shadow w-full flex flex-col">
-          <div className="flex items-center justify-between pb-3 mb-3 border-gray-500 border-b">
-            <div className="flex items-center gap-4">
-              <div className="size-8 rounded-full flex items-center justify-center bg-sky-100 shadow">
-                <MapPinned className="size-4" />
-              </div>
-              <h5 className="font-bold">Destination</h5>
+      <div className="col-span-2 bg-white px-5 py-3 rounded-md shadow w-full flex flex-col">
+        <div className="flex items-center justify-between pb-3 mb-3 border-gray-500 border-b">
+          <div className="flex items-center gap-4">
+            <div className="size-8 rounded-full flex items-center justify-center bg-sky-100 shadow">
+              <MapPinned className="size-4" />
             </div>
-            <Button className="" variant={"liquid"}>
-              <Send className="size-3 mr-1" />
-              Submit
-            </Button>
+            <h5 className="font-bold">Destination</h5>
           </div>
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-transparent h-10 text-base hover:bg-transparent text-black shadow-none justify-between group">
-                Not Selected
+        </div>
+        <Dialog open={isOpenDestination} onOpenChange={setIsOpenDestination}>
+          <DialogTrigger asChild>
+            <Button
+              disabled={dataList?.destiny_document_migrate}
+              className="bg-transparent h-10 text-base hover:bg-transparent text-black shadow-none justify-between group disabled:pointer-events-auto disabled:opacity-100 disabled:hover:bg-transparent"
+            >
+              {dataList?.destiny_document_migrate
+                ? dataList?.destiny_document_migrate
+                : input.destination
+                ? input.destination
+                : "Not Selected"}
+              {!dataList?.destiny_document_migrate && (
                 <div className="size-9 flex items-center justify-center rounded-full group-hover:bg-sky-100">
                   <ArrowLeftRight className="size-4" />
                 </div>
+              )}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="p-3">
+            <DialogHeader>
+              <DialogTitle>Select Destination</DialogTitle>
+            </DialogHeader>
+            <Command>
+              <CommandInput placeholder="Search destination..." />
+              <CommandList>
+                <CommandEmpty>No Destination yet.</CommandEmpty>
+                <CommandGroup>
+                  {dataListDestination?.map((item) => (
+                    <CommandItem
+                      key={item.id}
+                      onSelect={() => {
+                        setInput((prev) => ({
+                          ...prev,
+                          destination: item.shop_name,
+                        }));
+                        setIsOpenDestination(false);
+                      }}
+                      className="py-2.5 px-3 capitalize"
+                    >
+                      <CheckCircle2
+                        className={cn(
+                          "fill-black stroke-white mr-2 w-5 h-5",
+                          input.destination === item.shop_name
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                      <div className="flex flex-col">
+                        <p className="font-semibold">{item.shop_name}</p>
+                        <p className="text-xs">{item.alamat}</p>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <div className="col-span-3 bg-white px-5 py-3 rounded-md shadow w-full">
+        <div className="flex items-center justify-between pb-3 mb-3 border-gray-500 border-b">
+          <div className="flex items-center gap-4">
+            <div className="size-8 rounded-full flex items-center justify-center bg-sky-100 shadow">
+              <Palette className="size-4" />
+            </div>
+            <h5 className="font-bold">Color Product</h5>
+          </div>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              handleAddColor();
+            }}
+            variant={"liquid"}
+            disabled={
+              (!input.destination && !dataList?.destiny_document_migrate) ||
+              input.qty === "0"
+            }
+          >
+            {(!input.destination && !dataList?.destiny_document_migrate) ||
+            input.qty === "0" ? (
+              <Ban className="size-3 mr-1" />
+            ) : (
+              <PlusCircle className="size-3 mr-1" />
+            )}
+            Add
+          </Button>
+        </div>
+        <div className="flex w-full items-center px-5 gap-4">
+          <Dialog open={isOpenColor} onOpenChange={setIsOpenColor}>
+            <DialogTrigger asChild>
+              <Button
+                disabled={
+                  !input.destination && !dataList?.destiny_document_migrate
+                }
+                className="w-full bg-transparent h-10 text-base hover:bg-transparent text-black shadow-none justify-between group disabled:pointer-events-auto disabled:opacity-100 disabled:hover:bg-transparent"
+              >
+                {input.color ? (
+                  <p>
+                    {input.color}{" "}
+                    <span className="text-gray-700 text-sm">
+                      ({input.count} Products)
+                    </span>
+                  </p>
+                ) : (
+                  "Not Selected"
+                )}
+                {((input.destination && !dataList?.destiny_document_migrate) ||
+                  (!input.destination &&
+                    dataList?.destiny_document_migrate)) && (
+                  <div className="size-9 flex items-center justify-center rounded-full group-hover:bg-sky-100">
+                    <ArrowLeftRight className="size-4" />
+                  </div>
+                )}
               </Button>
             </DialogTrigger>
             <DialogContent className="p-3">
               <DialogHeader>
-                <DialogTitle>Select Destination</DialogTitle>
+                <DialogTitle>Select Color</DialogTitle>
               </DialogHeader>
               <Command>
-                <CommandInput placeholder="Search destination..." />
+                <CommandInput placeholder="Search color..." />
                 <CommandList>
-                  <CommandEmpty>No Destination yet.</CommandEmpty>
+                  <CommandEmpty>No Color yet.</CommandEmpty>
                   <CommandGroup>
-                    {dataListDestination?.map((item) => (
+                    {dataListColor?.map((item) => (
                       <CommandItem
-                        key={item.id}
+                        key={item.name}
                         onSelect={() => {
                           setInput((prev) => ({
                             ...prev,
-                            destination: item.shop_name,
+                            color: item.name,
+                            count: item.value,
                           }));
-                          setIsOpen(false);
+                          setIsOpenColor(false);
                         }}
                         className="py-2.5 px-3 capitalize"
                       >
                         <CheckCircle2
                           className={cn(
                             "fill-black stroke-white mr-2 w-5 h-5",
-                            input.destination === item.shop_name
+                            input.color === item.name
                               ? "opacity-100"
                               : "opacity-0"
                           )}
                         />
-                        {item.shop_name}
+                        <div className="flex justify-between items-center w-full">
+                          <p className="font-semibold">{item.name}</p>
+                          <p className="text-xs">{item.value} Products</p>
+                        </div>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -290,63 +433,96 @@ export const Client = () => {
               </Command>
             </DialogContent>
           </Dialog>
-        </div>
-        <div className="col-span-3 bg-white px-5 py-3 rounded-md shadow w-full">
-          <div className="flex items-center justify-between pb-3 mb-3 border-gray-500 border-b">
-            <div className="flex items-center gap-4">
-              <div className="size-8 rounded-full flex items-center justify-center bg-sky-100 shadow">
-                <Palette className="size-4" />
-              </div>
-              <h5 className="font-bold">Color Product</h5>
+          <div className="flex items-center flex-none">
+            <div className="flex h-10 relative items-center justify-center">
+              <Triangle className="rotate-90 size-3 absolute mx-auto my-auto mt-0.5 fill-gray-500 stroke-none" />
+              <div className="h-5 border-t-2 border-gray-500 w-5 mt-auto" />
             </div>
-            <Button className="" variant={"liquid"}>
-              <PlusCircle className="size-3 mr-1" />
-              Add
-            </Button>
+            <div className="size-9 flex items-center justify-center rounded-full border-gray-500 border-2">
+              <Truck className="size-4" />
+            </div>
+            <div className="flex h-10 relative items-center justify-center">
+              <Triangle className="rotate-90 size-3 absolute mx-auto my-auto mt-0.5 fill-gray-500 stroke-none" />
+              <div className="h-5 border-t-2 border-gray-500 w-5 mt-auto" />
+            </div>
           </div>
-          <div className="flex w-full items-center px-5 gap-4">
-            <Button className="w-full bg-transparent h-10 text-base hover:bg-transparent text-black shadow-none justify-between group px-0">
-              Not Selected
-              <div className="size-9 flex items-center justify-center rounded-full group-hover:bg-sky-100">
-                <ArrowLeftRight className="size-4" />
-              </div>
-            </Button>
-            <div className="flex items-center flex-none">
-              <div className="flex h-10 relative items-center justify-center">
-                <Triangle className="rotate-90 size-3 absolute mx-auto my-auto mt-0.5 fill-gray-500 stroke-none" />
-                <div className="h-5 border-t-2 border-gray-500 w-5 mt-auto" />
-              </div>
-              <div className="size-9 flex items-center justify-center rounded-full border-gray-500 border-2">
-                <Truck className="size-4" />
-              </div>
-              <div className="flex h-10 relative items-center justify-center">
-                <Triangle className="rotate-90 size-3 absolute mx-auto my-auto mt-0.5 fill-gray-500 stroke-none" />
-                <div className="h-5 border-t-2 border-gray-500 w-5 mt-auto" />
-              </div>
-            </div>
-            <div className="w-2/6 flex-none flex relative items-center justify-center">
-              <Input
-                type="number"
-                className="border-none focus-visible:ring-0 shadow-none placeholder:text-gray-500 px-0"
-                placeholder="Total to be sent..."
-              />
-              <div className="flex items-center absolute right-0">
-                <Button className="bg-transparent p-0 size-9 rounded-full shadow-none hover:bg-sky-100 text-black">
-                  <Minus className="size-4" />
-                </Button>
-                <Button className="bg-transparent p-0 size-9 rounded-full shadow-none hover:bg-sky-100 text-black">
-                  <Plus className="size-4" />
-                </Button>
-              </div>
+          <div className="w-2/5 flex-none flex relative items-center justify-center">
+            <p className="text-sm font-semibold mr-3 pr-3 border-r border-black">
+              Qty
+            </p>
+            <Input
+              disabled={
+                (!input.destination && !dataList?.destiny_document_migrate) ||
+                !input.color
+              }
+              type="number"
+              value={input.qty}
+              onChange={(e) =>
+                setInput((prev) => ({
+                  ...prev,
+                  qty: e.target.value.startsWith("0")
+                    ? e.target.value.replace(/^0+/, "")
+                    : e.target.value,
+                }))
+              }
+              className="border-none focus-visible:ring-0 shadow-none placeholder:text-gray-500 px-0"
+              placeholder="Total to be sent..."
+            />
+            <div className="flex items-center absolute right-0">
+              <Button
+                disabled={
+                  parseFloat(input.qty) === 0 ||
+                  (!input.destination && !dataList?.destiny_document_migrate) ||
+                  !input.color
+                }
+                onClick={() =>
+                  setInput((prev) => ({
+                    ...prev,
+                    qty: (parseFloat(prev.qty) - 1).toString(),
+                  }))
+                }
+                className="bg-transparent p-0 size-9 rounded-full shadow-none hover:bg-sky-100 text-black"
+              >
+                <Minus className="size-4" />
+              </Button>
+              <Button
+                disabled={
+                  parseFloat(input.qty) === input.count ||
+                  (!input.destination && !dataList?.destiny_document_migrate) ||
+                  !input.color
+                }
+                onClick={() =>
+                  setInput((prev) => ({
+                    ...prev,
+                    qty: (parseFloat(prev.qty) + 1).toString(),
+                  }))
+                }
+                className="bg-transparent p-0 size-9 rounded-full shadow-none hover:bg-sky-100 text-black"
+              >
+                <Plus className="size-4" />
+              </Button>
             </div>
           </div>
         </div>
       </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <div className="flex flex-col w-full gap-4">
-          <h3 className="border-b border-gray-500 pr-10 pb-1 w-fit font-semibold">
-            List Color Filtered
-          </h3>
+          <div className="flex items-center justify-between pb-3 mb-3 border-gray-500 border-b">
+            <div className="flex items-center gap-4">
+              <h5 className="font-bold">List Color Filtered</h5>
+            </div>
+            <Button
+              variant={"liquid"}
+              disabled={dataList?.migrates === 0}
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
+              <Send className="size-4 mr-1" />
+              Send
+            </Button>
+          </div>
           <DataTable
             columns={columnColorMigrate}
             data={dataList?.migrates ?? []}

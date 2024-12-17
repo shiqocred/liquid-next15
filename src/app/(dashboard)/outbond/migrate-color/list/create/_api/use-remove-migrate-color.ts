@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useRemoveFilterCreateQCD = () => {
+export const useRemoveMigrateColor = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/qcd/destroy/${id}`, {
+      const res = await axios.delete(`${baseUrl}/migrates/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,22 +25,18 @@ export const useRemoveFilterCreateQCD = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully removed from filter");
+      toast.success("Migrate successfully removed");
       queryClient.invalidateQueries({
-        queryKey: ["list-product-create-qcd"],
+        queryKey: ["list-select-migrate-color"],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["list-filter-product-create-qcd"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["list-color-migrate"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(
-          `ERROR ${err?.status}: Product failed to remove from filter`
-        );
-        console.log("ERROR_REMOVE_FILTER_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Migrate failed to remove`);
+        console.log("ERROR_REMOVE_MIGRATE:", err);
       }
     },
   });

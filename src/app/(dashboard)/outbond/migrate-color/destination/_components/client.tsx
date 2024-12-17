@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  AlertCircle,
-  Edit3,
-  Loader2,
-  PlusCircle,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
+import { Edit3, Loader2, PlusCircle, RefreshCw, Trash2 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { alertError, cn, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,7 +27,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateDestinationMC } from "../_api/use-update-destination-mc";
 import { useGetDetailDestinationMC } from "../_api/use-get-detail-destination-mc";
 import { useCreateDestinationMC } from "../_api/use-create-destination-mc";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 
@@ -125,15 +117,13 @@ export const Client = () => {
 
   // get pagetination
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess: isSuccess,
+      dataPaginate: data?.data.data.resource,
+      data: data,
+      setMetaPage: setMetaPage,
+      setPage: setPage,
+    });
   }, [data]);
 
   // handle delete
@@ -164,9 +154,9 @@ export const Client = () => {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      nama: input.name,
       alamat: input.address,
-      no_hp: input.phone,
+      phone_number: input.phone,
+      shop_name: input.name,
     };
     mutateCreate(
       { body },
@@ -182,9 +172,9 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      nama: input.name,
       alamat: input.address,
-      no_hp: input.phone,
+      phone_number: input.phone,
+      shop_name: input.name,
     };
     mutateUpdate(
       { id: destinationId, body },
@@ -212,8 +202,8 @@ export const Client = () => {
     if (isSuccessWarehouse && dataWarehouse) {
       setInput((prev) => ({
         ...prev,
-        name: dataWarehouse.data.data.resource.nama ?? "",
-        phone: dataWarehouse.data.data.resource.no_hp ?? "",
+        name: dataWarehouse.data.data.resource.shop_name ?? "",
+        phone: dataWarehouse.data.data.resource.phone_number ?? "",
         address: dataWarehouse.data.data.resource.alamat ?? "",
       }));
     }
@@ -221,17 +211,13 @@ export const Client = () => {
 
   // isError get Detail
   useEffect(() => {
-    if (isErrorWarehouse && (errorWarehouse as AxiosError).status === 403) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (isErrorWarehouse && (errorWarehouse as AxiosError).status !== 403) {
-      toast.error(
-        `ERROR ${
-          (errorWarehouse as AxiosError).status
-        }: Warehouse failed to get Data`
-      );
-      console.log("ERROR_GET_WAREHOUSE:", errorWarehouse);
-    }
+    alertError({
+      isError: isErrorWarehouse,
+      error: errorWarehouse as AxiosError,
+      data: "Warehouse",
+      action: "get Date",
+      method: "GET",
+    });
   }, [isErrorWarehouse, errorWarehouse]);
 
   // column data
@@ -355,10 +341,6 @@ export const Client = () => {
           <BreadcrumbItem>Destinations</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="w-full px-5 py-3 rounded bg-red-300 flex items-center">
-        <AlertCircle className="size-4 mr-1" />
-        <p>API GMAPS Error</p>
-      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Destinations</h2>
         <div className="flex flex-col w-full gap-4">

@@ -5,20 +5,16 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { useCookies } from "next-client-cookies";
 
-type RequestType = {
-  id: string;
-};
-
 type Error = AxiosError;
 
-export const useAddFilterCreateQCD = () => {
+export const useSubmitMigrateColor = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
+  const mutation = useMutation<AxiosResponse, Error, any>({
+    mutationFn: async () => {
       const res = await axios.post(
-        `${baseUrl}/qcd/filter_product/${id}/add`,
+        `${baseUrl}/migrate-finish`,
         {},
         {
           headers: {
@@ -29,20 +25,19 @@ export const useAddFilterCreateQCD = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully added to filter");
+      toast.success("Migrate Color successfully created");
       queryClient.invalidateQueries({
-        queryKey: ["list-product-create-qcd"],
+        queryKey: ["list-select-migrate-color"],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["list-filter-product-create-qcd"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["list-color-migrate"] });
+      window.location.href = "/outbond/migrate-color/list";
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to add to filter`);
-        console.log("ERROR_ADD_FILTER_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Migrate Color failed to create`);
+        console.log("ERROR_CREATE_MIGRATE_COLOR:", err);
       }
     },
   });

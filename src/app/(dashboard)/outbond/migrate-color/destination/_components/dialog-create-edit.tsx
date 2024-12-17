@@ -121,16 +121,7 @@ const DialogCreateEdit = ({
                     : "bg-sky-400 hover:bg-sky-400/80"
                 )}
                 type="submit"
-                disabled={
-                  !input.name ||
-                  !input.address ||
-                  !input.kabupaten ||
-                  !input.kecamatan ||
-                  !input.latitude ||
-                  !input.longitude ||
-                  !input.phone ||
-                  !input.provinsi
-                }
+                disabled={!input.name || !input.address || !input.phone}
               >
                 {destinationId ? "Update" : "Create"}
               </Button>

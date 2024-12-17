@@ -8,15 +8,16 @@ import { useCookies } from "next-client-cookies";
 type RequestType = {
   body: any;
 };
+
 type Error = AxiosError;
 
-export const useSubmitQCD = () => {
+export const useAddMigrateColor = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/bundle/qcd`, body, {
+      const res = await axios.post(`${baseUrl}/migrates`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -24,24 +25,18 @@ export const useSubmitQCD = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("QCD successfully created");
+      toast.success("Migrate successfully added");
       queryClient.invalidateQueries({
-        queryKey: ["list-product-create-qcd"],
+        queryKey: ["list-select-migrate-color"],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["list-filter-product-create-qcd"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["list-qcd"],
-      });
-      window.location.href = "/repair-station/qcd";
+      queryClient.invalidateQueries({ queryKey: ["list-color-migrate"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: QCD failed to create`);
-        console.log("ERROR_CREATE_QCD:", err);
+        toast.error(`ERROR ${err?.status}: Migrate failed to add`);
+        console.log("ERROR_ADD_MIGRATE:", err);
       }
     },
   });

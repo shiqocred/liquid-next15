@@ -38,6 +38,7 @@ import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
+import { useGetCountStaging } from "../_api/use-get-count-staging";
 
 interface ChartData {
   category_product: string;
@@ -131,12 +132,21 @@ export const Client = () => {
   });
   const { data, refetch, isPending, isRefetching, isLoading, isError, error } =
     useGetStorageReport();
+  const {
+    data: dataStaging,
+    // isError: isErrorStaging,
+    // error: errorStaging,
+  } = useGetCountStaging();
 
   const loading = isPending || isRefetching || isLoading;
 
   const dataStorage = useMemo(() => {
     return data?.data.data.resource;
   }, [data]);
+
+  const dataResStaging = useMemo(() => {
+    return dataStaging?.data.data.resource;
+  }, [dataStaging]);
 
   const dataChart: ChartData[] = useMemo(() => {
     return data?.data.data.resource.chart.category;
@@ -280,6 +290,27 @@ export const Client = () => {
               {formatRupiah(dataStorage?.total_all_price_category)}
             </p>
           )}
+        </div>
+      </div>
+      <div className="flex flex-col gap-3 bg-white rounded-md overflow-hidden shadow p-3 w-full">
+        <div className="w-full px-5">
+          <div className="w-full border-b border-gray-500 pb-3">
+            <h2 className="text-xl font-bold">Report Count Staging</h2>
+          </div>
+        </div>
+        <div className="w-full flex items-center gap-4">
+          <div className="flex w-full px-5 py-3 flex-col gap-2">
+            <p>Total Product</p>
+            <p className="text-2xl font-bold">
+              {dataResStaging?.total_product.toLocaleString()}
+            </p>
+          </div>
+          <div className="flex w-full px-5 py-3 flex-col gap-2">
+            <p>Total Value</p>
+            <p className="text-2xl font-bold">
+              {formatRupiah(dataResStaging?.total_price)}
+            </p>
+          </div>
         </div>
       </div>
       <div className="flex flex-col gap-6 bg-white rounded-md overflow-hidden shadow p-3 w-full">

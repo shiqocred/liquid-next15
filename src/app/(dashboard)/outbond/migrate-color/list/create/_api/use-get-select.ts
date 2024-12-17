@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { useCookies } from "next-client-cookies";
 
-export const useGetListDestinationMigrateColor = () => {
+export const useGetSelect = () => {
   const accessToken = useCookies().get("accessToken");
   const query = useQuery({
-    queryKey: ["list-destination-migrate-color"],
+    queryKey: ["list-select-migrate-color"],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/destinations`, {
+      const res = await axios.get(`${baseUrl}/colorDestination`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

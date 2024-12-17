@@ -27,6 +27,7 @@ export const useCreateFormatBarcode = () => {
     onSuccess: (res) => {
       toast.success("Format successfully created");
       queryClient.invalidateQueries({ queryKey: ["list-format-barcode"] });
+      queryClient.invalidateQueries({ queryKey: ["select-panel-spv"] });
       queryClient.invalidateQueries({
         queryKey: ["format-barcode-detail", res.data.data.resource.id],
       });

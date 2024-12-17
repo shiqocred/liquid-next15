@@ -27,6 +27,7 @@ export const useDeleteFormatBarcode = () => {
     onSuccess: (data) => {
       toast.success("Format successfully Deleted");
       queryClient.invalidateQueries({ queryKey: ["list-format-barcode"] });
+      queryClient.invalidateQueries({ queryKey: ["select-panel-spv"] });
       queryClient.invalidateQueries({
         queryKey: ["format-barcode-detail", data.data.data.resource.id],
       });
