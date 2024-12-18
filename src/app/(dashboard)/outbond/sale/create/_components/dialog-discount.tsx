@@ -59,7 +59,7 @@ const DialogDiscount = ({
             }}
             className="w-full flex flex-col gap-4"
           >
-            <div className="w-full flex gap-2 items-center bg-red-100 rounded border border-red-200 text-sm p-3">
+            <div className="w-full flex gap-2 items-center bg-yellow-300 rounded border border-yellow-500 text-sm p-3">
               <AlertCircle className="size-4 flex-none" />
               <p>
                 The discount is applied before any products are on sale. If you

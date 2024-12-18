@@ -134,8 +134,8 @@ export const Client = () => {
     useGetStorageReport();
   const {
     data: dataStaging,
-    // isError: isErrorStaging,
-    // error: errorStaging,
+    isError: isErrorStaging,
+    error: errorStaging,
   } = useGetCountStaging();
 
   const loading = isPending || isRefetching || isLoading;
@@ -165,7 +165,10 @@ export const Client = () => {
     return <Loading />;
   }
 
-  if (isError && (error as AxiosError).status === 403) {
+  if (
+    (isError && (error as AxiosError).status === 403) ||
+    (isErrorStaging && (errorStaging as AxiosError).status === 403)
+  ) {
     return (
       <div className="flex flex-col items-start h-full bg-gray-100 w-full relative p-4 gap-4">
         <Forbidden />

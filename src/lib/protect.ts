@@ -17,9 +17,9 @@ export const protect = async () => {
       throw new Error("Unauthenticated");
     }
 
-    return res;
+    return true;
   } catch (error) {
     console.log("ERROR_CHECK", error);
-    return null;
+    return false;
   }
 };
