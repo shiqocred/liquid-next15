@@ -6,40 +6,38 @@ import { toast } from "sonner";
 import { useCookies } from "next-client-cookies";
 
 type RequestType = {
-  id: string;
+  id: any;
+  body: any;
 };
 
 type Error = AxiosError;
 
-export const useRemoveFilterProductStaging = () => {
+export const useUpdatePromo = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(
-        `${baseUrl}/staging/filter_product/destroy/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+    mutationFn: async ({ id, body }) => {
+      const res = await axios.put(`${baseUrl}/promo/${id}`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
-    onSuccess: () => {
-      toast.success("Product successfully removed to filter");
-      queryClient.invalidateQueries({ queryKey: ["list-staging-product"] });
+    onSuccess: (data) => {
+      toast.success("Promo successfully updated");
+      queryClient.invalidateQueries({ queryKey: ["list-promo"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-filter-staging-product"],
+        queryKey: ["detail-promo", data.data.data.resource.id],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to remove to filter`);
-        console.log("ERROR_REMOVE_FILTER_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Promo failed to update`);
+        console.log("ERROR_UPDATE_PROMO:", err);
       }
     },
   });

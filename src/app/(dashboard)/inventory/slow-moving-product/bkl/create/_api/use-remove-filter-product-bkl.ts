@@ -6,22 +6,19 @@ import { toast } from "sonner";
 import { useCookies } from "next-client-cookies";
 
 type RequestType = {
-  description: string;
-  status: string;
   id: string;
 };
 
 type Error = AxiosError;
 
-export const useLPRProductStaging = () => {
+export const useRemoveFilterProductBKL = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, status, description }) => {
-      const res = await axios.post(
-        `${baseUrl}/staging/move_to_lpr/${id}`,
-        { status, description },
+    mutationFn: async ({ id }) => {
+      const res = await axios.delete(
+        `${baseUrl}/bkl/filter_product/destroy/${id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -31,15 +28,18 @@ export const useLPRProductStaging = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully Moved to LPR");
-      queryClient.invalidateQueries({ queryKey: ["list-staging-product"] });
+      toast.success("Product successfully removed to filter");
+      queryClient.invalidateQueries({ queryKey: ["list-bkl-product"] });
+      queryClient.invalidateQueries({
+        queryKey: ["list-filter-bkl-product"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: "Product failed to Move to LPR"`);
-        console.log("ERROR_TO_LPR_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to remove to filter`);
+        console.log("ERROR_REMOVE_FILTER_PRODUCT:", err);
       }
     },
   });

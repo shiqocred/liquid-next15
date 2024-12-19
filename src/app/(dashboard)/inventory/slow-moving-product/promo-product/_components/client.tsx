@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  AlertCircle,
-  CalendarX,
-  Loader,
-  Loader2,
-  PlusCircle,
-  ReceiptText,
-  RefreshCw,
-  ScanBarcode,
-} from "lucide-react";
+import { Loader2, PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -29,21 +20,25 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-// import { useConfirm } from "@/hooks/use-confirm";
 import { useGetListPromo } from "../_api/use-get-list-promo";
-// import { useDeleteProductSlow } from "../_api/use-delete-product-slow";
-import { useExportSlow } from "../_api/use-export-product-slow";
-// import { useQueryClient } from "@tanstack/react-query";
-import { useGetDetailPeoductSlow } from "../_api/use-get-detail-product-slow";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useGetDetailPromo } from "../_api/use-get-detail-promo";
 import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
+import dynamic from "next/dynamic";
+import { useGetListProduct } from "../_api/use-get-list-product";
+import { useCreatePromo } from "../_api/use-create-promo";
+import { useUpdatePromo } from "../_api/use-update-promo";
+
+const DialogProduct = dynamic(() => import("./dialog-product"), {
+  ssr: false,
+});
+const DialogCreatePromo = dynamic(() => import("./dialog-create-promo"), {
+  ssr: false,
+});
+const DialogDetailPromo = dynamic(() => import("./dialog-detail-promo"), {
+  ssr: false,
+});
 
 export const Client = () => {
   // const queryClient = useQueryClient();
@@ -53,8 +48,28 @@ export const Client = () => {
     "dialog",
     parseAsBoolean.withDefault(false)
   );
-  const [productId, setProductId] = useQueryState("productId", {
+  const [promoId, setPromoId] = useQueryState("promoId", {
     defaultValue: "",
+  });
+
+  const [isProduct, setIsProduct] = useState(false);
+  const [openPromo, setOpenPromo] = useState(false);
+
+  const [input, setInput] = useState({
+    id: "",
+    name: "",
+    discount: "0",
+    price: 0,
+  });
+
+  const [productSearch, setProductSearch] = useState("");
+  const searchProductValue = useDebounce(productSearch);
+  const [pageProduct, setPageProduct] = useState(1);
+  const [metaPageProduct, setMetaPageProduct] = useState({
+    last: 1, //page terakhir
+    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
+    total: 1, //total data
+    perPage: 1,
   });
 
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
@@ -67,14 +82,8 @@ export const Client = () => {
     perPage: 1,
   });
 
-  // const [DeleteDialog, confirmDelete] = useConfirm(
-  //   "Delete Product",
-  //   "This action cannot be undone",
-  //   "liquid"
-  // );
-
-  // const { mutate: mutateDelete } = useDeleteProductSlow();
-  const { mutate: mutateExport, isPending: isPendingExport } = useExportSlow();
+  const { mutate: mutateCreate } = useCreatePromo();
+  const { mutate: mutateUpdate } = useUpdatePromo();
 
   const {
     data,
@@ -89,66 +98,121 @@ export const Client = () => {
 
   const {
     data: dataDetail,
+    isSuccess: isSuccessDetail,
     isLoading: isLoadingDetail,
     isError: isErrorDetail,
     error: errorDetail,
-  } = useGetDetailPeoductSlow({ id: productId });
+  } = useGetDetailPromo({ id: promoId });
+
+  const {
+    data: dataProduct,
+    refetch: refetchProduct,
+    isRefetching: isRefetchingProduct,
+    error: errorProduct,
+    isError: isErrorProduct,
+    isSuccess: isSuccessProduct,
+  } = useGetListProduct({ p: pageProduct, q: searchProductValue });
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
 
-  const detailData: any = useMemo(() => {
-    return dataDetail?.data.data.resource;
-  }, [dataDetail]);
+  const dataListProduct: any[] = useMemo(() => {
+    return dataProduct?.data.data.resource.data;
+  }, [dataProduct]);
 
   const loading = isLoading || isRefetching || isPending;
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
-  // const handleDelete = async (id: any) => {
-  //   const ok = await confirmDelete();
+  useEffect(() => {
+    if (isSuccessDetail && dataDetail) {
+      setInput((prev) => ({
+        ...prev,
+        name: dataDetail?.data.data.resource?.name_promo ?? "",
+        discount:
+          Math.round(
+            dataDetail?.data.data.resource?.discount_promo
+          ).toString() ?? "0",
+        price:
+          Math.round(
+            dataDetail?.data.data.resource?.new_product?.new_price_product
+          ) ?? "0",
+      }));
+    }
+  }, [dataDetail]);
 
-  //   if (!ok) return;
+  useEffect(() => {
+    setPaginate({
+      isSuccess: isSuccessProduct,
+      data: dataProduct,
+      dataPaginate: dataProduct?.data.data.resource,
+      setPage: setPageProduct,
+      setMetaPage: setMetaPageProduct,
+    });
+  }, [dataProduct]);
 
-  //   mutateDelete(
-  //     { id },
-  //     {
-  //       onSuccess: () => {
-  //         queryClient.invalidateQueries({
-  //           queryKey: ["detail-product-slow", id],
-  //         });
-  //         queryClient.invalidateQueries({ queryKey: ["list-product-slow"] });
-  //       },
-  //     }
-  //   );
-  // };
+  const handleCreate = () => {
+    const body = {
+      discount_promo: input.discount,
+      name_promo: input.name,
+      new_product_id: input.id,
+      price_promo:
+        input.price - (input.price / 100) * parseFloat(input.discount),
+    };
 
-  const handleExport = async () => {
-    mutateExport("", {
-      onSuccess: (res) => {
-        const link = document.createElement("a");
-        link.href = res.data.data.resource;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      },
+    mutateCreate(
+      { body },
+      {
+        onSuccess: () => {
+          setOpenPromo(false);
+          setInput({ id: "", name: "", discount: "0", price: 0 });
+        },
+      }
+    );
+  };
+  const handleUpdate = () => {
+    const body = {
+      discount_promo: input.discount,
+      name_promo: input.name,
+      price_promo:
+        input.price - (input.price / 100) * parseFloat(input.discount),
+    };
+
+    mutateUpdate(
+      { id: promoId, body },
+      {
+        onSuccess: () => {
+          handleClose();
+        },
+      }
+    );
+  };
+
+  const handleCloseProduct = () => {
+    setIsProduct(false);
+    setProductSearch("");
+    setPageProduct(1);
+    setMetaPageProduct({
+      from: 0,
+      last: 0,
+      perPage: 0,
+      total: 0,
     });
   };
 
   const handleClose = () => {
     setOpenDialog(false);
-    setProductId("");
+    setPromoId("");
+    setInput({ id: "", name: "", discount: "0", price: 0 });
   };
 
   useEffect(() => {
@@ -164,6 +228,22 @@ export const Client = () => {
       console.log("ERROR_GET_Product:", errorDetail);
     }
   }, [isErrorDetail, errorDetail]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorProduct,
+      error: errorProduct as AxiosError,
+      data: "Product",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorProduct, errorProduct]);
+
+  useEffect(() => {
+    if (isNaN(parseFloat(input.discount))) {
+      setInput((prev) => ({ ...prev, discount: "0" }));
+    }
+  }, [input]);
 
   const columnListPromo: ColumnDef<any>[] = [
     {
@@ -218,7 +298,7 @@ export const Client = () => {
       accessorKey: "new_product.new_price_product",
       header: "Price",
       cell: ({ row }) => (
-        <div className="tabular-nums">
+        <div className="tabular-nums whitespace-nowrap">
           {formatRupiah(row.original.new_product.new_price_product)}
         </div>
       ),
@@ -234,9 +314,9 @@ export const Client = () => {
     },
     {
       accessorKey: "price_promo",
-      header: "Promo Price",
+      header: () => <div className="whitespace-nowrap">Promo Price</div>,
       cell: ({ row }) => (
-        <div className="tabular-nums">
+        <div className="tabular-nums whitespace-nowrap">
           {formatRupiah(row.original.price_promo)}
         </div>
       ),
@@ -246,7 +326,7 @@ export const Client = () => {
       header: () => <div className="text-center">Status</div>,
       cell: ({ row }) => (
         <div className="flex justify-center">
-          <Badge className="rounded justify-center text-black font-normal capitalize bg-sky-300/80 hover:bg-sky-300/80">
+          <Badge className="rounded justify-center whitespace-nowrap text-black font-normal capitalize bg-sky-300/80 hover:bg-sky-300/80">
             {row.original.new_product.new_status_product}
           </Badge>
         </div>
@@ -264,7 +344,7 @@ export const Client = () => {
               disabled={isLoadingDetail}
               onClick={(e) => {
                 e.preventDefault();
-                setProductId(row.original.id);
+                setPromoId(row.original.id);
                 setOpenDialog(true);
               }}
             >
@@ -275,23 +355,70 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
-          {/* <TooltipProviderPage value={<p>Delete</p>}>
+        </div>
+      ),
+    },
+  ];
+  const columnProduct: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPageProduct.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_barcode_product??old_barcode_product",
+      header: "Barcode",
+      cell: ({ row }) =>
+        row.original.new_barcode_product ?? row.original.old_barcode_product,
+    },
+    {
+      accessorKey: "new_name_product",
+      header: "Product Name",
+      cell: ({ row }) => (
+        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+      ),
+    },
+    {
+      accessorKey: "new_category_product??new_tag_product",
+      header: "Category",
+      cell: ({ row }) =>
+        row.original.new_category_product ??
+        row.original.new_tag_product ??
+        "-",
+    },
+    {
+      accessorKey: "old_price_product",
+      header: "Price",
+      cell: ({ row }) => formatRupiah(row.original.old_price_product),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={"Add Product"}>
             <Button
-              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              className="items-center border-sky-400 text-black hover:bg-sky-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingDelete}
               onClick={(e) => {
                 e.preventDefault();
-                handleDelete(row.original.id);
+                setInput((prev) => ({
+                  ...prev,
+                  id: row.original.id,
+                  price: row.original.new_price_product,
+                }));
+                setOpenPromo(true);
+                setIsProduct(false);
               }}
+              type="button"
             >
-              {isPendingDelete ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
+              <PlusCircle className="w-4 h-4" />
             </Button>
-          </TooltipProviderPage> */}
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -315,7 +442,47 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      {/* <DeleteDialog /> */}
+      <DialogDetailPromo
+        open={openDialog}
+        onCloseModal={() => {
+          if (openDialog) {
+            handleClose();
+          }
+        }}
+        data={dataDetail?.data.data.resource.new_product}
+        input={input}
+        setInput={setInput}
+        handleSubmit={handleUpdate}
+      />
+      <DialogCreatePromo
+        open={openPromo}
+        onCloseModal={() => {
+          if (openPromo) {
+            setOpenPromo(false);
+            setInput({ id: "", name: "", discount: "0", price: 0 });
+          }
+        }}
+        input={input}
+        setInput={setInput}
+        handleSubmit={handleCreate}
+      />
+      <DialogProduct
+        open={isProduct}
+        onCloseModal={() => {
+          if (isProduct) {
+            handleCloseProduct();
+          }
+        }}
+        search={productSearch}
+        setSearch={setProductSearch}
+        refetch={refetchProduct}
+        isRefetching={isRefetchingProduct}
+        columns={columnProduct}
+        dataTable={dataListProduct}
+        page={pageProduct}
+        metaPage={metaPageProduct}
+        setPage={setPageProduct}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -327,10 +494,6 @@ export const Client = () => {
           <BreadcrumbItem>List Promo Products</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="w-full p-4 rounded flex items-center bg-red-300">
-        <AlertCircle className="size-4 mr-2" />
-        <p>Baru tampilan utama</p>
-      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Promo Products</h2>
         <div className="flex flex-col w-full gap-4">
@@ -358,17 +521,12 @@ export const Client = () => {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    handleExport();
+                    setIsProduct(true);
                   }}
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  disabled={isPendingExport}
                   variant={"outline"}
                 >
-                  {isPendingExport ? (
-                    <Loader2 className={"w-4 h-4 animate-spin mr-1"} />
-                  ) : (
-                    <PlusCircle className={"w-4 h-4 mr-1"} />
-                  )}
+                  <PlusCircle className={"w-4 h-4 mr-1"} />
                   Add Promo
                 </Button>
               </div>
@@ -381,82 +539,6 @@ export const Client = () => {
           />
         </div>
       </div>
-      <Dialog
-        open={openDialog}
-        onOpenChange={() => {
-          handleClose();
-        }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Detail Product</DialogTitle>
-          </DialogHeader>
-          {isLoadingDetail ? (
-            <div className="w-full h-[275px] flex items-center justify-center">
-              <Loader className="size-6 animate-spin" />
-            </div>
-          ) : (
-            <div className="w-full flex flex-col border rounded border-gray-500 p-3 gap-2">
-              <div className="flex items-center text-sm font-semibold border-b border-gray-500 pb-3">
-                <ScanBarcode className="w-5 h-5 mr-2" />
-                <div className="w-full flex justify-between items-center">
-                  Barcode:
-                  <Badge className="bg-gray-200 hover:bg-gray-200 border border-black rounded-full text-black">
-                    {detailData?.old_barcode_product}
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex gap-3 flex-col my-4">
-                <div className="flex flex-col w-full overflow-hidden gap-0.5">
-                  <p className="text-sm font-medium">Name Product</p>
-                  <p className="text-sm w-full whitespace-pre-wrap min-h-9 py-2 leading-relaxed flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                    {detailData?.new_name_product}
-                  </p>
-                </div>
-                <div className="w-full flex gap-4">
-                  <div className="flex flex-col w-1/3 overflow-hidden gap-0.5">
-                    <p className="text-sm font-medium">Qty</p>
-                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                      {parseFloat(
-                        detailData?.new_quantity_product ?? "0"
-                      ).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex flex-col w-2/3 overflow-hidden gap-0.5">
-                    <p className="text-sm font-medium">Price</p>
-                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                      {formatRupiah(
-                        parseFloat(detailData?.old_price_product ?? "0")
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm font-semibold border-t justify-between border-gray-500 pt-3">
-                <CalendarX className="w-5 h-5 mr-2" />
-                <div className="w-full flex justify-between items-center">
-                  Experied Date:
-                  <Badge className="bg-gray-200 hover:bg-gray-200 border border-black rounded-full text-black">
-                    {detailData?.new_date_in_product}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="w-full flex justify-end">
-            <Button
-              className="bg-transparent hover:bg-transparent text-black border-black/50 border hover:border-black"
-              onClick={(e) => {
-                e.preventDefault();
-                handleClose();
-              }}
-              type="button"
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

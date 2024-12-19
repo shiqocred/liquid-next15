@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  AlertCircle,
   CalendarX,
   Loader,
   Loader2,
@@ -12,7 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -32,16 +31,15 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useGetListBKL } from "../_api/use-get-list-bkl";
-import { useDeleteProductSlow } from "../_api/use-delete-product-slow";
+import { useDeleteBKL } from "../_api/use-delete-bkl";
 import { useQueryClient } from "@tanstack/react-query";
-import { useGetDetailPeoductSlow } from "../_api/use-get-detail-product-slow";
+import { useGetDetailBKL } from "../_api/use-get-detail-bkl";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -71,11 +69,10 @@ export const Client = () => {
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
-    "liquid"
+    "destructive"
   );
 
-  const { mutate: mutateDelete, isPending: isPendingDelete } =
-    useDeleteProductSlow();
+  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteBKL();
 
   const {
     data,
@@ -93,7 +90,7 @@ export const Client = () => {
     isLoading: isLoadingDetail,
     isError: isErrorDetail,
     error: errorDetail,
-  } = useGetDetailPeoductSlow({ id: productId });
+  } = useGetDetailBKL({ id: productId });
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.products.data;
@@ -106,15 +103,13 @@ export const Client = () => {
   const loading = isLoading || isRefetching || isPending;
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.products.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.products.last_page ?? 1,
-        from: data?.data.data.resource.products.from ?? 0,
-        total: data?.data.data.resource.products.total ?? 0,
-        perPage: data?.data.data.resource.products.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource.products,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
   const handleDelete = async (id: any) => {
@@ -141,17 +136,13 @@ export const Client = () => {
   };
 
   useEffect(() => {
-    if (isErrorDetail && (errorDetail as AxiosError).status === 403) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (isErrorDetail && (errorDetail as AxiosError).status !== 403) {
-      toast.error(
-        `ERROR ${
-          (errorDetail as AxiosError).status
-        }: Product failed to get Data`
-      );
-      console.log("ERROR_GET_Product:", errorDetail);
-    }
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Detail",
+      action: "get data",
+      method: "GET",
+    });
   }, [isErrorDetail, errorDetail]);
 
   const columnListPromo: ColumnDef<any>[] = [
@@ -274,10 +265,6 @@ export const Client = () => {
           <BreadcrumbItem>BKL</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="w-full p-4 rounded flex items-center bg-red-300">
-        <AlertCircle className="size-4 mr-2" />
-        <p>Baru tampilan utama</p>
-      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List BKL</h2>
         <div className="flex w-full gap-4 p-4 border border-sky-400/80 rounded-md">
@@ -362,13 +349,13 @@ export const Client = () => {
                 </div>
               </div>
               <div className="flex gap-3 flex-col my-4">
-                <div className="flex flex-col w-full overflow-hidden gap-0.5">
-                  <p className="text-sm font-medium">Name Product</p>
-                  <p className="text-sm w-full whitespace-pre-wrap min-h-9 py-2 leading-relaxed flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                    {detailData?.new_name_product}
-                  </p>
-                </div>
-                <div className="w-full flex gap-4">
+                <div className="w-full flex gap-4 items-center">
+                  <div className="flex flex-col w-full overflow-hidden gap-0.5">
+                    <p className="text-sm font-medium">Name Product</p>
+                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 py-2 leading-relaxed flex items-center px-3 border-b border-sky-400/80 text-gray-600">
+                      {detailData?.new_name_product}
+                    </p>
+                  </div>
                   <div className="flex flex-col w-1/3 overflow-hidden gap-0.5">
                     <p className="text-sm font-medium">Qty</p>
                     <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
@@ -377,11 +364,21 @@ export const Client = () => {
                       ).toLocaleString()}
                     </p>
                   </div>
-                  <div className="flex flex-col w-2/3 overflow-hidden gap-0.5">
-                    <p className="text-sm font-medium">Price</p>
+                </div>
+                <div className="w-full flex gap-4">
+                  <div className="flex flex-col w-full overflow-hidden gap-0.5">
+                    <p className="text-sm font-medium">Old Price</p>
                     <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
                       {formatRupiah(
                         parseFloat(detailData?.old_price_product ?? "0")
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex flex-col w-full overflow-hidden gap-0.5">
+                    <p className="text-sm font-medium">New Price</p>
+                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
+                      {formatRupiah(
+                        parseFloat(detailData?.new_price_product ?? "0")
                       )}
                     </p>
                   </div>
@@ -390,9 +387,9 @@ export const Client = () => {
               <div className="flex items-center text-sm font-semibold border-t justify-between border-gray-500 pt-3">
                 <CalendarX className="w-5 h-5 mr-2" />
                 <div className="w-full flex justify-between items-center">
-                  Experied Date:
+                  The duration of goods:
                   <Badge className="bg-gray-200 hover:bg-gray-200 border border-black rounded-full text-black">
-                    {detailData?.new_date_in_product}
+                    {detailData?.days_since_created}
                   </Badge>
                 </div>
               </div>

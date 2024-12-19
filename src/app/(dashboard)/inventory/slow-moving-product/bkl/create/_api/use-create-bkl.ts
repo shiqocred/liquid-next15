@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
@@ -7,14 +7,13 @@ import { useCookies } from "next-client-cookies";
 
 type Error = AxiosError;
 
-export const useDoneCheckProductStaging = () => {
+export const useCreateBKL = () => {
   const accessToken = useCookies().get("accessToken");
-  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, any>({
     mutationFn: async () => {
       const res = await axios.post(
-        `${baseUrl}/staging_products`,
+        `${baseUrl}/bkls`,
         {},
         {
           headers: {
@@ -25,17 +24,15 @@ export const useDoneCheckProductStaging = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully checked all");
-      queryClient.invalidateQueries({
-        queryKey: ["list-filter-staging-product"],
-      });
+      toast.success("BKL successfully created");
+      window.location.href = "/inventory/slow-moving-product/bkl";
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to check all`);
-        console.log("ERROR_DONE_CHECK_AL_PRODUCT_INPUT:", err);
+        toast.error(`ERROR ${err?.status}: BKL failed to create`);
+        console.log("ERROR_CREATE_BKL:", err);
       }
     },
   });

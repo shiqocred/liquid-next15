@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { useCookies } from "next-client-cookies";
 
-export const useGetDetailPeoductSlow = ({ id }: any) => {
+export const useGetDetailBKL = ({ id }: any) => {
   const accessToken = useCookies().get("accessToken");
   const query = useQuery({
-    queryKey: ["detail-product-slow", id],
+    queryKey: ["detail-bkl", id],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/new_products/${id}`, {
+      const res = await axios.get(`${baseUrl}/bkls/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

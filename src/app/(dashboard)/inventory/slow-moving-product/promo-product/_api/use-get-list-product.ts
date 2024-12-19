@@ -3,13 +3,13 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { useCookies } from "next-client-cookies";
 
-export const useGetListFilterProductStaging = ({ p, q }: any) => {
+export const useGetListProduct = ({ p, q }: any) => {
   const accessToken = useCookies().get("accessToken");
   const query = useQuery({
-    queryKey: ["list-filter-staging-product", { p, q }],
+    queryKey: ["list-product-promo", { p, q }],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/staging/filter_product?page=${p}`,
+        `${baseUrl}/new_product/display-expired?page=${p}&q=${q}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

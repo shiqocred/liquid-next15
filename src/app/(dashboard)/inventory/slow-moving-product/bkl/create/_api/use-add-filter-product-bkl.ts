@@ -11,14 +11,14 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useAddFilterProductStaging = () => {
+export const useAddFilterProductBKL = () => {
   const accessToken = useCookies().get("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
       const res = await axios.post(
-        `${baseUrl}/staging/filter_product/${id}/add`,
+        `${baseUrl}/bkl/filter_product/${id}/add`,
         {},
         {
           headers: {
@@ -30,9 +30,9 @@ export const useAddFilterProductStaging = () => {
     },
     onSuccess: () => {
       toast.success("Product successfully added to filter");
-      queryClient.invalidateQueries({ queryKey: ["list-staging-product"] });
+      queryClient.invalidateQueries({ queryKey: ["list-bkl-product"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-filter-staging-product"],
+        queryKey: ["list-filter-bkl-product"],
       });
     },
     onError: (err) => {

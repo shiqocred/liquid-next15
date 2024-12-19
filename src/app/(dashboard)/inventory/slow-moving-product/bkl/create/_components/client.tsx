@@ -1,25 +1,16 @@
 "use client";
 
 import {
-  AlertCircle,
   ArrowLeft,
   ArrowRightCircle,
-  Drill,
-  FileDown,
   Loader2,
   PlusCircle,
   RefreshCw,
-  ShieldCheck,
+  Send,
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -39,23 +30,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useGetListProductStaging } from "../_api/use-get-list-product-staging";
+import { useGetListProductBKL } from "../_api/use-get-list-product-bkl";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
-import { useLPRProductStaging } from "../_api/use-lpr-product-staging";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Label } from "@/components/ui/label";
-import { useGetListFilterProductStaging } from "../_api/use-get-list-filter-product-staging";
-import { useAddFilterProductStaging } from "../_api/use-add-filter-product-staging";
-import { useRemoveFilterProductStaging } from "../_api/use-remove-filter-product-staging";
-import { useDoneCheckProductStaging } from "../_api/use-done-check-product-staging";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { useExportStagingProduct } from "../_api/use-export-staging-product";
+import { useGetListFilterProductBKL } from "../_api/use-get-list-filter-product-bkl";
+import { useAddFilterProductBKL } from "../_api/use-add-filter-product-bkl";
+import { useRemoveFilterProductBKL } from "../_api/use-remove-filter-product-bkl";
+import { useCreateBKL } from "../_api/use-create-bkl";
 import Link from "next/link";
 
 export const Client = () => {
@@ -63,13 +49,6 @@ export const Client = () => {
     "dialog",
     parseAsBoolean.withDefault(false)
   );
-
-  const [input, setInput] = useState({
-    abnormal: "",
-    damaged: "",
-  });
-  const [productId, setProductId] = useState("");
-  const [isOpenLPR, setIsOpenLPR] = useState(false);
 
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
@@ -92,22 +71,18 @@ export const Client = () => {
     perPage: 1,
   });
 
-  const [DoneCheckAllDialog, confirmDoneCheckAll] = useConfirm(
-    "Check All Product",
+  const [CreateBKLDialog, confirmCreateBKL] = useConfirm(
+    "Create BKL",
     "This action cannot be undone",
     "liquid"
   );
 
-  const { mutate: mutateToLPR, isPending: isPendingToLPR } =
-    useLPRProductStaging();
   const { mutate: mutateAddFilter, isPending: isPendingAddFilter } =
-    useAddFilterProductStaging();
+    useAddFilterProductBKL();
   const { mutate: mutateRemoveFilter, isPending: isPendingRemoveFilter } =
-    useRemoveFilterProductStaging();
-  const { mutate: mutateDoneCheckAll, isPending: isPendingDoneCheckAll } =
-    useDoneCheckProductStaging();
-  const { mutate: mutateExport, isPending: isPendingExport } =
-    useExportStagingProduct();
+    useRemoveFilterProductBKL();
+  const { mutate: mutateCreateBKL, isPending: isPendingCreateBKL } =
+    useCreateBKL();
 
   const {
     data,
@@ -118,13 +93,13 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListProductStaging({ p: page, q: searchValue });
+  } = useGetListProductBKL({ p: page, q: searchValue });
 
   const {
     data: dataFiltered,
     refetch: refetchFiltered,
     isSuccess: isSuccessFiltered,
-  } = useGetListFilterProductStaging({
+  } = useGetListFilterProductBKL({
     p: pageFiltered,
   });
 
@@ -133,49 +108,29 @@ export const Client = () => {
   }, [data]);
 
   const dataListFiltered: any[] = useMemo(() => {
-    return dataFiltered?.data.data.resource.data.data;
-  }, [dataFiltered]);
-
-  const dataPriceTotal: any = useMemo(() => {
-    return dataFiltered?.data.data.resource.total_new_price;
+    return dataFiltered?.data.data.resource.data;
   }, [dataFiltered]);
 
   const loading = isLoading || isRefetching || isPending;
 
-  const handleExport = async () => {
-    mutateExport("", {
-      onSuccess: (res) => {
-        const link = document.createElement("a");
-        link.href = res.data.data.resource;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      },
-    });
-  };
-
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
   useEffect(() => {
-    if (isSuccessFiltered && dataFiltered) {
-      setPageFiltered(dataFiltered?.data.data.resource.data.current_page);
-      setMetaPageFiltered({
-        last: dataFiltered?.data.data.resource.data.last_page ?? 1,
-        from: dataFiltered?.data.data.resource.data.from ?? 0,
-        total: dataFiltered?.data.data.resource.data.total ?? 0,
-        perPage: dataFiltered?.data.data.resource.data.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess: isSuccessFiltered,
+      data: dataFiltered,
+      dataPaginate: dataFiltered?.data.data.resource,
+      setPage: setPageFiltered,
+      setMetaPage: setMetaPageFiltered,
+    });
   }, [dataFiltered]);
 
   const handleAddFilter = (id: any) => {
@@ -185,35 +140,15 @@ export const Client = () => {
     mutateRemoveFilter({ id });
   };
 
-  const handleMoveToLPR = (type: string) => {
-    mutateToLPR(
-      {
-        id: productId,
-        status: type,
-        description: type === "abnormal" ? input.abnormal : input.damaged,
-      },
-      {
-        onSuccess: () => {
-          setInput({
-            abnormal: "",
-            damaged: "",
-          });
-          setProductId("");
-          setIsOpenLPR(false);
-        },
-      }
-    );
-  };
-
-  const handleDoneCheckAll = async () => {
-    const ok = await confirmDoneCheckAll();
+  const handleCreateBKL = async () => {
+    const ok = await confirmCreateBKL();
 
     if (!ok) return;
 
-    mutateDoneCheckAll({});
+    mutateCreateBKL({});
   };
 
-  const columnProductStaging: ColumnDef<any>[] = [
+  const columnProductBKL: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -266,7 +201,7 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingAddFilter || isPendingDoneCheckAll}
+              disabled={isPendingAddFilter || isPendingCreateBKL}
               onClick={(e) => {
                 e.preventDefault();
                 handleAddFilter(row.original.id);
@@ -279,29 +214,11 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>To LPR</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-orange-400 text-orange-700 hover:text-orange-700 hover:bg-orange-50 disabled:opacity-100 disabled:hover:bg-orange-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={isPendingToLPR || isPendingDoneCheckAll}
-              onClick={(e) => {
-                e.preventDefault();
-                setProductId(row.original.id);
-                setIsOpenLPR(true);
-              }}
-            >
-              {isPendingToLPR ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Drill className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
         </div>
       ),
     },
   ];
-  const columnFilteredProductStaging: ColumnDef<any>[] = [
+  const columnFilteredProductBKL: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -334,7 +251,7 @@ export const Client = () => {
           <TooltipProviderPage value={"Delete"}>
             <Button
               className="items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              disabled={isPendingRemoveFilter || isPendingDoneCheckAll}
+              disabled={isPendingRemoveFilter || isPendingCreateBKL}
               variant={"outline"}
               type="button"
               onClick={(e) => {
@@ -374,7 +291,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <DoneCheckAllDialog />
+      <CreateBKLDialog />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -392,10 +309,6 @@ export const Client = () => {
           <BreadcrumbItem>Create</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="w-full p-4 rounded flex items-center bg-red-300">
-        <AlertCircle className="size-4 mr-2" />
-        <p>Baru tampilan utama</p>
-      </div>
       <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
         <Button
           asChild
@@ -434,23 +347,6 @@ export const Client = () => {
               </div>
             </div>
             <div className="flex gap-3">
-              <TooltipProviderPage value={"Export Data"} side="left">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleExport();
-                  }}
-                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black bg-sky-100 hover:bg-sky-200 disabled:opacity-100 disabled:hover:bg-sky-200 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  disabled={isPendingExport}
-                  variant={"outline"}
-                >
-                  {isPendingExport ? (
-                    <Loader2 className={cn("w-4 h-4 animate-spin")} />
-                  ) : (
-                    <FileDown className={cn("w-4 h-4")} />
-                  )}
-                </Button>
-              </TooltipProviderPage>
               <Sheet open={isOpenFiltered} onOpenChange={setIsOpenFiltered}>
                 <SheetTrigger asChild>
                   <Button className="bg-sky-400 hover:bg-sky-400/80 text-black">
@@ -460,7 +356,7 @@ export const Client = () => {
                 </SheetTrigger>
                 <SheetContent className="min-w-[75vw]">
                   <SheetHeader>
-                    <SheetTitle>List Product Stagging (Filtered)</SheetTitle>
+                    <SheetTitle>List Product Filtered</SheetTitle>
                   </SheetHeader>
                   <div className="w-full flex flex-col gap-5 mt-5 text-sm">
                     <div className="flex gap-4 items-center w-full">
@@ -468,12 +364,6 @@ export const Client = () => {
                         Total Filtered:
                         <span className="font-semibold">
                           {metaPageFiltered.total} Products
-                        </span>
-                      </div>
-                      <div className="h-9 px-4 flex-none flex items-center text-sm rounded-md justify-center border gap-1 border-sky-500 bg-sky-100">
-                        Total Price:
-                        <span className="font-semibold">
-                          {formatRupiah(dataPriceTotal)}
                         </span>
                       </div>
                       <TooltipProviderPage value={"Reload Data"}>
@@ -493,23 +383,23 @@ export const Client = () => {
                       <Button
                         onClick={(e) => {
                           e.preventDefault();
-                          handleDoneCheckAll();
+                          handleCreateBKL();
                         }}
                         type="button"
                         className="bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                        disabled={isPendingDoneCheckAll}
+                        disabled={isPendingCreateBKL}
                       >
-                        {isPendingDoneCheckAll ? (
+                        {isPendingCreateBKL ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
-                          <ShieldCheck className="w-4 h-4 mr-2" />
+                          <Send className="w-4 h-4 mr-2" />
                         )}
-                        Done Check All
+                        Create
                       </Button>
                     </div>
                     <DataTable
                       isSticky
-                      columns={columnFilteredProductStaging}
+                      columns={columnFilteredProductBKL}
                       data={dataListFiltered ?? []}
                     />
                     <Pagination
@@ -524,101 +414,13 @@ export const Client = () => {
               </Sheet>
             </div>
           </div>
-          <DataTable columns={columnProductStaging} data={dataList ?? []} />
+          <DataTable columns={columnProductBKL} data={dataList ?? []} />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
           />
         </div>
       </div>
-      <Dialog
-        open={isOpenLPR}
-        onOpenChange={() => {
-          setIsOpenLPR(false);
-          setInput({
-            abnormal: "",
-            damaged: "",
-          });
-          setProductId("");
-        }}
-      >
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Move Product to LPR</DialogTitle>
-          </DialogHeader>
-          <Tabs className="flex flex-col gap-4" defaultValue="abnormal">
-            <TabsList className="bg-transparent flex justify-start gap-2">
-              <TabsTrigger asChild value="abnormal">
-                <Button className="data-[state=active]:bg-sky-400/80 data-[state=active]:hover:bg-sky-400 font-medium bg-transparent shadow-none text-black hover:bg-sky-100">
-                  Abnormal
-                </Button>
-              </TabsTrigger>
-              <TabsTrigger asChild value="damaged">
-                <Button className="data-[state=active]:bg-sky-400/80 data-[state=active]:hover:bg-sky-400 font-medium bg-transparent shadow-none text-black hover:bg-sky-100">
-                  Damaged
-                </Button>
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="abnormal">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleMoveToLPR("abnormal");
-                }}
-                className="flex flex-col gap-4"
-              >
-                <div className="flex flex-col w-full gap-1">
-                  <Label>Description</Label>
-                  <Textarea
-                    rows={6}
-                    className="resize-none border border-sky-400/80 focus-visible:ring-transparent focus-visible:outline-none"
-                    value={input.abnormal}
-                    onChange={(e) =>
-                      setInput((prev) => ({
-                        ...prev,
-                        abnormal: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <Button
-                  className="bg-orange-400/80 hover:bg-orange-400 text-black"
-                  type="submit"
-                >
-                  Submit
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="damaged">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleMoveToLPR("damaged");
-                }}
-                className="flex flex-col gap-4"
-              >
-                <div className="flex flex-col w-full gap-1">
-                  <Label>Description</Label>
-                  <Textarea
-                    rows={6}
-                    className="resize-none border border-sky-400/80 focus-visible:ring-transparent focus-visible:outline-none"
-                    value={input.damaged}
-                    onChange={(e) =>
-                      setInput((prev) => ({ ...prev, damaged: e.target.value }))
-                    }
-                  />
-                </div>
-                <Button
-                  className="bg-orange-400/80 hover:bg-orange-400 text-black"
-                  type="submit"
-                >
-                  Submit
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
