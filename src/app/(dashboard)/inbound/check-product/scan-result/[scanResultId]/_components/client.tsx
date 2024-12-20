@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Minus,
   Plus,
+  ScanBarcode,
   Send,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -46,7 +47,7 @@ import Loading from "@/app/(dashboard)/loading";
 import { useSubmitProduct } from "../_api/use-submit-product";
 import { format } from "date-fns";
 import BarcodePrinted from "@/components/barcode";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import Image from "next/image";
 
 export const Client = () => {
   const { scanResultId } = useParams();
@@ -104,7 +105,7 @@ export const Client = () => {
   }, [data]);
 
   const categories: any[] = useMemo(() => {
-    return dataCategories?.data.data.resource;
+    return dataCategories?.data.data.resource ?? [];
   }, [dataCategories]);
 
   const handleSubmit = (e: FormEvent, type: string) => {
@@ -201,40 +202,35 @@ export const Client = () => {
           <BreadcrumbItem>Check</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="flex text-sm text-gray-500 py-6 rounded-md shadow bg-white w-full px-5 gap-4 items-center relative">
-        <div className="w-full text-xs flex items-center">
-          <Link href={`/inbound/check-product/scan-result`} className="group">
-            <button
-              type="button"
-              className="flex items-center text-black group-hover:mr-6 mr-4 transition-all w-auto"
-            >
-              <div className="w-10 h-10 rounded-full group-hover:shadow justify-center flex items-center group-hover:bg-gray-100 transition-all">
-                <ArrowLeft className="w-5 h-5" />
-              </div>
-            </button>
-          </Link>
-          <div className="w-2/3">
-            <p>Product Name</p>
-            <h3 className="text-black font-semibold text-xl">
-              {dataDetail?.product_name}
-            </h3>
+      <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
+        <Link href="/inbound/check-product/scan-result">
+          <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
+            <ArrowLeft className="w-5 h-5 text-black" />
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-semibold">Check Product</h1>
+      </div>
+      <div className="w-full flex gap-4">
+        <div className="w-2/5 flex-none relative bg-white p-5 rounded-md">
+          <div className="w-full relative aspect-square rounded overflow-hidden">
+            <Image
+              src={dataDetail?.image ?? "/images/liquid8.png"}
+              alt=""
+              fill
+              className="object-contain"
+            />
           </div>
         </div>
-        <div className="w-full flex items-center text-xs">
-          <div className="w-1/3 text-end mr-3 pr-3 border-r border-gray-500">
-            <p>Barcode</p>
-            <h3 className="text-black font-medium text-sm">
-              {dataDetail?.old_barcode_product}
-            </h3>
-          </div>
-          <div className="w-1/3 text-end mr-3 pr-3 border-r border-gray-500">
-            <p>Old Price</p>
-            <h3 className="text-black font-medium text-sm">
-              {formatRupiah(parseFloat(dataDetail?.product_price))}
-            </h3>
-          </div>
-          <div className="w-1/3 text-end">
-            <p>Keterangan</p>
+        <div className="flex flex-col text-base text-gray-700 px-10 py-7 rounded-md shadow bg-white w-full gap-6 relative">
+          <div className="w-full flex justify-between items-center border-b border-gray-500 pb-5">
+            <div className="flex items-center gap-2">
+              <div className="size-9 flex items-center justify-center rounded-full bg-sky-100 text-black">
+                <ScanBarcode className="size-5" />
+              </div>
+              <h3 className="text-2xl font-semibold text-black">
+                {dataDetail?.old_barcode_product}
+              </h3>
+            </div>
             <Badge className="bg-sky-100 hover:bg-sky-100 border border-sky-500 text-black py-0.5 gap-1 rounded-full shadow-none mt-1">
               {parseFloat(dataDetail?.product_price) > 100000 ? (
                 <ChevronRight className="w-4 h-4" />
@@ -244,155 +240,92 @@ export const Client = () => {
               <p>100K</p>
             </Badge>
           </div>
+          <div className="flex flex-col gap-6 pl-3 h-full">
+            <div className="border-l-2 border-gray-300 pl-3">
+              <p>Product Name</p>
+              <h3 className="text-black font-semibold text-base">
+                {dataDetail?.product_name}
+              </h3>
+            </div>
+            <div className="flex w-full gap-4">
+              <div className="border-l-2 border-gray-300 pl-3 w-full">
+                <p>Old Price</p>
+                <h3 className="text-black font-semibold text-base">
+                  {formatRupiah(parseFloat(dataDetail?.product_price))}
+                </h3>
+              </div>
+              <div className="border-l-2 border-gray-300 pl-3 w-full">
+                <p>New Price</p>
+                <h3 className="text-black font-semibold text-base">
+                  {parseFloat(dataDetail?.product_price) > 100000
+                    ? formatRupiah(
+                        parseFloat(dataDetail?.product_price) -
+                          (parseFloat(dataDetail?.product_price) / 100) *
+                            metaData.discount
+                      )
+                    : formatRupiah(parseFloat(tagColor.fixed_price_color))}
+                </h3>
+              </div>
+            </div>
+            {parseFloat(dataDetail?.product_price) < 100000 && (
+              <div className="border-l-2 border-gray-300 pl-3 w-full">
+                <p>Tag Color</p>
+                <div className="flex w-1/2 gap-2 items-center cursor-default">
+                  <div
+                    className="size-4 rounded-full border border-black"
+                    style={{ background: tagColor?.hexa_code_color }}
+                  />
+                  <p className="text-black font-semibold">
+                    {tagColor.name_color}
+                  </p>
+                </div>
+              </div>
+            )}
+            <div className="border-l-2 border-gray-300 pl-3 flex flex-col gap-1 pb-1">
+              <p>Qty</p>
+              <div className="relative flex items-center w-1/2 text-black">
+                <Input
+                  value={metaData.qty}
+                  onChange={(e) =>
+                    setMetaData((prev) => ({
+                      ...prev,
+                      qty: e.target.value.startsWith("0")
+                        ? e.target.value.replace(/^0+/, "")
+                        : e.target.value,
+                    }))
+                  }
+                  className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
+                />
+                <div className="flex absolute right-2 gap-1">
+                  <button
+                    onClick={() =>
+                      setMetaData((prev) => ({
+                        ...prev,
+                        qty: (parseFloat(prev.qty) - 1).toString(),
+                      }))
+                    }
+                    disabled={parseFloat(metaData.qty) === 0}
+                    className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200 disabled:hover:bg-sky-100 disabled:opacity-50"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setMetaData((prev) => ({
+                        ...prev,
+                        qty: (parseFloat(prev.qty) + 1).toString(),
+                      }))
+                    }
+                    className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      {parseFloat(dataDetail?.product_price) > 100000 ? (
-        <div className="w-full">
-          <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 flex-col">
-            <h2 className="text-xl font-bold">New Data</h2>
-            <div className="flex w-full items-center gap-4">
-              <TooltipProviderPage value="Not Editable">
-                <div className="flex flex-col w-1/2 flex-none gap-1">
-                  <Label>Name</Label>
-                  <Input
-                    value={dataDetail?.product_name}
-                    disabled
-                    className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
-                  />
-                </div>
-              </TooltipProviderPage>
-              <TooltipProviderPage value="Not Editable">
-                <div className="flex flex-col w-full gap-1">
-                  <Label>Price</Label>
-                  <Input
-                    value={formatRupiah(
-                      parseFloat(dataDetail?.product_price) -
-                        (parseFloat(dataDetail?.product_price) / 100) *
-                          metaData.discount
-                    )}
-                    disabled
-                    className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
-                  />
-                </div>
-              </TooltipProviderPage>
-              <div className="flex flex-col w-full gap-1">
-                <Label>Qty</Label>
-                <div className="relative flex items-center">
-                  <Input
-                    value={metaData.qty}
-                    onChange={(e) =>
-                      setMetaData((prev) => ({
-                        ...prev,
-                        qty: e.target.value.startsWith("0")
-                          ? e.target.value.replace(/^0+/, "")
-                          : e.target.value,
-                      }))
-                    }
-                    className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
-                  />
-                  <div className="flex absolute right-2 gap-1">
-                    <button
-                      onClick={() =>
-                        setMetaData((prev) => ({
-                          ...prev,
-                          qty: (parseFloat(prev.qty) - 1).toString(),
-                        }))
-                      }
-                      disabled={parseFloat(metaData.qty) === 0}
-                      className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200 disabled:hover:bg-sky-100 disabled:opacity-50"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setMetaData((prev) => ({
-                          ...prev,
-                          qty: (parseFloat(prev.qty) + 1).toString(),
-                        }))
-                      }
-                      className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="w-full">
-          <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 flex-col">
-            <h2 className="text-xl font-bold">New Data</h2>
-            <div className="flex w-full items-center gap-4">
-              <TooltipProviderPage value="Not Editable">
-                <div className="flex flex-col w-1/2 flex-none gap-1">
-                  <Label>Tag Color</Label>
-                  <div className="flex w-full gap-2 items-center border rounded-md border-sky-500 px-5 h-9 cursor-default">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ background: tagColor?.hexa_code_color }}
-                    />
-                    <p className="text-sm">{tagColor.name_color}</p>
-                  </div>
-                </div>
-              </TooltipProviderPage>
-              <TooltipProviderPage value="Not Editable">
-                <div className="flex flex-col w-full gap-1">
-                  <Label>Price</Label>
-                  <Input
-                    value={formatRupiah(parseFloat(tagColor.fixed_price_color))}
-                    disabled
-                    className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
-                  />
-                </div>
-              </TooltipProviderPage>
-              <div className="flex flex-col w-full gap-1">
-                <Label>Qty</Label>
-                <div className="relative flex items-center">
-                  <Input
-                    value={metaData.qty}
-                    onChange={(e) =>
-                      setMetaData((prev) => ({
-                        ...prev,
-                        qty: e.target.value.startsWith("0")
-                          ? e.target.value.replace(/^0+/, "")
-                          : e.target.value,
-                      }))
-                    }
-                    className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
-                  />
-                  <div className="flex absolute right-2 gap-1">
-                    <button
-                      onClick={() =>
-                        setMetaData((prev) => ({
-                          ...prev,
-                          qty: (parseFloat(prev.qty) - 1).toString(),
-                        }))
-                      }
-                      disabled={parseFloat(metaData.qty) === 0}
-                      className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200 disabled:hover:bg-sky-100 disabled:opacity-50"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setMetaData((prev) => ({
-                          ...prev,
-                          qty: (parseFloat(prev.qty) + 1).toString(),
-                        }))
-                      }
-                      className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 items-center">
         <Tabs defaultValue="good" className="w-full">
           <div className="w-full flex justify-center">
@@ -417,7 +350,7 @@ export const Client = () => {
                 <div className="w-full flex flex-col gap-3">
                   <RadioGroup
                     onValueChange={(e) => {
-                      const selectedCategory = categories.find(
+                      const selectedCategory = categories?.find(
                         (item) => item.name_category === e
                       );
                       setMetaData((prev) => ({
@@ -430,7 +363,7 @@ export const Client = () => {
                     }}
                     className="grid grid-cols-4 w-full gap-6"
                   >
-                    {categories.map((item) => (
+                    {categories?.map((item) => (
                       <div
                         key={item.id}
                         className={cn(

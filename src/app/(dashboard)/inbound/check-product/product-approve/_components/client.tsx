@@ -16,7 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -147,6 +147,8 @@ export const Client = () => {
     data: dataDetail,
     refetch: refetchDetail,
     isSuccess: isSuccessDetail,
+    error: errorDetail,
+    isError: isErrorDetail,
   } = useGetDetailProductApprove({
     code: codeDocument,
     p: pageDetail,
@@ -164,28 +166,34 @@ export const Client = () => {
   const loading = isLoading || isRefetching || isPending;
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
   useEffect(() => {
-    if (isSuccessDetail && dataDetail) {
-      setPageDetail(dataDetail?.data.data.resource.current_page);
-      setMetaPageDetail({
-        last: dataDetail?.data.data.resource.last_page ?? 1,
-        from: dataDetail?.data.data.resource.from ?? 0,
-        total: dataDetail?.data.data.resource.total ?? 0,
-        perPage: dataDetail?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess: isSuccessDetail,
+      data: dataDetail,
+      dataPaginate: dataDetail?.data.data.resource,
+      setPage: setPageDetail,
+      setMetaPage: setMetaPageDetail,
+    });
   }, [dataDetail]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      action: "get data",
+      data: "Detail",
+      method: "GET",
+    });
+  });
 
   const handlePartialStaging = async (code: string) => {
     const ok = await confirmPartialStaging();
@@ -357,7 +365,9 @@ export const Client = () => {
       accessorKey: "base_document",
       header: "Base Document",
       cell: ({ row }) => (
-        <div className="capitalize">{row.original.base_document}</div>
+        <div className="capitalize max-w-[500px] break-all">
+          {row.original.base_document}
+        </div>
       ),
     },
     {
@@ -468,7 +478,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: () => <div className="text-center">Product Name</div>,
       cell: ({ row }) => (
-        <div className="max-w-[300px]">{row.original.new_name_product}</div>
+        <div className="max-w-[300px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

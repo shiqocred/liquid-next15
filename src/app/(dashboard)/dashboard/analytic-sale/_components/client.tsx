@@ -57,7 +57,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { ColumnDef } from "@tanstack/react-table";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { DataTable } from "@/components/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetAnalyticSaleMonthly } from "../_api/use-get-analytic-sale-monthly";
@@ -156,15 +155,9 @@ export const columnsAnalytic: ColumnDef<any>[] = [
     accessorKey: "product_category_sale",
     header: "Category Name",
     cell: ({ row }) => (
-      <TooltipProviderPage
-        value={
-          <p className="max-w-[500px]">{row.original.product_category_sale}</p>
-        }
-      >
-        <div className="truncate max-w-[500px]">
-          {row.original.product_category_sale}
-        </div>
-      </TooltipProviderPage>
+      <div className="break-all max-w-[500px]">
+        {row.original.product_category_sale}
+      </div>
     ),
   },
   {

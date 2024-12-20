@@ -34,7 +34,6 @@ import { useQueryState } from "nuqs";
 import { useGetStorageReport } from "../_api/use-get-storage-report";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
@@ -95,13 +94,9 @@ export const columnsStorage: ColumnDef<any>[] = [
     accessorKey: "category_product",
     header: "Category Name",
     cell: ({ row }) => (
-      <TooltipProviderPage
-        value={<p className="max-w-[500px]">{row.original.category_product}</p>}
-      >
-        <div className="truncate max-w-[500px]">
-          {row.original.category_product}
-        </div>
-      </TooltipProviderPage>
+      <div className="break-all max-w-[500px]">
+        {row.original.category_product}
+      </div>
     ),
   },
   {

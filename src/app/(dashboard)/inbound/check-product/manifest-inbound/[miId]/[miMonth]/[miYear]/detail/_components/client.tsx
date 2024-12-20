@@ -19,7 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { cn, formatRupiah, setPaginate } from "@/lib/utils";
 import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
 import { useGetDetailManifestInbound } from "../_api/use-get-detail-manifest-inbound";
 import { ColumnDef } from "@tanstack/react-table";
@@ -112,15 +112,13 @@ export const Client = () => {
   }, [data]);
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.data.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.data.last_page ?? 1,
-        from: data?.data.data.resource.data.from ?? 0,
-        total: data?.data.data.resource.data.total ?? 0,
-        perPage: data?.data.data.resource.data.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource.data,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
   useEffect(() => {
@@ -227,7 +225,9 @@ export const Client = () => {
       accessorKey: "old_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className=" max-w-[500px]">{row.original.old_name_product}</div>
+        <div className="break-all max-w-[500px]">
+          {row.original.old_name_product}
+        </div>
       ),
     },
     {

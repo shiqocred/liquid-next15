@@ -8,6 +8,7 @@ import {
   CloudUpload,
   Edit3,
   Expand,
+  FileDown,
   Loader2,
   Plus,
   PlusCircle,
@@ -79,6 +80,7 @@ import Image from "next/image";
 import { urlWeb } from "@/lib/baseUrl";
 import { useDeleteImage } from "../_api/use-delete-image";
 import { useUpdateImage } from "../_api/use-update-image";
+import { useExportPalet } from "../_api/use-export-palet";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -168,6 +170,7 @@ export const Client = () => {
     // isPending: isPendingUpdateImage
   } = useUpdateImage();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdate();
+  const { mutate: mutateExport, isPending: isPendingExport } = useExportPalet();
 
   // mutate end ----------------------------------------------------------------
 
@@ -373,6 +376,21 @@ export const Client = () => {
             queryKey: ["list-detail-palet", paletId],
           });
           setIsEdit(false);
+        },
+      }
+    );
+  };
+
+  const handleExport = async () => {
+    mutateExport(
+      { id: paletId },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         },
       }
     );
@@ -1474,7 +1492,7 @@ export const Client = () => {
                   onClick={() => refetch()}
                   className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50 z-10"
                   variant={"outline"}
-                  disabled={isPendingUpdate || isRefetching}
+                  disabled={isPendingUpdate || isRefetching || isPendingExport}
                 >
                   <RefreshCw
                     className={cn(
@@ -1484,9 +1502,24 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
+              <TooltipProviderPage value={"Reload Data"}>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleExport();
+                  }}
+                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50 z-10"
+                  variant={"outline"}
+                  disabled={isPendingUpdate || isRefetching || isPendingExport}
+                >
+                  <FileDown className={cn("w-4 h-4")} />
+                </Button>
+              </TooltipProviderPage>
               <Button
                 variant={"liquid"}
-                disabled={isPendingUpdate || isPendingAddProduct}
+                disabled={
+                  isPendingUpdate || isPendingAddProduct || isPendingExport
+                }
                 onClick={() => setIsProduct(true)}
                 className="z-10"
               >

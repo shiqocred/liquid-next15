@@ -10,7 +10,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { ImageIcon, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { cn, formatRupiah, setPaginate } from "@/lib/utils";
 import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
 import { useGetListScanResult } from "../_api/use-get-list-scan-result";
 import { ColumnDef } from "@tanstack/react-table";
@@ -80,15 +80,13 @@ export const Client = () => {
   }, [data]);
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
   const handleDelete = async (id: any) => {
@@ -120,7 +118,7 @@ export const Client = () => {
           }}
           disabled={!row.original.image}
           type="button"
-          className="flex justify-center relative w-10 h-10 border rounded shadow bg-white items-center overflow-hidden focus-visible:ring-0 focus-visible:outline-none"
+          className="flex justify-center relative size-10 border rounded shadow bg-white items-center overflow-hidden focus-visible:ring-0 focus-visible:outline-none"
         >
           {row.original.image ? (
             <Image fill src={row.original.image} alt="image_product" />
@@ -134,13 +132,9 @@ export const Client = () => {
       accessorKey: "product_name",
       header: "Product Name",
       cell: ({ row }) => (
-        <TooltipProviderPage
-          value={<p className="max-w-[500px]">{row.original.product_name}</p>}
-        >
-          <div className="truncate max-w-[500px]">
-            {row.original.product_name}
-          </div>
-        </TooltipProviderPage>
+        <div className="break-all max-w-[500px]">
+          {row.original.product_name}
+        </div>
       ),
     },
     {

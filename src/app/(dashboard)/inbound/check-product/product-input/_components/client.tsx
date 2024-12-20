@@ -18,7 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -81,11 +81,38 @@ interface QualityData {
 export const Client = () => {
   const queryClient = useQueryClient();
 
+  // bool filter
   const [isOpenFiltered, setIsOpenFiltered] = useQueryState(
     "dialog",
     parseAsBoolean.withDefault(false)
   );
 
+  // bool detail category
+  const [isOpenCategory, setIsOpenCategory] = useQueryState(
+    "categories",
+    parseAsBoolean.withDefault(false)
+  );
+
+  // bool detail
+  const [isOpenDetailProduct, setIsOpenDetailProduct] = useQueryState(
+    "dialog2",
+    parseAsBoolean.withDefault(false)
+  );
+
+  // product id to get detail
+  const [productId, setProductId] = useQueryState("productId", {
+    defaultValue: "",
+  });
+
+  // input detail
+  const [input, setInput] = useState({
+    name: "",
+    price: "0",
+    qty: "1",
+    category: "",
+  });
+
+  // search + pageination
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -96,6 +123,7 @@ export const Client = () => {
     perPage: 1,
   });
 
+  // pagination filter
   const [pageFiltered, setPageFiltered] = useQueryState(
     "p2",
     parseAsInteger.withDefault(1)
@@ -107,17 +135,21 @@ export const Client = () => {
     perPage: 1,
   });
 
+  // delete product confirm
   const [DeleteProductDialog, confirmDeleteProduct] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
     "destructive"
   );
+
+  // done check all confirm
   const [DoneCheckAllDialog, confirmDoneCheckAll] = useConfirm(
     "Check All Product",
     "This action cannot be undone",
     "liquid"
   );
 
+  // mutate delete product, add filter, remove filter, done check all, update product
   const { mutate: mutateDeleteProduct, isPending: isPendingDeleteProduct } =
     useDeleteProductInput();
   const { mutate: mutateAddFilter, isPending: isPendingAddFilter } =
@@ -126,7 +158,10 @@ export const Client = () => {
     useRemoveFilterProductInput();
   const { mutate: mutateDoneCheckAll, isPending: isPendingDoneCheckAll } =
     useDoneCheckProductInput();
+  const { mutate: updateProduct, isSuccess: isSuccessUpdate } =
+    useUpdateProductPII();
 
+  // get data, data filtered, data detail
   const {
     data,
     refetch,
@@ -137,13 +172,31 @@ export const Client = () => {
     isError,
     isSuccess,
   } = useGetListProductInput({ p: page, q: searchValue });
-
   const {
     data: dataFiltered,
     refetch: refetchFiltered,
+    error: errorFiltered,
+    isError: isErrorFiltered,
     isSuccess: isSuccessFiltered,
   } = useGetListFilterProductInput({
     p: pageFiltered,
+  });
+  const {
+    data: dataProduct,
+    isSuccess: isSuccessProduct,
+    isLoading: isLoadingDetailProduct,
+    isError: isErrorDetailProduct,
+    error: errorDetailProduct,
+  } = useGetProductDetailPII({ id: productId });
+
+  // memo detail product
+  const dataDetailProduct: any = useMemo(() => {
+    return dataProduct?.data.data.resource;
+  }, [dataProduct]);
+
+  // get old product detail
+  const { data: dataPrice } = useGetPriceProductPII({
+    price: dataDetailProduct?.old_price_product,
   });
 
   const dataPriceTotal: any = useMemo(() => {
@@ -158,31 +211,75 @@ export const Client = () => {
     return dataFiltered?.data.data.resource.data;
   }, [dataFiltered]);
 
+  const categories: any[] = useMemo(() => {
+    return dataPrice?.data.data.resource.category ?? [];
+  }, [dataPrice]);
+
   const loading = isLoading || isRefetching || isPending;
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.products.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.products.last_page ?? 1,
-        from: data?.data.data.resource.products.from ?? 0,
-        total: data?.data.data.resource.products.total ?? 0,
-        perPage: data?.data.data.resource.products.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource.products,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
   useEffect(() => {
-    if (isSuccessFiltered && dataFiltered) {
-      setPageFiltered(dataFiltered?.data.data.resource.current_page);
-      setMetaPageFiltered({
-        last: dataFiltered?.data.data.resource.last_page ?? 1,
-        from: dataFiltered?.data.data.resource.from ?? 0,
-        total: dataFiltered?.data.data.resource.total ?? 0,
-        perPage: dataFiltered?.data.data.resource.per_page ?? 0,
+    setPaginate({
+      isSuccess: isSuccessFiltered,
+      data: dataFiltered,
+      dataPaginate: dataFiltered?.data.data.resource,
+      setPage: setPageFiltered,
+      setMetaPage: setMetaPageFiltered,
+    });
+  }, [dataFiltered]);
+
+  useEffect(() => {
+    if (isSuccessProduct && dataProduct) {
+      setInput({
+        name: dataProduct?.data.data.resource.new_name_product ?? "",
+        price: dataProduct?.data.data.resource.new_price_product ?? "0",
+        qty: dataProduct?.data.data.resource.new_quantity_product ?? "1",
+        category: dataProduct?.data.data.resource.new_category_product ?? "",
       });
     }
-  }, [dataFiltered]);
+    if (dataProduct?.data.data.resource.new_category_product) {
+      setIsOpenCategory(true);
+    } else {
+      setIsOpenCategory(false);
+    }
+  }, [dataProduct]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetailProduct,
+      error: errorDetailProduct as AxiosError,
+      data: "Detail product",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetailProduct, errorDetailProduct]);
+  useEffect(() => {
+    alertError({
+      isError: isErrorFiltered,
+      error: errorFiltered as AxiosError,
+      data: "Product filtered",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorFiltered, errorFiltered]);
 
   const handleAddFilter = (id: any) => {
     mutateAddFilter({ id });
@@ -208,61 +305,6 @@ export const Client = () => {
   };
 
   // ---------------- Start Detail Fn -------------------- //
-
-  const [isOpenCategory, setIsOpenCategory] = useQueryState(
-    "categories",
-    parseAsBoolean.withDefault(false)
-  );
-  const [isOpenDetailProduct, setIsOpenDetailProduct] = useQueryState(
-    "dialog2",
-    parseAsBoolean.withDefault(false)
-  );
-  const [productId, setProductId] = useQueryState("productId", {
-    defaultValue: "",
-  });
-  const [input, setInput] = useState({
-    name: "",
-    price: "0",
-    qty: "1",
-    category: "",
-  });
-
-  const { mutate: updateProduct, isSuccess: isSuccessUpdate } =
-    useUpdateProductPII();
-
-  const {
-    data: dataProduct,
-    isSuccess: isSuccessProduct,
-    isLoading: isLoadingDetailProduct,
-  } = useGetProductDetailPII({ id: productId });
-
-  const dataDetailProduct: any = useMemo(() => {
-    return dataProduct?.data.data.resource;
-  }, [dataProduct]);
-
-  const { data: dataPrice } = useGetPriceProductPII({
-    price: dataDetailProduct?.old_price_product,
-  });
-
-  useEffect(() => {
-    if (isSuccessProduct && dataProduct) {
-      setInput({
-        name: dataProduct?.data.data.resource.new_name_product ?? "",
-        price: dataProduct?.data.data.resource.new_price_product ?? "0",
-        qty: dataProduct?.data.data.resource.new_quantity_product ?? "1",
-        category: dataProduct?.data.data.resource.new_category_product ?? "",
-      });
-    }
-    if (dataProduct?.data.data.resource.new_category_product) {
-      setIsOpenCategory(true);
-    } else {
-      setIsOpenCategory(false);
-    }
-  }, [dataProduct]);
-
-  const categories: any[] = useMemo(() => {
-    return dataPrice?.data.data.resource.category ?? [];
-  }, [dataPrice]);
 
   const findNotNull = (v: any) => {
     if (v) {
@@ -351,13 +393,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: () => <div className="text-center">Product Name</div>,
       cell: ({ row }) => (
-        <TooltipProviderPage
-          value={
-            <p className="max-w-[300px]">{row.original.new_name_product}</p>
-          }
-        >
-          <div className="max-w-[300px]">{row.original.new_name_product}</div>
-        </TooltipProviderPage>
+        <div className="break-all max-w-[300px]">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -440,6 +478,7 @@ export const Client = () => {
       ),
     },
   ];
+
   const columnFilteredProductInput: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
@@ -462,7 +501,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: () => <div className="text-center">Product Name</div>,
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="break-all max-w-[500px]">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

@@ -11,7 +11,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { ReceiptText, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, setPaginate } from "@/lib/utils";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useGetManifestInbound } from "../_api/use-get-manifest-inbound";
 import { ColumnDef } from "@tanstack/react-table";
@@ -68,15 +68,13 @@ export const Client = () => {
   }, [data]);
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
   const handleDelete = async (id: any) => {
@@ -101,7 +99,9 @@ export const Client = () => {
       accessorKey: "base_document",
       header: "Document Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.base_document}</div>
+        <div className="break-all max-w-[500px]">
+          {row.original.base_document}
+        </div>
       ),
     },
     {
