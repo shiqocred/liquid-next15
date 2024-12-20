@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   ArrowUpRight,
+  ArrowUpRightFromSquare,
   CalendarIcon,
   ChevronDown,
   LayoutGrid,
@@ -62,6 +63,7 @@ import { DataTable } from "@/components/data-table";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
+import Link from "next/link";
 
 interface ChartData {
   date: string;
@@ -152,13 +154,19 @@ export const columnsStorage: ColumnDef<any>[] = [
   {
     accessorKey: "action",
     header: () => <div className="text-center">Action</div>,
-    cell: () => (
+    cell: ({ row }) => (
       <div className="flex justify-center">
         <Button
-          onClick={() => {}}
-          className="bg-sky-300/80 hover:bg-sky-300 text-black h-6 text-xs font-normal rounded"
+          className="bg-sky-300/80 hover:bg-sky-300 text-black h-8 font-normal rounded"
+          asChild
         >
-          Detail
+          <Link
+            href={`/outbond/sale/detail/${row.original.id}`}
+            target="_blank"
+          >
+            <ArrowUpRightFromSquare className="size-2" />
+            Detail
+          </Link>
         </Button>
       </div>
     ),

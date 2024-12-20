@@ -258,9 +258,11 @@ const Navbar = () => {
             <PopoverTrigger asChild>
               <Button
                 disabled={loading}
-                className="w-8 h-8 p-0 rounded-full bg-transparent hover:bg-gray-50 text-black"
+                className="w-8 h-8 p-0 rounded-full bg-transparent hover:bg-gray-50 text-black relative border-sky-400 border"
               >
                 <Bell className="w-4 h-4" />
+                <div className="w-2.5 h-2.5 rounded-full absolute -top-[0.5px] -right-[0.5px] bg-sky-500" />
+                <div className="w-2.5 h-2.5 rounded-full absolute -top-[0.5px] -right-[0.5px] bg-sky-500 animate-ping opacity-75" />
               </Button>
             </PopoverTrigger>
             <PopoverContent
