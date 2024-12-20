@@ -9,7 +9,6 @@ import {
   Edit3,
   Expand,
   Loader2,
-  PencilRuler,
   Plus,
   PlusCircle,
   Printer,
@@ -159,11 +158,15 @@ export const Client = () => {
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
 
-  const { mutate: mutateDeleteImage, isPending: isPendingDeleteImage } =
-    useDeleteImage();
+  const {
+    mutate: mutateDeleteImage,
+    // isPending: isPendingDeleteImage
+  } = useDeleteImage();
 
-  const { mutate: mutateUpdateImage, isPending: isPendingUpdateImage } =
-    useUpdateImage();
+  const {
+    mutate: mutateUpdateImage,
+    // isPending: isPendingUpdateImage
+  } = useUpdateImage();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdate();
 
   // mutate end ----------------------------------------------------------------
@@ -1239,7 +1242,7 @@ export const Client = () => {
                         </div>
                       )}
                       {input.brand.length > 0 ? (
-                        input.brand.map((item, i) => (
+                        input.brand.map((item) => (
                           <div
                             key={item.id}
                             className="flex rounded overflow-hidden border border-sky-300"
@@ -1287,7 +1290,7 @@ export const Client = () => {
                                 .filter(
                                   (v) => !input.brand.some((s) => s.id === v.id)
                                 )
-                                .map((item, i) => (
+                                .map((item) => (
                                   <CommandItem
                                     className="border border-gray-500 my-2 first:mt-0 last:mb-0 flex gap-2 items-center group"
                                     onSelect={() => {
@@ -1350,7 +1353,7 @@ export const Client = () => {
                   </>
                 ) : (
                   <>
-                    {input.brand.map((item, i) => (
+                    {input.brand.map((item) => (
                       <div
                         key={item.id}
                         className="flex rounded overflow-hidden border border-sky-300"
@@ -1415,7 +1418,7 @@ export const Client = () => {
           <div className="grid grid-cols-8 gap-4">
             {dataListImages.length > 0 ? (
               <>
-                {dataListImages.map((item, i) => (
+                {dataListImages.map((item) => (
                   <div
                     key={item.filename}
                     className="relative w-full aspect-square shadow border"

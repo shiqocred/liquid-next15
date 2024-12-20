@@ -928,7 +928,7 @@ export const Client = () => {
                         </div>
                       )}
                       {input.brand.length > 0 ? (
-                        input.brand.map((item, i) => (
+                        input.brand.map((item) => (
                           <div
                             key={item.id}
                             className="flex rounded overflow-hidden border border-sky-300"
@@ -976,7 +976,7 @@ export const Client = () => {
                                 .filter(
                                   (v) => !input.brand.some((s) => s.id === v.id)
                                 )
-                                .map((item, i) => (
+                                .map((item) => (
                                   <CommandItem
                                     className="border border-gray-500 my-2 first:mt-0 last:mb-0 flex gap-2 items-center group"
                                     onSelect={() => {
@@ -1037,7 +1037,7 @@ export const Client = () => {
                   </>
                 ) : (
                   <>
-                    {input.brand.map((item, i) => (
+                    {input.brand.map((item) => (
                       <div
                         key={item.id}
                         className="flex rounded overflow-hidden border border-sky-300"

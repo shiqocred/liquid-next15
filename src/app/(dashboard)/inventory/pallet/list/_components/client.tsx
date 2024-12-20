@@ -29,7 +29,6 @@ import { DataTable } from "@/components/data-table";
 import { useGetListPalet } from "../_api/use-get-list-palet";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { useUnbundleBundle } from "../_api/use-unbundle-bundle";
 import { useConfirm } from "@/hooks/use-confirm";
 

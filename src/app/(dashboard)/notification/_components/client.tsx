@@ -1,7 +1,7 @@
 "use client";
 
-import { Edit3, Loader2, PlusCircle, RefreshCw, Trash2 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { cn, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -11,22 +11,18 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
-import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
+import { parseAsInteger, useQueryState } from "nuqs";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
 import { useGetListNotification } from "../_api/use-get-list-notification";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
-import { format, formatDistanceToNowStrict } from "date-fns";
 import { id } from "date-fns/locale";
+import { formatDistanceToNowStrict } from "date-fns";
 
 export const Client = () => {
   // data search, page
@@ -70,6 +66,7 @@ export const Client = () => {
       setPage,
       setMetaPage,
     });
+    setDataSearch("");
   }, [data]);
 
   // column data
