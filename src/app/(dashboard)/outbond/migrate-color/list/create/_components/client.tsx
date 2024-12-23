@@ -11,13 +11,14 @@ import {
   Palette,
   Plus,
   PlusCircle,
+  RefreshCw,
   Send,
   Trash2,
   Triangle,
   Truck,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { alertError, cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -80,21 +81,14 @@ export const Client = () => {
     "destructive"
   );
 
-  const {
-    data,
-    // refetch,
-    // isLoading,
-    // isRefetching,
-    // isPending,
-    error,
-    isError,
-    // isSuccess,
-  } = useGetListColorMigrate();
+  const { data, refetch, isRefetching, error, isError } =
+    useGetListColorMigrate();
 
   const {
     data: dataSelect,
-    // refetch: refetchFiltered,
-    // isSuccess: isSuccessFiltered,
+    refetch: refetchFiltered,
+    isError: isErrorSelect,
+    error: errorSelect,
   } = useGetSelect();
 
   const dataList: any = useMemo(() => {
@@ -117,7 +111,25 @@ export const Client = () => {
     );
   }, [dataSelect]);
 
-  // const loading = isLoading || isRefetching || isPending;
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelect,
+      error: errorSelect as AxiosError,
+      data: "Select Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelect, errorSelect]);
 
   const handleAddColor = () => {
     const body = {
@@ -511,17 +523,33 @@ export const Client = () => {
             <div className="flex items-center gap-4">
               <h5 className="font-bold">List Color Filtered</h5>
             </div>
-            <Button
-              variant={"liquid"}
-              disabled={dataList?.migrates === 0}
-              onClick={(e) => {
-                e.preventDefault();
-                handleSubmit();
-              }}
-            >
-              <Send className="size-4 mr-1" />
-              Send
-            </Button>
+            <div className="flex gap-4 items-center">
+              <TooltipProviderPage value={"Reload Data"}>
+                <Button
+                  onClick={() => refetch()}
+                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                  variant={"outline"}
+                >
+                  <RefreshCw
+                    className={cn(
+                      "w-4 h-4",
+                      isRefetching ? "animate-spin" : ""
+                    )}
+                  />
+                </Button>
+              </TooltipProviderPage>
+              <Button
+                variant={"liquid"}
+                disabled={dataList?.migrates === 0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit();
+                }}
+              >
+                <Send className="size-4 mr-1" />
+                Send
+              </Button>
+            </div>
           </div>
           <DataTable
             columns={columnColorMigrate}

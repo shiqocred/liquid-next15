@@ -11,7 +11,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { ReceiptText, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, setPaginate } from "@/lib/utils";
+import { alertError, cn, setPaginate } from "@/lib/utils";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useGetManifestInbound } from "../_api/use-get-manifest-inbound";
 import { ColumnDef } from "@tanstack/react-table";
@@ -76,6 +76,16 @@ export const Client = () => {
       setMetaPage,
     });
   }, [data]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
 
   const handleDelete = async (id: any) => {
     const ok = await confirmDelete();

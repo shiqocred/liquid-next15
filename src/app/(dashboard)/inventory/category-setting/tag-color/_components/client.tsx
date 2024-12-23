@@ -13,7 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -155,6 +155,36 @@ export const Client = () => {
   // loading WMS APK
   const loadingWMS = isLoadingWMS || isRefetchingWMS || isPendingWMS;
   const loadingAPK = isLoadingAPK || isRefetchingAPK || isPendingAPK;
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorWMS,
+      error: errorWMS as AxiosError,
+      data: "Detail WMS",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorWMS, errorWMS]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorAPK,
+      error: errorAPK as AxiosError,
+      data: "Detail APK",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorAPK, errorAPK]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorColor,
+      error: errorColor as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorColor, errorColor]);
 
   // handle delete color
   const handleDelete = async (id: any) => {
@@ -305,21 +335,6 @@ export const Client = () => {
     }
   }, [dataColor]);
 
-  // error get Detail
-  useEffect(() => {
-    if (isErrorColor && (errorColor as AxiosError).status === 403) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (isErrorColor && (errorColor as AxiosError).status !== 403) {
-      toast.error(
-        `ERROR ${
-          (errorColor as AxiosError).status
-        }: Tag Color failed to get Data`
-      );
-      console.log("ERROR_GET_TAG_COLOR:", errorColor);
-    }
-  }, [isErrorColor, errorColor]);
-
   // input isNaN
   useEffect(() => {
     if (isNaN(parseFloat(input.fixPrice))) {
@@ -361,7 +376,7 @@ export const Client = () => {
       accessorKey: "name_color",
       header: "Color Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.name_color}</div>
+        <div className="max-w-[500px] break-all">{row.original.name_color}</div>
       ),
     },
     {

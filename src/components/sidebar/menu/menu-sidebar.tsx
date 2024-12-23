@@ -18,6 +18,7 @@ import {
   PackageSearch,
   RailSymbol,
   Recycle,
+  ScanText,
   ShoppingBasket,
   SquareLibrary,
   SwatchBook,
@@ -288,6 +289,12 @@ const sidebarMenu = [
         title: "sale",
         href: "/outbond/sale",
         icon: <ShoppingBasket className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
+      {
+        title: "B2B",
+        href: "/outbond/b2b",
+        icon: <ScanText className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
       {

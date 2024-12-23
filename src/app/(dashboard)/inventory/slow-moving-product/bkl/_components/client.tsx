@@ -145,6 +145,16 @@ export const Client = () => {
     });
   }, [isErrorDetail, errorDetail]);
 
+  useEffect(() => {
+    alertError({
+      isError: isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   const columnListPromo: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
@@ -169,7 +179,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[400px]">{row.original.new_name_product}</div>
+        <div className="max-w-[400px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

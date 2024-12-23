@@ -221,6 +221,16 @@ export const Client = () => {
     }
   }, [input]);
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   // handle error product
   useEffect(() => {
     alertError({
@@ -250,7 +260,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -299,7 +311,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

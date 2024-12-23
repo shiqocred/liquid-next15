@@ -10,7 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -99,6 +99,8 @@ export const Client = () => {
     data: dataFiltered,
     refetch: refetchFiltered,
     isSuccess: isSuccessFiltered,
+    isError: isErrorFiltered,
+    error: errorFiltered,
   } = useGetListFilterProductBKL({
     p: pageFiltered,
   });
@@ -132,6 +134,26 @@ export const Client = () => {
       setMetaPage: setMetaPageFiltered,
     });
   }, [dataFiltered]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorFiltered,
+      error: errorFiltered as AxiosError,
+      data: "Filtered Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorFiltered, errorFiltered]);
 
   const handleAddFilter = (id: any) => {
     mutateAddFilter({ id });
@@ -168,9 +190,11 @@ export const Client = () => {
     },
     {
       accessorKey: "new_name_product",
-      header: () => <div className="text-center">Product Name</div>,
+      header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[300px]">{row.original.new_name_product}</div>
+        <div className="max-w-[300px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -238,9 +262,11 @@ export const Client = () => {
     },
     {
       accessorKey: "new_name_product",
-      header: () => <div className="text-center">Product Name</div>,
+      header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

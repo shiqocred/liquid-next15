@@ -1,8 +1,14 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  CircleFadingPlus,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, setPaginate } from "@/lib/utils";
+import { alertError, cn, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,10 +29,24 @@ import Pagination from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { id } from "date-fns/locale";
 import { formatDistanceToNowStrict } from "date-fns";
+import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Client = () => {
+  const [isStatus, setIsStatus] = useState(false);
   // data search, page
-  const [dataSearch, setDataSearch] = useQueryState("status", {
+  const [status, setStatus] = useQueryState("status", {
     defaultValue: "",
   });
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -47,7 +67,7 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListNotification({ p: page, q: dataSearch });
+  } = useGetListNotification({ p: page, q: status });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -66,8 +86,17 @@ export const Client = () => {
       setPage,
       setMetaPage,
     });
-    setDataSearch("");
   }, [data]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
 
   // column data
   const columnNotification: ColumnDef<any>[] = [
@@ -84,14 +113,18 @@ export const Client = () => {
       accessorKey: "status",
       header: () => <div className="text-center">Status</div>,
       cell: ({ row }) => (
-        <div className="flex justify-center">
+        <div className="flex justify-center my-1.5">
           <Badge
             className={cn(
-              "font-normal capitalize text-black shadow-none bg-green-400 hover:bg-green-400",
+              "font-normal capitalize text-black shadow-none",
               row.original.status.toLowerCase() === "pending" &&
                 "bg-yellow-300 hover:bg-yellow-300",
+              row.original.status.toLowerCase() === "display" &&
+                "bg-sky-400 hover:bg-sky-400",
               row.original.status.toLowerCase() === "done" &&
-                "bg-sky-400 hover:bg-sky-400"
+                "bg-green-400 hover:bg-green-400",
+              row.original.status.toLowerCase() === "sale" &&
+                "bg-indigo-400 hover:bg-indigo-400"
             )}
           >
             {row.original.status}
@@ -111,6 +144,22 @@ export const Client = () => {
           locale: id,
           addSuffix: true,
         }),
+    },
+    {
+      accessorKey: "external_id",
+      header: () => <div className="text-center">Approve</div>,
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          {row.original.external_id ? (
+            <Button className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1">
+              <p className="text-xs">Detail</p>
+              <ArrowUpRight />
+            </Button>
+          ) : (
+            "-"
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -160,6 +209,121 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
+              <div className="flex items-center gap-3">
+                <Popover open={isStatus} onOpenChange={setIsStatus}>
+                  <PopoverTrigger asChild>
+                    <Button className="border-sky-400/80 border text-black bg-transparent border-dashed hover:bg-transparent flex px-3 hover:border-sky-400">
+                      <CircleFadingPlus className="h-4 w-4 mr-2" />
+                      Status
+                      {status && (
+                        <Separator
+                          orientation="vertical"
+                          className="mx-2 bg-gray-500 w-[1.5px]"
+                        />
+                      )}
+                      {status && (
+                        <Badge
+                          className={cn(
+                            "rounded w-20 px-0 justify-center text-black font-normal capitalize",
+                            status === "pending" &&
+                              "bg-yellow-300 hover:bg-yellow-300",
+                            status === "display" &&
+                              "bg-sky-400 hover:bg-sky-400",
+                            status === "done" &&
+                              "bg-green-400 hover:bg-green-400",
+                            status === "sale" &&
+                              "bg-indigo-400 hover:bg-indigo-400"
+                          )}
+                        >
+                          {status}
+                        </Badge>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0 w-52" align="start">
+                    <Command>
+                      <CommandGroup>
+                        <CommandList>
+                          <CommandItem
+                            onSelect={() => {
+                              setStatus("pending");
+                              setIsStatus(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={status === "pending"}
+                              onCheckedChange={() => {
+                                setStatus("pending");
+                                setIsStatus(false);
+                              }}
+                            />
+                            Pending
+                          </CommandItem>
+                          <CommandItem
+                            onSelect={() => {
+                              setStatus("display");
+                              setIsStatus(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={status === "display"}
+                              onCheckedChange={() => {
+                                setStatus("display");
+                                setIsStatus(false);
+                              }}
+                            />
+                            Display
+                          </CommandItem>
+                          <CommandItem
+                            onSelect={() => {
+                              setStatus("done");
+                              setIsStatus(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={status === "done"}
+                              onCheckedChange={() => {
+                                setStatus("done");
+                                setIsStatus(false);
+                              }}
+                            />
+                            Done
+                          </CommandItem>
+                          <CommandItem
+                            onSelect={() => {
+                              setStatus("sale");
+                              setIsStatus(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={status === "sale"}
+                              onCheckedChange={() => {
+                                setStatus("sale");
+                                setIsStatus(false);
+                              }}
+                            />
+                            Sale
+                          </CommandItem>
+                        </CommandList>
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {status && (
+                  <Button
+                    variant={"ghost"}
+                    className="flex px-3"
+                    onClick={() => setStatus("")}
+                  >
+                    Reset
+                    <XCircle className="h-4 w-4 ml-2" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           <DataTable columns={columnNotification} data={dataList ?? []} />

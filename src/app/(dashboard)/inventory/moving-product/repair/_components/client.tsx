@@ -8,7 +8,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -85,6 +85,16 @@ export const Client = () => {
     });
   }, [data]);
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   const handleUnbundle = async (id: any) => {
     const ok = await confirmUnbundle();
 
@@ -112,7 +122,9 @@ export const Client = () => {
       accessorKey: "repair_name",
       header: "Repair Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.repair_name}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.repair_name}
+        </div>
       ),
     },
     {

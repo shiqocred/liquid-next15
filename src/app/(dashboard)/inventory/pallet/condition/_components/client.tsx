@@ -2,7 +2,7 @@
 
 import { Edit3, Loader2, PlusCircle, RefreshCw, Trash2 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { alertError, cn, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -110,18 +110,38 @@ export const Client = () => {
   // load data
   const loading = isLoading || isRefetching || isPending;
 
-  // get pagetination
+  // handle pagination
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
+
+  // handle error data
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  // handle error get detail
+  useEffect(() => {
+    alertError({
+      isError: isErrorCondition,
+      error: errorCondition as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorCondition, errorCondition]);
 
   // handle delete
   const handleDelete = async (id: any) => {
@@ -190,21 +210,6 @@ export const Client = () => {
     }
   }, [dataCondition]);
 
-  // isError get Detail
-  useEffect(() => {
-    if (isErrorCondition && (errorCondition as AxiosError).status === 403) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (isErrorCondition && (errorCondition as AxiosError).status !== 403) {
-      toast.error(
-        `ERROR ${
-          (errorCondition as AxiosError).status
-        }: Condition failed to get Data`
-      );
-      console.log("ERROR_GET_CONDITION:", errorCondition);
-    }
-  }, [isErrorCondition, errorCondition]);
-
   // column data
   const columnWarehousePalet: ColumnDef<any>[] = [
     {
@@ -219,10 +224,16 @@ export const Client = () => {
     {
       accessorKey: "condition_name",
       header: "Name",
+      cell: ({ row }) => (
+        <div className="break-all">{row.original.condition_name}</div>
+      ),
     },
     {
       accessorKey: "condition_slug",
       header: "Slug",
+      cell: ({ row }) => (
+        <div className="break-all">{row.original.condition_slug}</div>
+      ),
     },
     {
       accessorKey: "action",

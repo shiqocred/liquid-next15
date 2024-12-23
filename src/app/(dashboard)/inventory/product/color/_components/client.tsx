@@ -188,7 +188,6 @@ export const Client = () => {
       setMetaPage: setMetaPageWMS,
     });
   }, [dataWMS]);
-
   useEffect(() => {
     setPaginate({
       isSuccess: isSuccessAPK,
@@ -198,6 +197,35 @@ export const Client = () => {
       setMetaPage: setMetaPageAPK,
     });
   }, [dataAPK]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorWMS,
+      error: errorWMS as AxiosError,
+      data: "Data WMS",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorWMS, errorWMS]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorAPK,
+      error: errorAPK as AxiosError,
+      data: "Data APK",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorAPK, errorAPK]);
+  useEffect(() => {
+    alertError({
+      isError: isErrorProduct,
+      error: errorProduct as AxiosError,
+      data: "Data Product",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorProduct, errorProduct]);
 
   // handle delete color
   const handleDelete = async (id: any) => {
@@ -240,17 +268,6 @@ export const Client = () => {
     );
   };
 
-  // error get Detail
-  useEffect(() => {
-    alertError({
-      isError: isErrorProduct,
-      error: errorProduct as AxiosError,
-      action: "get Data",
-      data: "Product Color",
-      method: "GET",
-    });
-  }, [isErrorProduct, errorProduct]);
-
   const columnSummaryColor: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
@@ -264,6 +281,9 @@ export const Client = () => {
     {
       accessorKey: "tag_name",
       header: "Color Name",
+      cell: ({ row }) => (
+        <div className="break-all">{row.original.tag_name}</div>
+      ),
     },
     {
       accessorKey: "total_data",
@@ -302,7 +322,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -389,7 +411,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

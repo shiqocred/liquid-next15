@@ -10,7 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -95,6 +95,26 @@ export const Client = () => {
 
   const loading = isLoading || isRefetching || isPending;
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorCategory,
+      error: errorCategory as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorCategory, errorCategory]);
+
   const handleDelete = async (id: any) => {
     const ok = await confirmDelete();
 
@@ -144,6 +164,7 @@ export const Client = () => {
       }
     );
   };
+
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
@@ -184,20 +205,6 @@ export const Client = () => {
   }, [dataCategory]);
 
   useEffect(() => {
-    if (isErrorCategory && (errorCategory as AxiosError).status === 403) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (isErrorCategory && (errorCategory as AxiosError).status !== 403) {
-      toast.error(
-        `ERROR ${
-          (errorCategory as AxiosError).status
-        }: Category failed to get Data`
-      );
-      console.log("ERROR_GET_CATEGORY:", errorCategory);
-    }
-  }, [isErrorCategory, errorCategory]);
-
-  useEffect(() => {
     if (isNaN(parseFloat(input.discount))) {
       setInput((prev) => ({ ...prev, discount: "0" }));
     }
@@ -220,7 +227,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Category Name",
       cell: ({ row }) => (
-        <div className="max-w-[400px]">{row.original.name_category}</div>
+        <div className="max-w-[400px] break-all">
+          {row.original.name_category}
+        </div>
       ),
     },
     {

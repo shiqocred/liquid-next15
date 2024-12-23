@@ -8,7 +8,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -84,6 +84,16 @@ export const Client = () => {
     });
   }, [data]);
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   const handleUnbundle = async (id: any) => {
     const ok = await confirmUnbundle();
 
@@ -93,7 +103,7 @@ export const Client = () => {
   };
 
   // column data
-  const columnListBundle: ColumnDef<any>[] = [
+  const columnListPalet: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -111,7 +121,7 @@ export const Client = () => {
       accessorKey: "name_palet",
       header: "Palet Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.name_palet}</div>
+        <div className="max-w-[500px] break-all">{row.original.name_palet}</div>
       ),
     },
     {
@@ -241,7 +251,7 @@ export const Client = () => {
               </div>
             </div>
           </div>
-          <DataTable columns={columnListBundle} data={dataList ?? []} />
+          <DataTable columns={columnListPalet} data={dataList ?? []} />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

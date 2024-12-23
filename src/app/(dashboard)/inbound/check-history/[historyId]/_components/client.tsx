@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { MouseEvent, useEffect, useMemo, useState } from "react";
 import { Pie, PieChart, Label } from "recharts";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useGetDetailCheckHistory } from "../_api/use-get-detail-check-history";
 import { ColumnDef } from "@tanstack/react-table";
@@ -126,6 +126,8 @@ export const Client = () => {
     data: dataProduct,
     refetch: refetchProduct,
     isSuccess: isSuccessProduct,
+    isError: isErrorProduct,
+    error: errorProduct,
   } = useGetProductDetailCheckHistory({
     code: dataDetail?.data.data.resource.code_document,
     p: page,
@@ -165,16 +167,33 @@ export const Client = () => {
   }, [dataDetail]);
 
   useEffect(() => {
-    if (isSuccessProduct && dataProduct) {
-      setPage(dataProduct?.data.data.resource.current_page);
-      setMetaPage({
-        last: dataProduct?.data.data.resource.last_page ?? 1,
-        from: dataProduct?.data.data.resource.from ?? 0,
-        total: dataProduct?.data.data.resource.total ?? 0,
-        perPage: dataProduct?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess: isSuccessProduct,
+      data: dataProduct,
+      dataPaginate: dataProduct?.data.data.resource,
+      setPage: setPage,
+      setMetaPage: setMetaPage,
+    });
   }, [dataProduct]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetail, errorDetail]);
+  useEffect(() => {
+    alertError({
+      isError: isErrorProduct,
+      error: errorProduct as AxiosError,
+      data: "Products",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorProduct, errorProduct]);
 
   const handleExport = async (e: MouseEvent) => {
     e.preventDefault();
@@ -219,7 +238,7 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">
+        <div className="break-all max-w-[500px]">
           {row.original.new_name_product ?? row.original.old_name_product}
         </div>
       ),

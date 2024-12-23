@@ -318,34 +318,33 @@ const DialogExportProduct = ({
                       <div className="w-32 flex-none px-3 py-0.5">Harga</div>
                     </div>
                     <div className="flex w-full flex-col relative">
-                      {data?.buyer?.sales &&
-                        data?.buyer?.sales.map((item: any, index: number) => (
-                          <div
-                            key={
-                              item.barcode +
-                              item.product_name_sale +
-                              item.product_qty_sale +
-                              item.product_price_sale
-                            }
-                            className="w-full flex border-t border-black first:border-t-2"
-                          >
-                            <div className="w-10 flex-none border-r border-black text-center py-0.5">
-                              {index + 1}
-                            </div>
-                            <div className="w-36 flex-none border-r border-black px-3 py-0.5 uppercase">
-                              {item.product_barcode_sale}
-                            </div>
-                            <div className="w-[450px] border-r break-all border-black px-3 py-0.5 capitalize whitespace-pre-wrap flex-none">
-                              {item.product_name_sale}
-                            </div>
-                            <div className="w-12 flex-none border-r border-black text-center  py-0.5">
-                              {item.product_qty_sale}
-                            </div>
-                            <div className="w-32 flex-none px-3 py-0.5">
-                              {formatRupiah(item.product_price_sale) ?? "Rp 0"}
-                            </div>
+                      {data?.buyer?.sales?.map((item: any, index: number) => (
+                        <div
+                          key={
+                            item.barcode +
+                            item.product_name_sale +
+                            item.product_qty_sale +
+                            item.product_price_sale
+                          }
+                          className="w-full flex border-t border-black first:border-t-2"
+                        >
+                          <div className="w-10 flex-none border-r border-black text-center py-0.5">
+                            {index + 1}
                           </div>
-                        ))}
+                          <div className="w-36 flex-none border-r border-black px-3 py-0.5 uppercase">
+                            {item.product_barcode_sale}
+                          </div>
+                          <div className="w-[450px] border-r break-all border-black px-3 py-0.5 capitalize whitespace-pre-wrap flex-none">
+                            {item.product_name_sale}
+                          </div>
+                          <div className="w-12 flex-none border-r border-black text-center  py-0.5">
+                            {item.product_qty_sale}
+                          </div>
+                          <div className="w-32 flex-none px-3 py-0.5">
+                            {formatRupiah(item.product_price_sale) ?? "Rp 0"}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   <div

@@ -11,7 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -85,8 +85,12 @@ export const Client = () => {
     isSuccess,
   } = useGetListCreateMC({ p: page, q: searchValue });
 
-  const { data: dataFiltered, refetch: refetchFiltered } =
-    useGetListFilterCreateMC();
+  const {
+    data: dataFiltered,
+    refetch: refetchFiltered,
+    isError: isErrorFiltered,
+    error: errorFiltered,
+  } = useGetListFilterCreateMC();
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
@@ -99,16 +103,34 @@ export const Client = () => {
   const loading = isLoading || isRefetching || isPending;
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorFiltered,
+      error: errorFiltered as AxiosError,
+      data: "Filtered Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorFiltered, errorFiltered]);
 
   const handleAddFilter = (id: any) => {
     mutateAddFilter({ id });
@@ -147,7 +169,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -217,7 +241,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: () => <div className="text-center">Product Name</div>,
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

@@ -295,6 +295,16 @@ export const Client = () => {
 
   // handling close end ----------------------------------------------------------------
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   // handle error product
   useEffect(() => {
     alertError({
@@ -404,7 +414,7 @@ export const Client = () => {
     maxSize: MAX_FILE_SIZE_MB * 1024 * 1024, // Konversi dari MB ke byte
   });
 
-  const columnBundle: ColumnDef<any>[] = [
+  const columnPalet: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -422,7 +432,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -471,7 +483,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -1179,7 +1193,7 @@ export const Client = () => {
           <div className="flex flex-col w-full gap-4 z-10">
             <DataTable
               isLoading={isRefetching}
-              columns={columnBundle}
+              columns={columnPalet}
               data={dataList ?? []}
             />
             <Pagination

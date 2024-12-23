@@ -216,17 +216,13 @@ export const Client = () => {
   };
 
   useEffect(() => {
-    if (isErrorDetail && (errorDetail as AxiosError).status === 403) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (isErrorDetail && (errorDetail as AxiosError).status !== 403) {
-      toast.error(
-        `ERROR ${
-          (errorDetail as AxiosError).status
-        }: Product failed to get Data`
-      );
-      console.log("ERROR_GET_Product:", errorDetail);
-    }
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Detail",
+      action: "get data",
+      method: "GET",
+    });
   }, [isErrorDetail, errorDetail]);
 
   useEffect(() => {
@@ -272,7 +268,7 @@ export const Client = () => {
       accessorKey: "new_product.new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[400px]">
+        <div className="max-w-[400px] break-all">
           {row.original.new_product.new_name_product}
         </div>
       ),
@@ -379,7 +375,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

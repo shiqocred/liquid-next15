@@ -17,7 +17,7 @@ import {
   Send,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   parseAsBoolean,
   parseAsString,
@@ -159,6 +159,15 @@ export const Client = () => {
       setMetaData((prev) => ({ ...prev, qty: "0" }));
     }
   }, [metaData]);
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
 
   const [isMounted, setIsMounted] = useState(false);
 

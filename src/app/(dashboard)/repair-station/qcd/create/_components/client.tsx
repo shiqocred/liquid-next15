@@ -12,7 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -101,6 +101,8 @@ export const Client = () => {
     data: dataFiltered,
     refetch: refetchFiltered,
     isSuccess: isSuccessFiltered,
+    isError: isErrorFiltered,
+    error: errorFiltered,
   } = useGetListFilterQCD({
     p: pageFiltered,
   });
@@ -115,37 +117,61 @@ export const Client = () => {
 
   const loading = isLoading || isRefetching || isPending;
 
+  // handle paginate
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
 
+  // handle data filtered
   useEffect(() => {
-    if (isSuccessFiltered && dataFiltered) {
-      setPageFiltered(dataFiltered?.data.data.resource.data.current_page);
-      setMetaPageFiltered({
-        last: dataFiltered?.data.data.resource.data.last_page ?? 1,
-        from: dataFiltered?.data.data.resource.data.from ?? 0,
-        total: dataFiltered?.data.data.resource.data.total ?? 0,
-        perPage: dataFiltered?.data.data.resource.data.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess: isSuccessFiltered,
+      data: dataFiltered,
+      dataPaginate: dataFiltered?.data.data.resource.data,
+      setPage: setPageFiltered,
+      setMetaPage: setMetaPageFiltered,
+    });
   }, [dataFiltered]);
 
+  // alert error data
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  // alert error filtered
+  useEffect(() => {
+    alertError({
+      isError: isErrorFiltered,
+      error: errorFiltered as AxiosError,
+      data: "Filtered Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorFiltered, errorFiltered]);
+
+  // handle add filter
   const handleAddFilter = (id: any) => {
     mutateAddFilter({ id });
   };
+
+  // handle remove filter
   const handleRemoveFilter = (id: any) => {
     mutateRemoveFilter({ id });
   };
 
+  // handle submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const body = {
@@ -164,6 +190,7 @@ export const Client = () => {
     }
   }, [input]);
 
+  // get data filtered
   useEffect(() => {
     if (isSuccess && dataFiltered) {
       setInput((prev) => ({
@@ -196,7 +223,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: () => <div className="text-center">Product Name</div>,
       cell: ({ row }) => (
-        <div className="max-w-[400px]">{row.original.new_name_product}</div>
+        <div className="max-w-[400px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -266,7 +295,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: () => <div className="text-center">Product Name</div>,
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

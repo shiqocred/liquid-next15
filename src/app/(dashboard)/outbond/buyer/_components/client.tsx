@@ -199,6 +199,17 @@ export const Client = () => {
     }
   }, [dataBuyer]);
 
+  // isError get data
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   // isError get Detail
   useEffect(() => {
     alertError({

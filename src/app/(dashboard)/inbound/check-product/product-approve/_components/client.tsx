@@ -193,7 +193,17 @@ export const Client = () => {
       data: "Detail",
       method: "GET",
     });
-  });
+  }, [isErrorDetail, errorDetail]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
 
   const handlePartialStaging = async (code: string) => {
     const ok = await confirmPartialStaging();

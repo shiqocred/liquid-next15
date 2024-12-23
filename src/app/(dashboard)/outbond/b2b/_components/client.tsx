@@ -1,8 +1,14 @@
 "use client";
 
-import { PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  CircleFadingPlus,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,22 +18,37 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useGetListSale } from "../_api/use-get-list-sale";
+import { useGetListB2B } from "../_api/use-get-list-b2b";
 import Pagination from "@/components/pagination";
-import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { id } from "date-fns/locale";
+import { formatDistanceToNowStrict } from "date-fns";
+import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Client = () => {
+  const [isStatus, setIsStatus] = useState(false);
   // data search, page
-  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
-  const searchValue = useDebounce(dataSearch);
+  const [status, setStatus] = useQueryState("status", {
+    defaultValue: "",
+  });
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
   const [metaPage, setMetaPage] = useState({
     last: 1, //page terakhir
@@ -46,7 +67,7 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListSale({ p: page, q: searchValue });
+  } = useGetListB2B({ p: page, q: status });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -56,6 +77,7 @@ export const Client = () => {
   // load data
   const loading = isLoading || isRefetching || isPending;
 
+  // get pagetination
   useEffect(() => {
     setPaginate({
       isSuccess,
@@ -77,7 +99,7 @@ export const Client = () => {
   }, [isError, error]);
 
   // column data
-  const columnListSale: ColumnDef<any>[] = [
+  const columnNotification: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -88,43 +110,54 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "code_document_sale",
-      header: "Barcode",
-    },
-    {
-      accessorKey: "buyer_name_document_sale",
-      header: "Buyer",
-    },
-    {
-      accessorKey: "total_product_document_sale",
-      header: () => <div className="text-center">Qty</div>,
+      accessorKey: "status",
+      header: () => <div className="text-center">Status</div>,
       cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {row.original.total_product_document_sale.toLocaleString()}
+        <div className="flex justify-center my-1.5">
+          <Badge
+            className={cn(
+              "font-normal capitalize text-black shadow-none",
+              row.original.status.toLowerCase() === "pending" &&
+                "bg-yellow-300 hover:bg-yellow-300",
+              row.original.status.toLowerCase() === "display" &&
+                "bg-sky-400 hover:bg-sky-400",
+              row.original.status.toLowerCase() === "done" &&
+                "bg-green-400 hover:bg-green-400",
+              row.original.status.toLowerCase() === "sale" &&
+                "bg-indigo-400 hover:bg-indigo-400"
+            )}
+          >
+            {row.original.status}
+          </Badge>
         </div>
       ),
     },
     {
-      accessorKey: "total_price_document_sale",
-      header: "Price",
-      cell: ({ row }) => formatRupiah(row.original.total_price_document_sale),
+      accessorKey: "notification_name",
+      header: "Notification",
     },
     {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
+      accessorKey: "created_at",
+      header: "Time",
+      cell: ({ row }) =>
+        formatDistanceToNowStrict(new Date(row.original.created_at), {
+          locale: id,
+          addSuffix: true,
+        }),
+    },
+    {
+      accessorKey: "external_id",
+      header: () => <div className="text-center">Approve</div>,
       cell: ({ row }) => (
-        <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>Detail</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              asChild
-            >
-              <Link href={`/outbond/sale/detail/${row.original.id}`}>
-                <ReceiptText className="w-4 h-4" />
-              </Link>
+        <div className="flex justify-center">
+          {row.original.external_id ? (
+            <Button className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1">
+              <p className="text-xs">Detail</p>
+              <ArrowUpRight />
             </Button>
-          </TooltipProviderPage>
+          ) : (
+            "-"
+          )}
         </div>
       ),
     },
@@ -159,21 +192,14 @@ export const Client = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>Outbond</BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Sale</BreadcrumbItem>
+          <BreadcrumbItem>B2B</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Sale</h2>
+        <h2 className="text-xl font-bold">List B2B</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
-              <Input
-                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                value={dataSearch}
-                onChange={(e) => setDataSearch(e.target.value)}
-                placeholder="Search..."
-                autoFocus
-              />
               <TooltipProviderPage value={"Reload Data"}>
                 <Button
                   onClick={() => refetch()}
@@ -185,21 +211,9 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
-              <div className="flex gap-4 items-center ml-auto">
-                <Button
-                  asChild
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                >
-                  <Link href={"/outbond/sale/create"}>
-                    <PlusCircle className={"w-4 h-4 mr-1"} />
-                    Cashier
-                  </Link>
-                </Button>
-              </div>
             </div>
           </div>
-          <DataTable columns={columnListSale} data={dataList ?? []} />
+          <DataTable columns={columnNotification} data={dataList ?? []} />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

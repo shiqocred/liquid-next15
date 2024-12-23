@@ -11,7 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -106,16 +106,34 @@ export const Client = () => {
   const loading = isLoading || isRefetching || isPending;
 
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetail, errorDetail]);
 
   const handleDelete = async (id: any) => {
     const ok = await confirmDelete();
@@ -152,20 +170,6 @@ export const Client = () => {
     setProductId("");
   };
 
-  useEffect(() => {
-    if (isErrorDetail && (errorDetail as AxiosError).status === 403) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (isErrorDetail && (errorDetail as AxiosError).status !== 403) {
-      toast.error(
-        `ERROR ${
-          (errorDetail as AxiosError).status
-        }: Product failed to get Data`
-      );
-      console.log("ERROR_GET_Product:", errorDetail);
-    }
-  }, [isErrorDetail, errorDetail]);
-
   const columnListProductSlow: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
@@ -186,7 +190,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[400px]">{row.original.new_name_product}</div>
+        <div className="max-w-[400px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {

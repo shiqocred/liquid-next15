@@ -2,7 +2,7 @@
 
 import { PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -100,43 +100,40 @@ export const Client = () => {
 
   // get pagetination
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
-    }
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
   }, [data]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorMigrateCategory,
+      error: errorMigrateCategory as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorMigrateCategory, errorMigrateCategory]);
 
   // handle close
   const handleClose = () => {
     setOpenDetail(false);
     setMigrateCategoryId("");
   };
-
-  // isError get Detail
-  useEffect(() => {
-    if (
-      isErrorMigrateCategory &&
-      (errorMigrateCategory as AxiosError).status === 403
-    ) {
-      toast.error(`Error 403: Restricted Access`);
-    }
-    if (
-      isErrorMigrateCategory &&
-      (errorMigrateCategory as AxiosError).status !== 403
-    ) {
-      toast.error(
-        `ERROR ${
-          (errorMigrateCategory as AxiosError).status
-        }: Migrate Category failed to get Data`
-      );
-      console.log("ERROR_GET_MIGRATE_CATEGORY:", errorMigrateCategory);
-    }
-  }, [isErrorMigrateCategory, errorMigrateCategory]);
 
   // column data
   const columnListMigrateCategory: ColumnDef<any>[] = [
@@ -203,8 +200,21 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "code_document",
+      header: "Document Code",
+    },
+    {
       accessorKey: "new_barcode_product",
       header: "Barcode",
+    },
+    {
+      accessorKey: "new_name_product",
+      header: "Product Name",
+      cell: ({ row }) => (
+        <div className="max-w-[400px] break-all">
+          {row.original.new_name_product}
+        </div>
+      ),
     },
     {
       accessorKey: "new_category_product",

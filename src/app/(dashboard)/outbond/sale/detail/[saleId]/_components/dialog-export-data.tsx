@@ -374,31 +374,30 @@ const DialogExportData = ({
                       </div>
                     </div>
                     <div className="flex w-full flex-col relative">
-                      {data?.data?.category_report.category_list &&
-                        data?.data?.category_report.category_list.map(
-                          (item: any) => (
-                            <div
-                              key={item.category}
-                              className="w-full flex border-t border-black first:border-t-2"
-                            >
-                              <div className="w-full border-r border-black px-3 py-0.5 capitalize">
-                                {item.category}
-                              </div>
-                              <div className="w-12 flex-none border-r border-black text-center  py-0.5">
-                                {item.total_quantity}
-                              </div>
-                              <div className="w-36 flex-none px-3 py-0.5 border-r border-black">
-                                {formatRupiah(item.before_discount) ?? "Rp 0"}
-                              </div>
-                              <div className="w-20 flex-none border-r border-black text-center  py-0.5">
-                                {item.total_discount}%
-                              </div>
-                              <div className="w-36 flex-none px-3 py-0.5">
-                                {formatRupiah(item.total_price) ?? "Rp 0"}
-                              </div>
+                      {data?.data?.category_report?.category_list?.map(
+                        (item: any) => (
+                          <div
+                            key={item.category}
+                            className="w-full flex border-t border-black first:border-t-2"
+                          >
+                            <div className="w-full border-r border-black px-3 py-0.5 capitalize">
+                              {item.category}
                             </div>
-                          )
-                        )}
+                            <div className="w-12 flex-none border-r border-black text-center  py-0.5">
+                              {item.total_quantity}
+                            </div>
+                            <div className="w-36 flex-none px-3 py-0.5 border-r border-black">
+                              {formatRupiah(item.before_discount) ?? "Rp 0"}
+                            </div>
+                            <div className="w-20 flex-none border-r border-black text-center  py-0.5">
+                              {item.total_discount}%
+                            </div>
+                            <div className="w-36 flex-none px-3 py-0.5">
+                              {formatRupiah(item.total_price) ?? "Rp 0"}
+                            </div>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                   <div className="w-full flex items-end flex-col mt-3 font-bold">
@@ -649,7 +648,7 @@ const DialogExportData = ({
         <DialogContent onClose={false}>
           <DialogHeader className="border-b border-black pb-5">
             <DialogTitle className="flex justify-between items-center">
-              🌟 Hints & Tips B
+              🌟 Hints & Tips
               <TooltipProviderPage value="close" side="left">
                 <button
                   onClick={() => setHintOpen(false)}

@@ -45,7 +45,7 @@ import { useRemoveProduct } from "../_api/use-remove-product";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useGetListProduct } from "../_api/use-get-list-product";
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -365,7 +365,7 @@ export const Client = () => {
       warehouse_id: input.warehouse.id,
       product_condition_id: input.condition.id,
       product_status_id: input.status.id,
-      "product_brand_ids[]": input.brand.map((item) => item.id),
+      "product_brand_ids[]": input.brand.map((item) => item.id.toString()),
       palet_barcode: data?.data.data.resource.palet_barcode,
     };
     mutateUpdate(
@@ -413,6 +413,16 @@ export const Client = () => {
   };
 
   // handling close end ----------------------------------------------------------------
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
 
   // handle error product
   useEffect(() => {
@@ -549,7 +559,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -621,7 +633,9 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.new_name_product}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
       ),
     },
     {
@@ -675,6 +689,10 @@ export const Client = () => {
         <Forbidden />
       </div>
     );
+  }
+
+  if (isError && (error as AxiosError)?.status === 404) {
+    notFound();
   }
 
   return (

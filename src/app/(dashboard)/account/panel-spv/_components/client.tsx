@@ -270,6 +270,16 @@ export const Client = () => {
     }
   }, [dataFormat]);
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      action: "get data",
+      data: "Data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   // isError get Detail
   useEffect(() => {
     alertError({

@@ -126,6 +126,16 @@ export const Client = () => {
     });
   }, [data]);
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   // handle delete
   const handleDelete = async (id: any) => {
     const ok = await confirmDelete();
@@ -214,7 +224,7 @@ export const Client = () => {
     alertError({
       isError: isErrorWarehouse,
       error: errorWarehouse as AxiosError,
-      data: "Warehouse",
+      data: "Destination",
       action: "get Date",
       method: "GET",
     });

@@ -400,6 +400,16 @@ export const Client = () => {
     }
   }, [searchAddProductValue]);
 
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
   // handle error buyer
   useEffect(() => {
     alertError({
@@ -446,7 +456,9 @@ export const Client = () => {
       accessorKey: "product_name_sale",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.product_name_sale}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.product_name_sale}
+        </div>
       ),
     },
     {
@@ -601,7 +613,7 @@ export const Client = () => {
       accessorKey: "name",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px]">{row.original.name}</div>
+        <div className="max-w-[500px] break-all">{row.original.name}</div>
       ),
     },
     {
@@ -946,6 +958,7 @@ export const Client = () => {
               e.preventDefault();
               handleSubmit();
             }}
+            disabled={dataList?.length === 0 || isPendingSubmit}
             className="bg-white/80 hover:bg-white text-black"
           >
             <Send className="size-4 mr-1" />
