@@ -27,7 +27,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateWarehousePalet } from "../_api/use-update-warehouse-palet";
 import { useGetDetailWarehousePalet } from "../_api/use-get-detail-warehouse-palet";
 import { useCreateWarehousePalet } from "../_api/use-create-warehouse-palet";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 

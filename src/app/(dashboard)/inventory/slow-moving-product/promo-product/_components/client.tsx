@@ -22,7 +22,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useGetListPromo } from "../_api/use-get-list-promo";
 import { useGetDetailPromo } from "../_api/use-get-detail-promo";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import dynamic from "next/dynamic";

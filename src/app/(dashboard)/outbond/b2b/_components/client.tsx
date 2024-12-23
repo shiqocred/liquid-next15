@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  CircleFadingPlus,
-  RefreshCw,
-  XCircle,
-} from "lucide-react";
+import { ArrowUpRight, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, setPaginate } from "@/lib/utils";
 import {
@@ -29,26 +23,9 @@ import Pagination from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { id } from "date-fns/locale";
 import { formatDistanceToNowStrict } from "date-fns";
-import { Separator } from "@/components/ui/separator";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Checkbox } from "@/components/ui/checkbox";
 
 export const Client = () => {
-  const [isStatus, setIsStatus] = useState(false);
   // data search, page
-  const [status, setStatus] = useQueryState("status", {
-    defaultValue: "",
-  });
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
   const [metaPage, setMetaPage] = useState({
     last: 1, //page terakhir
@@ -67,7 +44,7 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListB2B({ p: page, q: status });
+  } = useGetListB2B({ p: page, q: "" });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {

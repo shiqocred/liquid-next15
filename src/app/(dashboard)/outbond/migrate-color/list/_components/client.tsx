@@ -27,7 +27,6 @@ import { Badge } from "@/components/ui/badge";
 import dynamic from "next/dynamic";
 import { useGetDetailMigrateColor } from "../_api/use-get-detail-migrate-color";
 import { useExportDetailMigrateColor } from "../_api/use-export-detail-migrate-color";
-import { toast } from "sonner";
 import { format } from "date-fns";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {

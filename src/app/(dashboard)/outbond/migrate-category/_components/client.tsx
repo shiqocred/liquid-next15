@@ -26,7 +26,6 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import dynamic from "next/dynamic";
 import { useGetDetailMigrateCategory } from "../_api/use-get-detail-migrate-category";
-import { toast } from "sonner";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,

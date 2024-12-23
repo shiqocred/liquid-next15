@@ -27,7 +27,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateTransportationPalet } from "../_api/use-update-transportation-palet";
 import { useGetDetailTransportationPalet } from "../_api/use-get-detail-transportation-palet";
 import { useCreateTransportationPalet } from "../_api/use-create-transportation-palet";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 

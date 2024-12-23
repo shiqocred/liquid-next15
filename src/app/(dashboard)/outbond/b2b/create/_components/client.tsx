@@ -1,26 +1,9 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import {
-  AlertCircle,
-  CheckCircle2,
-  ChevronDown,
-  FileSpreadsheet,
-  Percent,
-  RefreshCcw,
-  Save,
-} from "lucide-react";
+import { FileSpreadsheet, Percent, RefreshCcw, Save } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { formatRupiah } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,9 +11,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useUploadCreateB2B } from "../_api/use-upload-create-b2b";
 import Loading from "@/app/(dashboard)/loading";
 import { Label } from "@/components/ui/label";

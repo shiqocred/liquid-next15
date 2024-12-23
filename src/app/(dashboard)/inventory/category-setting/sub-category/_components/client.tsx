@@ -43,7 +43,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useCreateCategory } from "../_api/use-create-category";
-import { toast } from "sonner";
 
 export const Client = () => {
   const queryClient = useQueryClient();

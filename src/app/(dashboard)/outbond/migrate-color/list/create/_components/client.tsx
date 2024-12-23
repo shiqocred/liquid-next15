@@ -86,7 +86,7 @@ export const Client = () => {
 
   const {
     data: dataSelect,
-    refetch: refetchFiltered,
+    // refetch: refetchFiltered,
     isError: isErrorSelect,
     error: errorSelect,
   } = useGetSelect();

@@ -27,7 +27,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateStatusPalet } from "../_api/use-update-status-palet";
 import { useGetDetailStatusPalet } from "../_api/use-get-detail-status-palet";
 import { useCreateStatusPalet } from "../_api/use-create-status-palet";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 

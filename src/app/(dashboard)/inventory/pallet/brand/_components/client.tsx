@@ -27,7 +27,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateBrandPalet } from "../_api/use-update-brand-palet";
 import { useGetDetailBrandPalet } from "../_api/use-get-detail-brand-palet";
 import { useCreateBrandPalet } from "../_api/use-create-brand-palet";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 

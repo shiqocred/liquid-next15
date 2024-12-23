@@ -27,7 +27,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateConditionPalet } from "../_api/use-update-condition-palet";
 import { useGetDetailConditionPalet } from "../_api/use-get-detail-condition-palet";
 import { useCreateConditionPalet } from "../_api/use-create-condition-palet";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 

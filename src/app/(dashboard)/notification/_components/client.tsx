@@ -2,7 +2,6 @@
 
 import {
   ArrowUpRight,
-  CheckCircle2,
   CircleFadingPlus,
   RefreshCw,
   XCircle,
