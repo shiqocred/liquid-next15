@@ -9,16 +9,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import {
-  Barcode,
-  Loader,
-  RefreshCw,
-  ScanBarcodeIcon,
-  Users2,
-  X,
-} from "lucide-react";
+import { Loader, RefreshCw, X } from "lucide-react";
 import React from "react";
 
 const DialogDetail = ({
@@ -49,7 +42,7 @@ const DialogDetail = ({
       >
         <DialogHeader>
           <DialogTitle className="justify-between flex items-center">
-            Detail Format Barcode
+            Detail B2B
             <TooltipProviderPage value="close" side="left">
               <button
                 onClick={() => onCloseModal()}
@@ -71,50 +64,41 @@ const DialogDetail = ({
                 <div className="w-full flex items-center">
                   <div className="flex items-center w-full">
                     <div className="flex w-full items-end gap-4">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sky-100">
-                        <Barcode className="w-5 h-5" />
-                      </div>
                       <div className="flex flex-col">
-                        <p className="text-xs">Format</p>
+                        <p className="text-xs">Document Code</p>
                         <p className="font-semibold capitalize text-lg">
-                          {data?.format}
+                          {data?.code_document_bulky}
                         </p>
                       </div>
                     </div>
                     <Separator
                       orientation="vertical"
-                      className="bg-gray-500 h-12"
+                      className="bg-gray-500 h-20"
                     />
                     <div className="flex w-full pl-5 items-end gap-4">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sky-100">
-                        <Users2 className="w-5 h-5" />
-                      </div>
                       <div className="flex flex-col">
-                        <p className="text-xs">Total User</p>
+                        <p className="text-xs">Discount</p>
                         <p className="font-semibold capitalize text-lg">
-                          {data?.total_user.toLocaleString()}
+                          {data?.discount_bulky?.toLocaleString()}%
                         </p>
                       </div>
                     </div>
                     <Separator
                       orientation="vertical"
-                      className="bg-gray-500 h-12"
+                      className="bg-gray-500 h-20"
                     />
                     <div className="flex w-full pl-5 items-end gap-4">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sky-100">
-                        <ScanBarcodeIcon className="w-5 h-5" />
-                      </div>
                       <div className="flex flex-col">
-                        <p className="text-xs">Total Scan</p>
+                        <p className="text-xs">Total Product</p>
                         <p className="font-semibold capitalize text-lg">
-                          {data?.total_scan.toLocaleString()}
+                          {data?.total_product_bulky.toLocaleString()}
                         </p>
                       </div>
                     </div>
                   </div>
                   <Separator
                     orientation="vertical"
-                    className="bg-gray-500 h-12"
+                    className="bg-gray-500 h-20"
                   />
                   <div className="flex items-center gap-4 ml-4">
                     <TooltipProviderPage value={"Reload Data"}>
@@ -136,10 +120,35 @@ const DialogDetail = ({
                     </TooltipProviderPage>
                   </div>
                 </div>
+                <Separator className="bg-gray-500" />
+                <div className="w-full flex items-center">
+                  <div className="flex items-center w-full">
+                    <div className="flex w-full items-end gap-4">
+                      <div className="flex flex-col">
+                        <p className="text-xs">Total Old Price</p>
+                        <p className="font-semibold capitalize text-lg">
+                          {formatRupiah(data?.total_old_price_bulky)}
+                        </p>
+                      </div>
+                    </div>
+                    <Separator
+                      orientation="vertical"
+                      className="bg-gray-500 h-20"
+                    />
+                    <div className="flex w-full pl-5 items-end gap-4">
+                      <div className="flex flex-col">
+                        <p className="text-xs">Total New Price</p>
+                        <p className="font-semibold capitalize text-lg">
+                          {formatRupiah(data?.after_price_bulky)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <DataTable
-              maxHeight="h-[60vh]"
+              maxHeight="h-[45vh]"
               isSticky
               isLoading={isRefetching}
               columns={columns}

@@ -165,7 +165,13 @@ export const Client = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col w-1/3 gap-4">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleComplete();
+                  }}
+                  className="flex flex-col w-1/3 gap-4"
+                >
                   <div className="flex flex-col gap-1 w-full relative">
                     <Label>Discount</Label>
                     <Input
@@ -204,8 +210,9 @@ export const Client = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <Button
-                      onClick={handleComplete}
+                      type="submit"
                       className="bg-sky-300/80 hover:bg-sky-300 text-black w-1/2"
+                      disabled={input.priceAfterDiscount === "0"}
                     >
                       <Save className="w-4 h-4 mr-1" />
                       Save
@@ -221,7 +228,7 @@ export const Client = () => {
                       Change File
                     </button>
                   </div>
-                </div>
+                </form>
               </div>
             </div>
           )}

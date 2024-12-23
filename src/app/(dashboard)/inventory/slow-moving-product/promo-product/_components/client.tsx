@@ -40,8 +40,6 @@ const DialogDetailPromo = dynamic(() => import("./dialog-detail-promo"), {
 });
 
 export const Client = () => {
-  // const queryClient = useQueryClient();
-
   const [isMounted, setIsMounted] = useState(false);
   const [openDialog, setOpenDialog] = useQueryState(
     "dialog",

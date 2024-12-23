@@ -1,8 +1,14 @@
 "use client";
 
-import { ArrowUpRight, RefreshCw } from "lucide-react";
+import {
+  Loader2,
+  PlusCircle,
+  ReceiptText,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,7 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
@@ -20,12 +26,36 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useGetListB2B } from "../_api/use-get-list-b2b";
 import Pagination from "@/components/pagination";
-import { Badge } from "@/components/ui/badge";
-import { id } from "date-fns/locale";
-import { formatDistanceToNowStrict } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useGetDetailB2B } from "../_api/use-get-detail-b2b";
+import dynamic from "next/dynamic";
+import { useDeleteB2B } from "../_api/use-delete-b2b";
+import { useConfirm } from "@/hooks/use-confirm";
+import Link from "next/link";
+
+const DialogDetail = dynamic(() => import("./dialog-detail"), {
+  ssr: false,
+});
 
 export const Client = () => {
+  const [openDetail, setOpenDetail] = useQueryState(
+    "dialog",
+    parseAsBoolean.withDefault(false)
+  );
+
+  const [b2bId, setB2BId] = useQueryState("B2BId", { defaultValue: "" });
+
+  // donfirm delete
+  const [DeleteDialog, confirmDelete] = useConfirm(
+    "Delete B2B",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   // data search, page
+  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
+  const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
   const [metaPage, setMetaPage] = useState({
     last: 1, //page terakhir
@@ -33,6 +63,9 @@ export const Client = () => {
     total: 1, //total data
     perPage: 1,
   });
+
+  // mutate delete
+  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteB2B();
 
   // get data utama
   const {
@@ -44,12 +77,32 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListB2B({ p: page, q: "" });
+  } = useGetListB2B({ p: page, q: searchValue });
+
+  // get data utama
+  const {
+    data: dataDetail,
+    refetch: refetchDetail,
+    isLoading: isLoadingDetail,
+    isRefetching: isRefetchingDetail,
+    error: errorDetail,
+    isError: isErrorDetail,
+  } = useGetDetailB2B({ id: b2bId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
+
+  // memo data detail
+  const dataListDetail: any[] = useMemo(() => {
+    return dataDetail?.data.data.resource.bulky_sales;
+  }, [dataDetail]);
+
+  // memo data red detail
+  const dataResDetail: any = useMemo(() => {
+    return dataDetail?.data.data.resource;
+  }, [dataDetail]);
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -75,8 +128,25 @@ export const Client = () => {
     });
   }, [isError, error]);
 
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetail, errorDetail]);
+
+  const handleDelete = async (id: string) => {
+    const ok = await confirmDelete();
+    if (!ok) return;
+
+    mutateDelete({ id });
+  };
+
   // column data
-  const columnNotification: ColumnDef<any>[] = [
+  const columnB2B: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -87,56 +157,94 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "status",
-      header: () => <div className="text-center">Status</div>,
+      accessorKey: "code_document_bulky",
+      header: "Code Document",
+    },
+    {
+      accessorKey: "total_product_bulky",
+      header: () => <div className="text-center">Total Product</div>,
       cell: ({ row }) => (
-        <div className="flex justify-center my-1.5">
-          <Badge
-            className={cn(
-              "font-normal capitalize text-black shadow-none",
-              row.original.status.toLowerCase() === "pending" &&
-                "bg-yellow-300 hover:bg-yellow-300",
-              row.original.status.toLowerCase() === "display" &&
-                "bg-sky-400 hover:bg-sky-400",
-              row.original.status.toLowerCase() === "done" &&
-                "bg-green-400 hover:bg-green-400",
-              row.original.status.toLowerCase() === "sale" &&
-                "bg-indigo-400 hover:bg-indigo-400"
-            )}
-          >
-            {row.original.status}
-          </Badge>
+        <div className="text-center tabular-nums">
+          {row.original.total_product_bulky}
         </div>
       ),
     },
     {
-      accessorKey: "notification_name",
-      header: "Notification",
-    },
-    {
-      accessorKey: "created_at",
-      header: "Time",
-      cell: ({ row }) =>
-        formatDistanceToNowStrict(new Date(row.original.created_at), {
-          locale: id,
-          addSuffix: true,
-        }),
-    },
-    {
-      accessorKey: "external_id",
-      header: () => <div className="text-center">Approve</div>,
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
-        <div className="flex justify-center">
-          {row.original.external_id ? (
-            <Button className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1">
-              <p className="text-xs">Detail</p>
-              <ArrowUpRight />
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isLoadingDetail}
+              onClick={(e) => {
+                e.preventDefault();
+                setB2BId(row.original.id);
+                setOpenDetail(true);
+              }}
+            >
+              {isLoadingDetail ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ReceiptText className="w-4 h-4" />
+              )}
             </Button>
-          ) : (
-            "-"
-          )}
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.original.id);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
+    },
+  ];
+  // column data detail
+  const columnB2BDetail: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(1 + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "barcode_bulky_sale",
+      header: "Barcode",
+    },
+    {
+      accessorKey: "name_product_bulky_sale",
+      header: () => <div className="text-center">Product Name</div>,
+      cell: ({ row }) => (
+        <div className="max-w-[400px] break-all">
+          {row.original.name_product_bulky_sale}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "product_category_bulky_sale",
+      header: "Category",
+    },
+    {
+      accessorKey: "old_price_bulky_sale",
+      header: "Price",
+      cell: ({ row }) => formatRupiah(row.original.old_price_bulky_sale),
     },
   ];
 
@@ -161,6 +269,22 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <DeleteDialog />
+      <DialogDetail
+        open={openDetail} // open modal
+        onCloseModal={() => {
+          if (openDetail) {
+            setOpenDetail(false);
+            setB2BId("");
+          }
+        }} // handle close modal
+        data={dataResDetail}
+        isLoading={isLoadingDetail}
+        refetch={refetchDetail}
+        isRefetching={isRefetchingDetail}
+        columns={columnB2BDetail}
+        dataTable={dataListDetail ?? []}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -177,6 +301,13 @@ export const Client = () => {
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
+              <Input
+                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
+                value={dataSearch}
+                onChange={(e) => setDataSearch(e.target.value)}
+                placeholder="Search..."
+                autoFocus
+              />
               <TooltipProviderPage value={"Reload Data"}>
                 <Button
                   onClick={() => refetch()}
@@ -189,8 +320,14 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
             </div>
+            <Button variant={"liquid"} asChild>
+              <Link href="/outbond/b2b/create">
+                <PlusCircle className="size-4" />
+                Create B2B
+              </Link>
+            </Button>
           </div>
-          <DataTable columns={columnNotification} data={dataList ?? []} />
+          <DataTable columns={columnB2B} data={dataList ?? []} />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
