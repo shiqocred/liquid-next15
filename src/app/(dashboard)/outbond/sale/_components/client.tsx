@@ -23,6 +23,7 @@ import { DataTable } from "@/components/data-table";
 import { useGetListSale } from "../_api/use-get-list-sale";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
   // data search, page
@@ -108,6 +109,30 @@ export const Client = () => {
       accessorKey: "total_price_document_sale",
       header: "Price",
       cell: ({ row }) => formatRupiah(row.original.total_price_document_sale),
+    },
+    {
+      accessorKey: "approved",
+      header: () => <div className="text-center">Approved</div>,
+      cell: ({ row }) => (
+        <div className="flex justify-center items-center">
+          <Badge
+            className={cn(
+              "rounded-full text-black shadow-none",
+              row.original.approved === "1"
+                ? "bg-yellow-300 hover:bg-yellow-300 font-normal"
+                : row.original.approved === "2"
+                ? "bg-sky-300 hover:bg-sky-300 font-normal"
+                : "bg-transparent hover:bg-transparent font-normal text-sm"
+            )}
+          >
+            {row.original.approved === "1"
+              ? "Pending"
+              : row.original.approved === "2"
+              ? "Done"
+              : "-"}
+          </Badge>
+        </div>
+      ),
     },
     {
       accessorKey: "action",

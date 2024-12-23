@@ -2,12 +2,14 @@
 
 import {
   ArrowUpRight,
+  CheckCircle2,
   CircleFadingPlus,
+  Loader2,
   RefreshCw,
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,7 +18,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
@@ -41,13 +43,57 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useGetDetailApprove } from "../_api/use-get-detail-approve";
+import dynamic from "next/dynamic";
+import { useApproveDocument } from "../_api/use-approve-document";
+import { useApproveProduct } from "../_api/use-approve-product";
+import { useRejectDocument } from "../_api/use-reject-document";
+import { useRejectProduct } from "../_api/use-reject-product";
+import { useConfirm } from "@/hooks/use-confirm";
+import { useQueryClient } from "@tanstack/react-query";
+
+const DialogDetail = dynamic(() => import("./dialog-detail"), {
+  ssr: false,
+});
 
 export const Client = () => {
+  const queryClient = useQueryClient();
   const [isStatus, setIsStatus] = useState(false);
+  const [openDetail, setOpenDetail] = useQueryState(
+    "dialog",
+    parseAsBoolean.withDefault(false)
+  );
+
+  // data search, page
+  const [saleId, setSaleId] = useQueryState("saleId", {
+    defaultValue: "",
+  });
   // data search, page
   const [status, setStatus] = useQueryState("status", {
     defaultValue: "",
   });
+
+  const [AprvDocumentDialog, confirmAprvDocument] = useConfirm(
+    "Approve Document",
+    "This action cannot be undone",
+    "liquid"
+  );
+  const [AprvProductDialog, confirmAprvProduct] = useConfirm(
+    "Approve Product",
+    "This action cannot be undone",
+    "liquid"
+  );
+  const [RjctDocumentDialog, confirmRjctDocument] = useConfirm(
+    "Reject Document",
+    "This action cannot be undone",
+    "destructive"
+  );
+  const [RjctProductDialog, confirmRjctProduct] = useConfirm(
+    "Reject Product",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
   const [metaPage, setMetaPage] = useState({
     last: 1, //page terakhir
@@ -55,6 +101,15 @@ export const Client = () => {
     total: 1, //total data
     perPage: 1,
   });
+
+  const { mutate: mutateAprvDocument, isPending: isPendingAprvDocument } =
+    useApproveDocument();
+  const { mutate: mutateAprvProduct, isPending: isPendingAprvProduct } =
+    useApproveProduct();
+  const { mutate: mutateRjctDocument, isPending: isPendingRjctDocument } =
+    useRejectDocument();
+  const { mutate: mutateRjctProduct, isPending: isPendingRjctProduct } =
+    useRejectProduct();
 
   // get data utama
   const {
@@ -68,10 +123,30 @@ export const Client = () => {
     isSuccess,
   } = useGetListNotification({ p: page, q: status });
 
+  // get data detail
+  const {
+    data: dataDetail,
+    refetch: refetchDetail,
+    isLoading: isLoadingDetail,
+    isRefetching: isRefetchingDetail,
+    error: errorDetail,
+    isError: isErrorDetail,
+  } = useGetDetailApprove({ id: saleId });
+
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
+
+  // memo data detail
+  const dataListDetail: any[] = useMemo(() => {
+    return dataDetail?.data.data.resource.sales;
+  }, [dataDetail]);
+
+  // memo data red detail
+  const dataResDetail: any = useMemo(() => {
+    return dataDetail?.data.data.resource;
+  }, [dataDetail]);
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -96,6 +171,85 @@ export const Client = () => {
       method: "GET",
     });
   }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetail, errorDetail]);
+
+  const handleApproveDocument = async (id: any) => {
+    const ok = await confirmAprvDocument();
+
+    if (!ok) return;
+
+    mutateAprvDocument(
+      { id },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+          });
+          setSaleId("");
+          setOpenDetail(false);
+        },
+      }
+    );
+  };
+  const handleApproveProduct = async (id: any) => {
+    const ok = await confirmAprvProduct();
+
+    if (!ok) return;
+
+    mutateAprvProduct(
+      { id },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+          });
+        },
+      }
+    );
+  };
+  const handleRejectDocument = async (id: any) => {
+    const ok = await confirmRjctDocument();
+
+    if (!ok) return;
+
+    mutateRjctDocument(
+      { id },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+          });
+          setSaleId("");
+          setOpenDetail(false);
+        },
+      }
+    );
+  };
+  const handleRejectProduct = async (id: any) => {
+    const ok = await confirmRjctProduct();
+
+    if (!ok) return;
+
+    mutateRjctProduct(
+      { id },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+          });
+        },
+      }
+    );
+  };
 
   // column data
   const columnNotification: ColumnDef<any>[] = [
@@ -150,13 +304,107 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="flex justify-center">
           {row.original.external_id ? (
-            <Button className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1">
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                setSaleId(row.original.external_id);
+                setOpenDetail(true);
+              }}
+              disabled={isLoadingDetail}
+              className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1"
+            >
               <p className="text-xs">Detail</p>
-              <ArrowUpRight />
+              {isLoadingDetail ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <ArrowUpRight />
+              )}
             </Button>
           ) : (
             "-"
           )}
+        </div>
+      ),
+    },
+  ];
+
+  const columnSales: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(1 + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "product_barcode_sale",
+      header: "Barcode",
+    },
+    {
+      accessorKey: "product_name_sale",
+      header: "Product Name",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.product_name_sale}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "product_price_sale",
+      header: "Price",
+      cell: ({ row }) => (
+        <div className="tabular-nums">
+          {formatRupiah(row.original.product_price_sale)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-2 justify-center items-center my-0.5">
+          <TooltipProviderPage value={"Approve"}>
+            <Button
+              className="size-8 px-0 hover:bg-sky-100 border-sky-400 hover:border-sky-600 text-black"
+              size={"icon"}
+              variant={"outline"}
+              type="button"
+              disabled={
+                isPendingAprvProduct ||
+                isPendingRjctProduct ||
+                isPendingAprvDocument ||
+                isPendingRjctDocument
+              }
+              onClick={(e) => {
+                e.preventDefault();
+                handleApproveProduct(row.original.id);
+              }}
+            >
+              <CheckCircle2 className="size-4" />
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={"Reject"}>
+            <Button
+              className="size-8 px-0 hover:bg-red-100 border-red-400 hover:border-red-600 text-black"
+              size={"icon"}
+              variant={"outline"}
+              type="button"
+              disabled={
+                isPendingAprvProduct ||
+                isPendingRjctProduct ||
+                isPendingAprvDocument ||
+                isPendingRjctDocument
+              }
+              onClick={(e) => {
+                e.preventDefault();
+                handleRejectProduct(row.original.id);
+              }}
+            >
+              <XCircle className="size-4" />
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -183,6 +431,29 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <AprvDocumentDialog />
+      <AprvProductDialog />
+      <RjctDocumentDialog />
+      <RjctProductDialog />
+      <DialogDetail
+        open={openDetail} // open modal
+        onCloseModal={() => {
+          if (openDetail) {
+            setOpenDetail(false);
+            setSaleId("");
+          }
+        }} // handle close modal
+        data={dataResDetail}
+        isLoading={isLoadingDetail}
+        refetch={refetchDetail}
+        isRefetching={isRefetchingDetail}
+        columns={columnSales}
+        handleApprove={handleApproveDocument}
+        handleReject={handleRejectDocument}
+        isPendingApprove={isPendingAprvDocument}
+        isPendingReject={isPendingRjctDocument}
+        dataTable={dataListDetail ?? []}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

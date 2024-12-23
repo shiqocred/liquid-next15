@@ -294,7 +294,8 @@ const Navbar = () => {
                       "flex-col flex border-l-4 pl-2",
                       item.status === "done" && "border-green-500",
                       item.status === "pending" && "border-yellow-500",
-                      item.status === "display" && "border-sky-500"
+                      item.status === "display" && "border-sky-500",
+                      item.status === "sale" && "border-indigo-500"
                     )}
                   >
                     <p className="text-xs capitalize">

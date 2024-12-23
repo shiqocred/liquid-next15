@@ -79,7 +79,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className={cn(" text-center", isSticky ? "h-[50vh]" : "h-24")}
+                  className={cn(" text-center", isSticky ? "h-[40vh]" : "h-24")}
                 >
                   <div className="flex flex-col justify-center items-center gap-2 w-full">
                     <Loader className="size-6 animate-spin" />
