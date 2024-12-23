@@ -287,7 +287,7 @@ const Navbar = () => {
               {data.map((item) => (
                 <div
                   key={item.id}
-                  className=" flex hover:bg-gray-50 px-2.5 py-2 rounded items-center cursor-default"
+                  className=" flex hover:bg-gray-50 px-2.5 py-2 rounded items-center cursor-default justify-between"
                 >
                   <div
                     className={cn(
@@ -298,8 +298,19 @@ const Navbar = () => {
                       item.status === "sale" && "border-indigo-500"
                     )}
                   >
-                    <p className="text-xs capitalize">
-                      {item.notification_name}
+                    <p className="text-xs capitalize flex gap-1">
+                      {item.notification_name} -
+                      <span className="font-semibold underline">
+                        {item.status === "sale" && item.approved === "0"
+                          ? "Required"
+                          : ""}
+                        {item.status === "sale" && item.approved === "1"
+                          ? "Rejected"
+                          : ""}
+                        {item.status === "sale" && item.approved === "2"
+                          ? "Approved"
+                          : ""}
+                      </span>
                     </p>
                     <p className="text-xs font-light text-gray-500">
                       {formatDistanceStrict(
@@ -323,7 +334,7 @@ const Navbar = () => {
                   <Circle className="size-3 mr-2 fill-green-500 text-transparent" />
                   <p>Done</p>
                 </div>
-                <div className="flex items-center w-full border-x border-gray-300 px-2.5 pt-2 pb-1 justify-center">
+                <div className="flex items-center w-full border-r border-gray-300 px-2.5 pt-2 pb-1 justify-center">
                   <Circle className="size-3 mr-2 fill-sky-500 text-transparent" />
                   <p>Display</p>
                 </div>

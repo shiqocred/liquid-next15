@@ -190,9 +190,9 @@ export const Client = () => {
     mutateAprvDocument(
       { id },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+            queryKey: ["detail-sale-approve", saleId],
           });
           setSaleId("");
           setOpenDetail(false);
@@ -208,9 +208,9 @@ export const Client = () => {
     mutateAprvProduct(
       { id },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+            queryKey: ["detail-sale-approve", saleId],
           });
         },
       }
@@ -224,9 +224,9 @@ export const Client = () => {
     mutateRjctDocument(
       { id },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+            queryKey: ["detail-sale-approve", saleId],
           });
           setSaleId("");
           setOpenDetail(false);
@@ -242,9 +242,9 @@ export const Client = () => {
     mutateRjctProduct(
       { id },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", data?.data.data.resource.id],
+            queryKey: ["detail-sale-approve", saleId],
           });
         },
       }
@@ -303,7 +303,7 @@ export const Client = () => {
       header: () => <div className="text-center">Approve</div>,
       cell: ({ row }) => (
         <div className="flex justify-center">
-          {row.original.external_id ? (
+          {row.original.external_id && row.original.approved === "0" ? (
             <Button
               onClick={(e) => {
                 e.preventDefault();
@@ -313,13 +313,21 @@ export const Client = () => {
               disabled={isLoadingDetail}
               className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1"
             >
-              <p className="text-xs">Detail</p>
+              <p className="text-xs">Check</p>
               {isLoadingDetail ? (
                 <Loader2 className="animate-spin" />
               ) : (
                 <ArrowUpRight />
               )}
             </Button>
+          ) : row.original.external_id && row.original.approved === "1" ? (
+            <Badge className="bg-red-300 hover:bg-red-300 font-normal text-black h-7 px-3 cursor-default">
+              Rejected
+            </Badge>
+          ) : row.original.external_id && row.original.approved === "2" ? (
+            <Badge className="bg-green-300 hover:bg-green-300 font-normal text-black h-7 px-3 cursor-default">
+              Approved
+            </Badge>
           ) : (
             "-"
           )}
@@ -364,47 +372,57 @@ export const Client = () => {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
-        <div className="flex gap-2 justify-center items-center my-0.5">
-          <TooltipProviderPage value={"Approve"}>
-            <Button
-              className="size-8 px-0 hover:bg-sky-100 border-sky-400 hover:border-sky-600 text-black"
-              size={"icon"}
-              variant={"outline"}
-              type="button"
-              disabled={
-                isPendingAprvProduct ||
-                isPendingRjctProduct ||
-                isPendingAprvDocument ||
-                isPendingRjctDocument
-              }
-              onClick={(e) => {
-                e.preventDefault();
-                handleApproveProduct(row.original.id);
-              }}
-            >
-              <CheckCircle2 className="size-4" />
-            </Button>
-          </TooltipProviderPage>
-          <TooltipProviderPage value={"Reject"}>
-            <Button
-              className="size-8 px-0 hover:bg-red-100 border-red-400 hover:border-red-600 text-black"
-              size={"icon"}
-              variant={"outline"}
-              type="button"
-              disabled={
-                isPendingAprvProduct ||
-                isPendingRjctProduct ||
-                isPendingAprvDocument ||
-                isPendingRjctDocument
-              }
-              onClick={(e) => {
-                e.preventDefault();
-                handleRejectProduct(row.original.id);
-              }}
-            >
-              <XCircle className="size-4" />
-            </Button>
-          </TooltipProviderPage>
+        <div className="flex justify-center">
+          {row.original.approved === "1" ? (
+            <div className="flex gap-2 justify-center items-center my-0.5">
+              <TooltipProviderPage value={"Approve"}>
+                <Button
+                  className="size-8 px-0 hover:bg-sky-100 border-sky-400 hover:border-sky-600 text-black"
+                  size={"icon"}
+                  variant={"outline"}
+                  type="button"
+                  disabled={
+                    isPendingAprvProduct ||
+                    isPendingRjctProduct ||
+                    isPendingAprvDocument ||
+                    isPendingRjctDocument
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleApproveProduct(row.original.id);
+                  }}
+                >
+                  <CheckCircle2 className="size-4" />
+                </Button>
+              </TooltipProviderPage>
+              <TooltipProviderPage value={"Reject"}>
+                <Button
+                  className="size-8 px-0 hover:bg-red-100 border-red-400 hover:border-red-600 text-black"
+                  size={"icon"}
+                  variant={"outline"}
+                  type="button"
+                  disabled={
+                    isPendingAprvProduct ||
+                    isPendingRjctProduct ||
+                    isPendingAprvDocument ||
+                    isPendingRjctDocument
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleRejectProduct(row.original.id);
+                  }}
+                >
+                  <XCircle className="size-4" />
+                </Button>
+              </TooltipProviderPage>
+            </div>
+          ) : (
+            <div className="flex gap-2 justify-center items-center my-0.5">
+              <Badge className="bg-sky-300 hover:bg-sky-300 font-normal text-black h-7 px-3 cursor-default">
+                Approved
+              </Badge>
+            </div>
+          )}
         </div>
       ),
     },
