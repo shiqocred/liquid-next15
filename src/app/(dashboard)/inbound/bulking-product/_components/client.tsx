@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle,
   CheckCircle2,
@@ -27,7 +26,6 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { parseAsBoolean, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useUploadBulking } from "../_api/use-upload-bulking";
