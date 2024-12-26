@@ -6,7 +6,9 @@ import { redirect } from "next/navigation";
 const LoginPage = async () => {
   const user = await protect();
 
-  if (user) redirect("/");
+  if (user) {
+    redirect("/");
+  }
 
   return (
     <div className="w-full h-full">
