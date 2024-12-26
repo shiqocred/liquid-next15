@@ -523,8 +523,8 @@ export const Client = () => {
               <h3 className="font-bold text-xl">Detail & Edit Product</h3>
               <div className="w-full relative overflow-hidden flex flex-col gap-4">
                 <div className="w-full flex flex-col gap-3">
-                  <div className="w-full flex flex-col border rounded border-gray-500 p-3 gap-2">
-                    <div className="flex items-center text-sm font-semibold border-b border-gray-500 pb-2">
+                  <div className="w-full flex flex-col border rounded border-gray-300 p-3 gap-2">
+                    <div className="flex items-center text-sm font-semibold border-b border-gray-300 pb-2">
                       <ScanBarcode className="w-4 h-4 mr-2" />
                       <div className="flex w-full items-center justify-between">
                         <p>Old Data</p>
@@ -535,15 +535,15 @@ export const Client = () => {
                     </div>
                     <div className="flex gap-3">
                       <div className="flex flex-col pl-6 w-full overflow-hidden gap-1">
-                        <p className="text-xs font-medium">Name Product</p>
-                        <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                        <p className="text-xs font-semibold">Name Product</p>
+                        <p className="text-sm text-gray-700 w-full overflow-hidden text-ellipsis whitespace-nowrap">
                           {dataDetailProduct?.new_name_product}
                         </p>
                       </div>
                       <div className="w-1/3 flex-none pl-6 flex gap-2 ">
                         <div className="flex flex-col w-2/3 overflow-hidden gap-1">
-                          <p className="text-xs font-medium">Price</p>
-                          <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                          <p className="text-xs font-semibold">Price</p>
+                          <p className="text-sm text-gray-700 w-full overflow-hidden text-ellipsis whitespace-nowrap">
                             {formatRupiah(
                               parseFloat(
                                 dataDetailProduct?.old_price_product ?? "0"
@@ -552,8 +552,8 @@ export const Client = () => {
                           </p>
                         </div>
                         <div className="flex flex-col w-1/3 overflow-hidden gap-1">
-                          <p className="text-xs font-medium">Qty</p>
-                          <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                          <p className="text-xs font-semibold">Qty</p>
+                          <p className="text-sm text-gray-700 w-full overflow-hidden text-ellipsis whitespace-nowrap">
                             {parseFloat(
                               dataDetailProduct?.new_quantity_product ?? "0"
                             ).toLocaleString()}
@@ -562,16 +562,16 @@ export const Client = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex w-full gap-3 items-center bg-gray-300 rounded-md px-5 py-2">
+                  <div className="flex w-full gap-3 items-center bg-gray-200 rounded-md px-5 py-2">
                     <AlertCircle className="text-black h-4 w-4" />
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-semibold">
                       To change the new price on the barcode, please update the
                       product first.
                     </p>
                   </div>
                   <div className="w-full flex gap-3">
-                    <div className="w-full flex flex-col border rounded border-gray-500 p-3 gap-2">
-                      <div className="flex items-center text-sm font-semibold border-b border-gray-500 pb-2">
+                    <div className="w-full flex flex-col border rounded border-gray-300 p-3 gap-2">
+                      <div className="flex items-center text-sm font-semibold border-b border-gray-300 pb-2">
                         <ScanBarcode className="w-4 h-4 mr-2" />
                         <div className="flex w-full items-center justify-between">
                           <p>New Data</p>
@@ -608,13 +608,13 @@ export const Client = () => {
                         <div className="flex flex-col pl-6 w-full  gap-1">
                           <Label
                             htmlFor="nameNew"
-                            className="text-xs font-medium"
+                            className="text-xs font-semibold"
                           >
                             Name Product
                           </Label>
                           <Input
                             id="nameNew"
-                            className="w-full border-sky-400/80 focus-visible:ring-sky-400"
+                            className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:ring-sky-400 "
                             value={input.name}
                             onChange={(e) =>
                               setInput((prev) => ({
@@ -629,13 +629,13 @@ export const Client = () => {
                           <div className="flex flex-col w-full  gap-1">
                             <Label
                               htmlFor="priceNew"
-                              className="text-xs font-medium"
+                              className="text-xs font-semibold"
                             >
                               Price
                             </Label>
                             <Input
                               id="priceNew"
-                              className="w-full border-sky-400/80 focus-visible:ring-sky-400"
+                              className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:ring-sky-400 "
                               value={Math.round(parseFloat(input.price))}
                               onChange={(e) =>
                                 setInput((prev) => ({
@@ -649,7 +649,7 @@ export const Client = () => {
                             />
                           </div>
                           <div className="flex flex-col w-full gap-1">
-                            <Label>Qty</Label>
+                            <Label className="text-xs font-semibold">Qty</Label>
                             <div className="relative flex items-center">
                               <Input
                                 value={input.qty}
@@ -661,7 +661,7 @@ export const Client = () => {
                                       : e.target.value,
                                   }))
                                 }
-                                className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
+                                className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:ring-sky-400  disabled:opacity-100 disabled:cursor-default"
                               />
                               <div className="flex absolute right-2 gap-1">
                                 <button
@@ -703,7 +703,7 @@ export const Client = () => {
                             findNotNull(dataDetailProduct?.new_quality) !==
                               "abnormal") && (
                             <div className="flex flex-col gap-1 pl-6">
-                              <Label className="text-xs font-medium">
+                              <Label className="text-xs font-semibold">
                                 Category
                               </Label>
                               <Button
@@ -711,7 +711,7 @@ export const Client = () => {
                                 onClick={() =>
                                   setIsOpenCategory(!isOpenCategory)
                                 }
-                                className="justify-between border-sky-400/80 focus:ring-sky-400 focus:ring-1 hover:bg-sky-50 focus:bg-sky-50"
+                                className="border-0 border-b  rounded-none justify-between border-sky-400/80 focus:ring-sky-400 focus:ring-1 hover:bg-sky-50 focus:bg-sky-50"
                                 variant={"outline"}
                               >
                                 <p>
@@ -732,13 +732,13 @@ export const Client = () => {
                           <div className="flex flex-col w-1/3  gap-1">
                             <Label
                               htmlFor="priceNew"
-                              className="text-xs font-medium"
+                              className="text-xs font-semibold"
                             >
                               Discount
                             </Label>
                             <Input
                               id="priceNew"
-                              className="w-full border-sky-400/80 focus-visible:ring-sky-400"
+                              className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:ring-sky-400 "
                               value={Math.round(parseFloat(input.discount))}
                               onChange={(e) =>
                                 setInput((prev) => ({
@@ -754,13 +754,13 @@ export const Client = () => {
                           <div className="flex flex-col w-2/3  gap-1">
                             <Label
                               htmlFor="priceNew"
-                              className="text-xs font-medium"
+                              className="text-xs font-semibold"
                             >
                               Display Price
                             </Label>
                             <Input
                               id="priceNew"
-                              className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100"
+                              className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:ring-sky-400  disabled:opacity-100"
                               value={formatRupiah(
                                 parseFloat(input.displayPrice)
                               )}
@@ -794,8 +794,8 @@ export const Client = () => {
                         />
                       ) : (
                         <div className="w-auto">
-                          <div className="w-[282px] p-3 flex flex-col gap-3 border border-gray-500 rounded text-sm">
-                            <div className="flex items-center text-sm font-semibold border-b border-gray-500 pb-2">
+                          <div className="w-[282px] p-3 flex flex-col gap-3 border border-gray-300 rounded text-sm">
+                            <div className="flex items-center text-sm font-semibold border-b border-gray-300 pb-2">
                               <Palette className="w-4 h-4 mr-2" />
                               <p>Color</p>
                             </div>
@@ -836,7 +836,7 @@ export const Client = () => {
             </h3>
             <ScrollArea
               className={cn(
-                "h-[500px] w-full border border-sky-500 p-2 rounded-md",
+                "h-[580px] w-full border border-sky-500 p-2 rounded-md",
                 isOpenCategory ? "flex" : "hidden"
               )}
             >

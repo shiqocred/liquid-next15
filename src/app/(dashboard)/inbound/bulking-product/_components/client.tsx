@@ -102,11 +102,11 @@ export const Client = () => {
     maxFiles: 1, // Limit file upload to only one
   });
 
-  useEffect(() => {
-    if (!typeBulk && !isDialogOpen) {
-      setIsDialogOpen(true);
-    }
-  }, [isDialogOpen]);
+  // useEffect(() => {
+  //   if (!typeBulk && !isDialogOpen) {
+  //     setIsDialogOpen(true);
+  //   }
+  // }, [isDialogOpen]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -155,19 +155,46 @@ export const Client = () => {
             <>
               <div className="w-full flex items-center justify-between mb-4">
                 <div className="flex gap-3 items-center">
-                  <h2 className="text-xl font-bold">Bulking</h2>
+                  <h2 className="text-xl font-bold">Bulking Product</h2>
+                </div>
+              </div>
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded h-52 flex items-center justify-center text-center cursor-default ${
+                  isDragActive ? "border-blue-500" : "border-gray-300"
+                }`}
+              >
+                <input {...getInputProps()} />
+                {isDragActive ? (
+                  <p className="text-blue-500">Drop the files here ...</p>
+                ) : (
+                  <div className="flex justify-center flex-col items-center gap-2">
+                    <p>Drag & drop some files here, or click to select files</p>
+                    <p className="text-sky-500 text-sm font-semibold">
+                      (.xlsx, .xls)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold">Bulking Product</h2>
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
-                      <button type="button" className="flex gap-2 items-center">
-                        <Badge className="bg-black hover:bg-black text-white rounded-full capitalize">
-                          <p>{typeBulk}</p>
-                          <Separator
-                            orientation="vertical"
-                            className="h-3 bg-white ml-3 mr-2"
-                          />
-                          <ChevronDown className="h-4 w-4 stroke-2" />
-                        </Badge>
-                      </button>
+                      <Button
+                        type="button"
+                        variant={"ghost"}
+                        className={cn(
+                          "text-xl px-0 hover:bg-transparent font-bold underline-offset-2 hover:underline capitalize",
+                          !typeBulk && "underline"
+                        )}
+                      >
+                        <p>{typeBulk || "Select Type"}</p>
+                        <ChevronDown className="h-4 w-4 stroke-2" />
+                      </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-xs">
                       <DialogHeader>
@@ -216,32 +243,6 @@ export const Client = () => {
                       </div>
                     </DialogContent>
                   </Dialog>
-                </div>
-              </div>
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded h-52 flex items-center justify-center text-center cursor-default ${
-                  isDragActive ? "border-blue-500" : "border-gray-300"
-                }`}
-              >
-                <input {...getInputProps()} />
-                {isDragActive ? (
-                  <p className="text-blue-500">Drop the files here ...</p>
-                ) : (
-                  <div className="flex justify-center flex-col items-center gap-2">
-                    <p>Drag & drop some files here, or click to select files</p>
-                    <p className="text-sky-500 text-sm font-semibold">
-                      (.xlsx, .xls)
-                    </p>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-xl font-bold">Selected File</h2>
                   {errorMsg.length > 0 && (
                     <Button
                       type="button"
@@ -252,7 +253,7 @@ export const Client = () => {
                     </Button>
                   )}
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <button
                     className="flex text-sm items-center text-gray-500 hover:underline"
                     type="button"
@@ -268,6 +269,7 @@ export const Client = () => {
                     <Button
                       onClick={handleComplete}
                       className="bg-sky-300/80 hover:bg-sky-300 text-black"
+                      disabled={!typeBulk}
                     >
                       <Save className="w-4 h-4 mr-1" />
                       Save

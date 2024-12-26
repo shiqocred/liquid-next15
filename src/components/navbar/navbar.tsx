@@ -299,16 +299,16 @@ const Navbar = () => {
                     )}
                   >
                     <p className="text-xs capitalize flex gap-1">
-                      {item.notification_name} -
+                      {item.notification_name}
                       <span className="font-semibold underline">
                         {item.status === "sale" && item.approved === "0"
-                          ? "Required"
+                          ? " - Required"
                           : ""}
                         {item.status === "sale" && item.approved === "1"
-                          ? "Rejected"
+                          ? " - Rejected"
                           : ""}
                         {item.status === "sale" && item.approved === "2"
-                          ? "Approved"
+                          ? " - Approved"
                           : ""}
                       </span>
                     </p>

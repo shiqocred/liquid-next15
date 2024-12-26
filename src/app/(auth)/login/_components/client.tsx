@@ -88,7 +88,7 @@ export const Client = () => {
               <Label>Password</Label>
               <div className="relative flex items-center">
                 <Input
-                  type="password"
+                  type={isVisible ? "text" : "password"}
                   name="password"
                   value={input.password}
                   onChange={(e) =>
