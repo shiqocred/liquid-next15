@@ -31,7 +31,12 @@ export const useSubmitProduct = () => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to submit`);
+        toast.error(
+          `ERROR ${err?.status}: ${
+            (err.response?.data as any).data.message ||
+            "Product failed to submit"
+          } `
+        );
         console.log("ERROR_SUBMIT_PRODUCT:", err);
       }
     },
