@@ -21,12 +21,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { cn, formatRupiah } from "@/lib/utils";
-import {
-  parseAsBoolean,
-  parseAsString,
-  useQueryState,
-  useQueryStates,
-} from "nuqs";
+import { parseAsBoolean, useQueryState } from "nuqs";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import { Input } from "@/components/ui/input";
@@ -75,21 +70,12 @@ export const Client = () => {
     "dialog",
     parseAsBoolean.withDefault(false)
   );
-  const [{ barcode, newPrice, oldPrice, category }, setMetaBarcode] =
-    useQueryStates(
-      {
-        barcode: parseAsString.withDefault(""),
-        newPrice: parseAsString.withDefault(""),
-        oldPrice: parseAsString.withDefault(""),
-        category: parseAsString.withDefault(""),
-      },
-      {
-        urlKeys: {
-          newPrice: "new-price",
-          oldPrice: "old-price",
-        },
-      }
-    );
+  const [metaBarcode, setMetaBarcode] = useState({
+    barcode: "",
+    newPrice: "",
+    oldPrice: "",
+    category: "",
+  });
 
   const [SubmitDoubleDialog, confirmSubmit] = useConfirm(
     "Barcode Duplication Confirmation",
@@ -765,10 +751,10 @@ export const Client = () => {
             <DialogTitle>Barcode Printered</DialogTitle>
           </DialogHeader>
           <BarcodePrinted
-            oldPrice={oldPrice ?? "0"}
-            barcode={barcode ?? ""}
-            category={category ?? ""}
-            newPrice={newPrice ?? "0"}
+            oldPrice={metaBarcode.oldPrice ?? "0"}
+            barcode={metaBarcode.barcode ?? ""}
+            category={metaBarcode.category ?? ""}
+            newPrice={metaBarcode.newPrice ?? "0"}
             cancel={() => {
               setBarcodeOpen(false);
               setMetaBarcode({
