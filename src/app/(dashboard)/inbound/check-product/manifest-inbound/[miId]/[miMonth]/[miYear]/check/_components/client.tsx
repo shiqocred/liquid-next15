@@ -273,7 +273,12 @@ export const Client = () => {
       (isErrorBarcode && (errorBarcode as AxiosError).status === 404) ||
       (isSuccessBarcode && !dataBarcode?.data.data.status)
     ) {
-      toast.error("Barcode not found");
+      toast.error(
+        (isSuccessBarcode && `Error: ${dataBarcode?.data.data}`) ||
+          `Error ${(errorBarcode as AxiosError).status}: ${
+            dataBarcode?.data.data
+          }`
+      );
     } else if (isSuccessBarcode && dataBarcode?.data.data.status) {
       toast.success("Barcode successfully found.");
       setMetaData((prev) => ({
@@ -296,6 +301,8 @@ export const Client = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  console.log(metaData);
 
   if (!isMounted) {
     return <Loading />;
@@ -405,6 +412,7 @@ export const Client = () => {
               handleDoneCheckAll();
             }}
             className="bg-sky-400/80 hover:bg-sky-400 text-black"
+            type="button"
           >
             <ShieldCheck className="w-4 h-4 mr-2" />
             Done Check All
@@ -668,9 +676,9 @@ export const Client = () => {
                     type="submit"
                     className="w-full bg-sky-400/80 hover:bg-sky-400 text-black"
                     disabled={
-                      !metaData.name &&
-                      metaData.qty === "0" &&
-                      parseFloat(barcodeData?.old_price_product) > 100000
+                      metaData.qty === "0" ||
+                      (parseFloat(barcodeData?.old_price_product) > 100000 &&
+                        !metaData.name)
                     }
                   >
                     <Send className="w-4 h-4 mr-2" />
@@ -698,7 +706,7 @@ export const Client = () => {
                   <Button
                     type="submit"
                     className="w-full bg-sky-400/80 hover:bg-sky-400 text-black"
-                    disabled={metaData.qty === "0" && !metaData.damaged}
+                    disabled={metaData.qty === "0" || !metaData.damaged}
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Submit
@@ -725,7 +733,7 @@ export const Client = () => {
                   <Button
                     type="submit"
                     className="w-full bg-sky-400/80 hover:bg-sky-400 text-black"
-                    disabled={metaData.qty === "0" && !metaData.abnormal}
+                    disabled={metaData.qty === "0" || !metaData.abnormal}
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Submit
