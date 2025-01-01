@@ -16,7 +16,7 @@ export const useDeleteHistory = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async (id) => {
+    mutationFn: async ({ id }) => {
       const res = await axios.delete(`${baseUrl}/historys/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
