@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/sidebar/sidebar";
 import { cn } from "@/lib/utils";
 import React, { ReactNode } from "react";
 
-const AdminDashboardLayout = ({ children }: { children: ReactNode }) => {
+const AdminDashboardLayout = async ({ children }: { children: ReactNode }) => {
   return (
     <main className={cn("w-screen bg-white h-full flex flex-col")}>
       <Navbar />
