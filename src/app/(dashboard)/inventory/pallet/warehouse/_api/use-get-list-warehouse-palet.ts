@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 export const useGetListWarehousePalet = ({ p, q }: any) => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
   const query = useQuery({
     queryKey: ["list-warehouse-palet", { p, q }],
     queryFn: async () => {
