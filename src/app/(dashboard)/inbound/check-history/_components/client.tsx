@@ -93,7 +93,7 @@ export const Client = () => {
 
     if (!ok) return;
 
-    mutate(id);
+    mutate({ id });
   };
 
   const columnCheckHistory: ColumnDef<any>[] = [
