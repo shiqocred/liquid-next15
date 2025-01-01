@@ -18,7 +18,7 @@ import {
 } from "../ui/sheet";
 import { MenuSidebar } from "../sidebar/menu";
 import { usePathname, useRouter } from "next/navigation";
-import { useCookies } from "next-client-cookies";
+import { deleteCookie, getCookie, hasCookie } from "cookies-next/client";
 import { Skeleton } from "../ui/skeleton";
 import { toast } from "sonner";
 import axios from "axios";
@@ -30,7 +30,6 @@ import { id as indonesia } from "date-fns/locale";
 const Navbar = () => {
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
-  const cookies = useCookies();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isNotif, setIsNotif] = useState(false);
@@ -39,14 +38,14 @@ const Navbar = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogout = () => {
-    cookies.remove("profile");
-    cookies.remove("accessToken");
+    deleteCookie("profile");
+    deleteCookie("accessToken");
     toast.success("Logout successfully");
     router.push("/login");
   };
 
   // cookies
-  const accessToken = cookies.get("accessToken");
+  const accessToken = getCookie("accessToken");
 
   // state data
   const [data, setData] = useState<any[]>([]);
@@ -86,11 +85,11 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    if (cookies.get("profile")) {
-      const data = JSON.parse(cookies.get("profile") ?? "");
+    if (hasCookie("profile")) {
+      const data = JSON.parse(getCookie("profile") ?? "");
       setProfileData(data);
     }
-  }, [cookies.get("profile")]);
+  }, [hasCookie("profile")]);
 
   useEffect(() => {
     const interval = setInterval(() => {

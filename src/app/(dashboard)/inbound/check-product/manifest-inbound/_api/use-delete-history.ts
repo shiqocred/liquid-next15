@@ -2,8 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
-import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: any;
@@ -12,11 +11,11 @@ type RequestType = {
 type Error = AxiosError;
 
 export const useDeleteHistory = () => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async (id) => {
+    mutationFn: async ({ id }) => {
       const res = await axios.delete(`${baseUrl}/documents/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -25,16 +24,11 @@ export const useDeleteHistory = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Manifest Inbound successfully deleted");
       queryClient.invalidateQueries({ queryKey: ["manifest-inbound"] });
     },
     onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(`ERROR ${err?.status}: Manifest Inbound failed to delete`);
-        console.log("ERROR_DELETE_MANIFEST_INBOUND:", err);
-      }
+      console.log("ERROR_DELETE_MANIFEST_INBOUND:", err);
+      // }
     },
   });
   return mutation;

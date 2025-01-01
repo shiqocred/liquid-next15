@@ -3,14 +3,14 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = { code_document: string };
 
 type Error = AxiosError;
 
 export const useDeleteBarcodeMI = () => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ code_document }) => {

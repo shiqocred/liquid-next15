@@ -9,7 +9,7 @@ import {
   Save,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, promiseToast } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
 import {
   Dialog,
@@ -64,18 +64,33 @@ export const Client = () => {
     if (selectedFile?.file) {
       body.append("file", selectedFile.file);
     }
-    mutate(
-      { value: body, type: typeBulk },
-      {
-        onSuccess: () => {
-          setSelectedFile(null);
-        },
-        onError: (err) => {
-          setErrorMsg((err?.response?.data as any)?.data?.resource);
-          setIsErrorOpen(true);
-        },
-      }
-    );
+
+    const promise = new Promise((resolve, reject) => {
+      mutate(
+        { value: body, type: typeBulk },
+        {
+          onSuccess: (data) => {
+            resolve(data);
+            setSelectedFile(null);
+            setTypeBulk("");
+          },
+          onError: (error) => {
+            reject(error);
+            setErrorMsg((error?.response?.data as any)?.data?.resource);
+            setIsErrorOpen(true);
+            setTypeBulk("");
+          },
+        }
+      );
+    });
+
+    promiseToast({
+      promise,
+      loading: "Uploading...",
+      success: "File Successfully uploaded",
+      error: (err) =>
+        (err?.response?.data as any)?.data?.message || "File failed to upload",
+    });
   };
 
   const onDrop = (acceptedFiles: File[]) => {
@@ -100,12 +115,6 @@ export const Client = () => {
     maxFiles: 1, // Limit file upload to only one
   });
 
-  // useEffect(() => {
-  //   if (!typeBulk && !isDialogOpen) {
-  //     setIsDialogOpen(true);
-  //   }
-  // }, [isDialogOpen]);
-
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -123,9 +132,9 @@ export const Client = () => {
             <DialogDescription>Check please some error</DialogDescription>
           </DialogHeader>
           <ul className="w-full max-h-[50vh] overflow-y-auto">
-            {errorMsg.map((item, i) => (
+            {errorMsg?.map((item, i) => (
               <li
-                key={i}
+                key={item + i}
                 className="py-2 px-4 border-b last:border-0 border-gray-400"
               >
                 {item}
@@ -241,7 +250,7 @@ export const Client = () => {
                       </div>
                     </DialogContent>
                   </Dialog>
-                  {errorMsg.length > 0 && (
+                  {errorMsg?.length > 0 && (
                     <Button
                       type="button"
                       onClick={() => setIsErrorOpen(true)}
@@ -263,7 +272,7 @@ export const Client = () => {
                     <RefreshCcw className="w-4 h-4 mr-2" />
                     Change File
                   </button>
-                  {errorMsg.length === 0 && (
+                  {errorMsg?.length === 0 && (
                     <Button
                       onClick={handleComplete}
                       className="bg-sky-300/80 hover:bg-sky-300 text-black"

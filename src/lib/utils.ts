@@ -76,3 +76,30 @@ export const alertError = ({
     );
   }
 };
+
+export const promiseToast = <T>({
+  promise,
+  loading,
+  success,
+  error,
+}: {
+  promise: Promise<T>;
+  loading: string;
+  success: ((data: T) => string) | string;
+  error: ((err: AxiosError) => string) | string;
+}) => {
+  return toast.promise(promise, {
+    loading,
+    success: (data) =>
+      typeof success === "function" ? success(data) : success,
+    error: (err: AxiosError) => {
+      if (err.status === 403) {
+        return "Error 403: Restricted Access";
+      } else {
+        return `ERROR ${err?.status}: ${
+          typeof error === "function" ? error(err) : error
+        }`;
+      }
+    },
+  });
+};

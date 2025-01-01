@@ -2,8 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
-import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   value: FormData;
@@ -13,7 +12,7 @@ type RequestType = {
 type Error = AxiosError;
 
 export const useUploadBulking = () => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ value, type }) => {
@@ -28,16 +27,8 @@ export const useUploadBulking = () => {
       );
       return res;
     },
-    onSuccess: () => {
-      toast.success("File successfuly Uploaded");
-    },
     onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(`ERROR: ${(err?.response?.data as any)?.data?.message}`);
-        console.log("ERROR_UPLOAD_FILE:", err);
-      }
+      console.log("ERROR_UPLOAD_FILE:", err);
     },
   });
   return mutation;

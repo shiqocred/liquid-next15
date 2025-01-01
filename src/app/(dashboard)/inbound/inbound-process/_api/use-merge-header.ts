@@ -3,8 +3,7 @@ import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
-import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   code_document: any;
@@ -19,7 +18,7 @@ type RequestType = {
 type Error = AxiosError;
 
 export const useMergeHeader = () => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
   const router = useRouter();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
@@ -32,16 +31,10 @@ export const useMergeHeader = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("File successfully merged");
       router.push("/inbound/check-product/manifest-inbound");
     },
     onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(`Error ${err?.response?.status}: failed to merge file`);
-        console.log("ERROR_MERGE_FILE:", err);
-      }
+      console.log("ERROR_MERGE_FILE:", err);
     },
   });
   return mutation;
