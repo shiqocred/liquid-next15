@@ -67,11 +67,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-const categoryVariant = {
-  isClose: { width: "0px", padding: "0px", marginLeft: "0px" },
-  isOpen: { width: "300px", padding: "20px", marginLeft: "8px" },
-};
-
 interface QualityData {
   lolos: string | null;
   damaged: string | null;

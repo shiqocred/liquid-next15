@@ -31,7 +31,7 @@ import { deleteCookie, getCookie, hasCookie } from "cookies-next/client";
 import { Skeleton } from "../ui/skeleton";
 import { toast } from "sonner";
 import axios, { AxiosError } from "axios";
-import { baseUrl, urlWeb } from "@/lib/baseUrl";
+import { urlWeb } from "@/lib/baseUrl";
 import { alertError, cn, setPaginate } from "@/lib/utils";
 import { formatDistanceStrict } from "date-fns";
 import { id as indonesia } from "date-fns/locale";
@@ -58,7 +58,6 @@ const Navbar = () => {
   const [isNotif, setIsNotif] = useState(false);
   const [profileData, setProfileData] = useState<any>();
   const [ping, setPing] = useState<number | null | "connecting">("connecting");
-  const [loading, setLoading] = useState(false);
 
   const [dataSearch, setDataSearch] = useState("");
   const searchValue = useDebounce(dataSearch);
@@ -94,6 +93,7 @@ const Navbar = () => {
     data: dataNotif,
     isError: isErrorNotif,
     error: errorNotif,
+    isLoading: isLoadingNotif,
   } = useGetNotifWidget();
 
   const scanData: any[] = useMemo(() => {
@@ -347,7 +347,7 @@ const Navbar = () => {
           <Popover open={isNotif} onOpenChange={setIsNotif}>
             <PopoverTrigger asChild>
               <Button
-                disabled={loading}
+                disabled={isLoadingNotif}
                 className="w-8 h-8 p-0 rounded-full bg-transparent hover:bg-gray-50 text-black relative border-sky-400 border"
               >
                 <Bell className="w-4 h-4" />
@@ -445,7 +445,7 @@ const Navbar = () => {
               >
                 <DialogTrigger asChild>
                   <Button
-                    disabled={loading}
+                    disabled={isLoadingScan}
                     className="w-8 h-8 p-0 rounded-full bg-transparent hover:bg-gray-50 text-black relative border border-amber-500"
                   >
                     <ScanLine className="w-4 h-4" />
@@ -482,7 +482,7 @@ const Navbar = () => {
                 <DataTable
                   columns={columnListScan}
                   data={scanData ?? []}
-                  isLoading={loading}
+                  isLoading={isLoadingScan}
                   isSticky
                   maxHeight="max-h-[60vh]"
                 />
