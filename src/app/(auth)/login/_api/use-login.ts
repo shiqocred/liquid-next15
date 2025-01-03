@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
@@ -15,6 +15,7 @@ type Error = AxiosError;
 
 export const useLogin = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async (value) => {
@@ -25,6 +26,8 @@ export const useLogin = () => {
       toast.success("Login Success");
       setCookie("accessToken", res.data.data.resource[0]);
       setCookie("profile", JSON.stringify(res.data.data.resource[1]));
+      queryClient.invalidateQueries({ queryKey: ["storage-report"] });
+      queryClient.invalidateQueries({ queryKey: ["count-staging"] });
       router.push("/");
     },
     onError: (err) => {

@@ -130,7 +130,7 @@ export const Client = () => {
       accessorKey: "base_document",
       header: "Document Name",
       cell: ({ row }) => (
-        <div className="break-all max-w-[500px]">
+        <div className="hyphens-auto max-w-[500px]">
           {row.original.base_document}
         </div>
       ),

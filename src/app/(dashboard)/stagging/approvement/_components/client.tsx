@@ -130,7 +130,7 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="break-all max-w-[450px]">
+        <div className="hyphens-auto max-w-[450px]">
           {row.original.new_name_product}
         </div>
       ),

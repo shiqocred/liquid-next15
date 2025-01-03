@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { cn, formatRupiah } from "@/lib/utils";
-import { parseAsBoolean, useQueryState } from "nuqs";
+import { useQueryState } from "nuqs";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import { Input } from "@/components/ui/input";
@@ -66,10 +66,7 @@ export const Client = () => {
     qty: "0",
   });
 
-  const [barcodeOpen, setBarcodeOpen] = useQueryState(
-    "dialog",
-    parseAsBoolean.withDefault(false)
-  );
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
   const [metaBarcode, setMetaBarcode] = useState({
     barcode: "",
     newPrice: "",
@@ -93,8 +90,9 @@ export const Client = () => {
 
   const codeDocument = `${miId}/${miMonth}/${miYear}`;
 
-  const { mutate } = useSubmitProduct();
-  const { mutate: mutateDouble } = useSubmitDoubleBarcode();
+  const { mutate, isPending: isPendingSubmit } = useSubmitProduct();
+  const { mutate: mutateDouble, isPending: isPendingDouble } =
+    useSubmitDoubleBarcode();
   const { mutate: mutateDoneAll } = useSubmitDoneCheckAll();
 
   const { data, error, isError } = useGetCheckManifestInbound({
@@ -260,9 +258,9 @@ export const Client = () => {
       (isSuccessBarcode && !dataBarcode?.data.data.status)
     ) {
       toast.error(
-        (isSuccessBarcode && `Error: ${dataBarcode?.data.data}`) ||
+        (isSuccessBarcode && `Error: ${dataBarcode?.data.data.message}`) ||
           `Error ${(errorBarcode as AxiosError).status}: ${
-            dataBarcode?.data.data
+            dataBarcode?.data.data.message
           }`
       );
     } else if (isSuccessBarcode && dataBarcode?.data.data.status) {
@@ -287,8 +285,6 @@ export const Client = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  console.log(metaData);
 
   if (!isMounted) {
     return <Loading />;
@@ -345,6 +341,7 @@ export const Client = () => {
           >
             <button
               type="button"
+              disabled={loadingBarcode || isPendingSubmit || isPendingDouble}
               className="flex items-center text-black group-hover:mr-6 mr-4 transition-all w-auto"
             >
               <div className="w-10 h-10 rounded-full group-hover:shadow justify-center flex items-center group-hover:bg-gray-100 transition-all">
@@ -368,6 +365,7 @@ export const Client = () => {
               placeholder="Search..."
               ref={searchRef}
               autoFocus
+              disabled={loadingBarcode || isPendingSubmit || isPendingDouble}
             />
             {dataSearch.length > 0 && (
               <button
@@ -399,6 +397,7 @@ export const Client = () => {
             }}
             className="bg-sky-400/80 hover:bg-sky-400 text-black"
             type="button"
+            disabled={loadingBarcode || isPendingSubmit || isPendingDouble}
           >
             <ShieldCheck className="w-4 h-4 mr-2" />
             Done Check All
@@ -418,9 +417,16 @@ export const Client = () => {
           </div>
         )}
       </div>
-      {loadingBarcode ? (
-        <div className="flex w-full bg-white rounded-md shadow items-center justify-center h-[300px]">
-          <Loader className="w-8 h-8 animate-spin" />
+      {loadingBarcode || isPendingSubmit || isPendingDouble ? (
+        <div className="flex flex-col w-full bg-white rounded-md shadow items-center justify-center h-[300px] gap-3">
+          <Loader className="size-6 animate-spin" />
+          <p className="text-sm ml-1">
+            {loadingBarcode
+              ? "Getting Data..."
+              : isPendingSubmit
+              ? "Submiting..."
+              : "Submiting Double..."}
+          </p>
         </div>
       ) : barcodeData?.id === "0" ? (
         <div className="flex w-full bg-white rounded-md shadow items-center justify-center h-[300px]">

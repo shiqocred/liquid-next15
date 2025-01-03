@@ -24,8 +24,14 @@ export const useSubmitProduct = () => {
       });
       return res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["check-history"] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          "check-barcode-manifest-inbound",
+          data?.data?.data?.resource?.code_document,
+          data?.data?.data?.resource?.old_barcode_product,
+        ],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
