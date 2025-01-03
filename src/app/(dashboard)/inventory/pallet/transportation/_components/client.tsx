@@ -252,7 +252,7 @@ export const Client = () => {
       accessorKey: "vehicle_name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.vehicle_name}</div>
+        <div className="hyphens-auto">{row.original.vehicle_name}</div>
       ),
     },
     {

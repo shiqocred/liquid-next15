@@ -334,7 +334,7 @@ const DialogExportProduct = ({
                           <div className="w-36 flex-none border-r border-black px-3 py-0.5 uppercase">
                             {item.product_barcode_sale}
                           </div>
-                          <div className="w-[450px] border-r break-all border-black px-3 py-0.5 capitalize whitespace-pre-wrap flex-none">
+                          <div className="w-[450px] border-r hyphens-auto border-black px-3 py-0.5 capitalize whitespace-pre-wrap flex-none">
                             {item.product_name_sale}
                           </div>
                           <div className="w-12 flex-none border-r border-black text-center  py-0.5">

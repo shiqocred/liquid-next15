@@ -72,7 +72,6 @@ export const Client = () => {
             <div className="flex w-full flex-col gap-1">
               <Label>Email or Username</Label>
               <Input
-                type="email"
                 name="email_or_username"
                 value={input.email_or_username}
                 onChange={(e) =>
@@ -81,7 +80,7 @@ export const Client = () => {
                     email_or_username: e.target.value,
                   }))
                 }
-                placeholder="jhon@example.com"
+                placeholder="jhon"
               />
             </div>
             <div className="flex w-full flex-col gap-1">

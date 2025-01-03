@@ -282,7 +282,7 @@ export const Client = () => {
       accessorKey: "tag_name",
       header: "Color Name",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.tag_name}</div>
+        <div className="hyphens-auto">{row.original.tag_name}</div>
       ),
     },
     {
@@ -322,7 +322,7 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] break-all">
+        <div className="max-w-[500px] hyphens-auto">
           {row.original.new_name_product}
         </div>
       ),
@@ -411,7 +411,7 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] break-all">
+        <div className="max-w-[500px] hyphens-auto">
           {row.original.new_name_product}
         </div>
       ),
