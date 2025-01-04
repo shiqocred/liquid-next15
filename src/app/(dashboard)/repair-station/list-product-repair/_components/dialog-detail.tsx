@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, formatRupiah } from "@/lib/utils";
 import {
-  AlertCircle,
   ArrowRight,
   ChevronDown,
   Circle,
@@ -21,13 +20,9 @@ import {
   Minus,
   Palette,
   Plus,
-  ScanBarcode,
   X,
 } from "lucide-react";
 import React from "react";
-import { motion } from "motion/react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import {
   PopoverPortal,
@@ -42,11 +37,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-
-const categoryVariant = {
-  isClose: { width: "0px", padding: "0px", marginLeft: "0px" },
-  isOpen: { width: "300px", padding: "20px", marginLeft: "8px" },
-};
 
 const DialogDetail = ({
   open,
