@@ -50,12 +50,15 @@ export const Client = () => {
   });
 
   const [input, setInput] = useState({
+    barcode: "",
+    oldBarcode: "",
     name: "",
+    oldName: "",
     price: "0",
-    qty: "0",
+    oldPrice: "0",
+    qty: "1",
+    oldQty: "1",
     category: "",
-    discount: "0",
-    displayPrice: "0",
   });
 
   // data search, page
@@ -129,19 +132,22 @@ export const Client = () => {
 
   // memo data category
   const dataCategories: any[] = useMemo(() => {
-    return dataCategory?.data.data.resource;
+    return dataCategory?.data.data.resource ?? [];
   }, [dataCategory]);
 
   useEffect(() => {
     if (isSuccessDetail && dataDetail) {
       const dataResponse = dataDetail?.data.data.resource.product;
       setInput({
+        barcode: dataResponse?.new_barcode_product ?? "",
         name: dataResponse?.new_name_product ?? "",
         price: dataResponse?.new_price_product ?? "0",
-        qty: dataResponse?.new_quantity_product ?? "0",
+        qty: dataResponse?.new_quantity_product ?? "1",
+        oldBarcode: dataResponse?.old_barcode_product ?? "",
+        oldName: dataResponse?.new_name_product ?? "",
+        oldPrice: dataResponse?.old_price_product ?? "0",
+        oldQty: dataResponse?.new_quantity_product ?? "1",
         category: dataResponse?.new_category_product ?? "",
-        discount: dataResponse?.new_discount ?? "0",
-        displayPrice: dataResponse?.display_price ?? "0",
       });
     }
   }, [dataDetail]);
@@ -200,10 +206,10 @@ export const Client = () => {
 
   const handleToDisplay = () => {
     const body = {
-      old_barcode_product: dataResDetail?.old_barcode_product,
-      old_price_product: dataResDetail?.old_price_product,
+      old_barcode_product: input.oldBarcode,
+      old_price_product: input.oldPrice,
       new_status_product: dataResDetail?.new_status_product,
-      new_barcode_product: dataResDetail?.new_barcode_product,
+      new_barcode_product: input.barcode,
       new_name_product: input.name,
       new_price_product: input.price,
       new_quantity_product: input.qty,
@@ -247,9 +253,6 @@ export const Client = () => {
     if (isNaN(parseFloat(input.qty))) {
       setInput((prev) => ({ ...prev, qty: "0" }));
     }
-    if (isNaN(parseFloat(input.discount))) {
-      setInput((prev) => ({ ...prev, discount: "0" }));
-    }
   }, [input]);
 
   // column data
@@ -265,9 +268,9 @@ export const Client = () => {
     },
     {
       accessorKey: "old_barcode_product||new_barcode_product",
-      header: "Name",
+      header: "Barcode",
       cell: ({ row }) =>
-        row.original.old_barcode_product ?? row.original.new_barcode_product,
+        row.original.new_barcode_product || row.original.old_barcode_product,
     },
     {
       accessorKey: "new_name_product",
@@ -366,18 +369,22 @@ export const Client = () => {
           if (openDisplay) {
             setOpenDisplay(false);
             setInput({
+              barcode: "",
+              oldBarcode: "",
               name: "",
+              oldName: "",
               price: "0",
-              qty: "0",
+              oldPrice: "0",
+              qty: "1",
+              oldQty: "1",
               category: "",
-              discount: "0",
-              displayPrice: "0",
             });
           }
         }}
         isLoading={isLoadingDetail}
         data={dataResDetail}
         dataColor={dataResColorDetail}
+        isSubmit={isPendingToDisplay}
         input={input}
         setInput={setInput}
         categories={dataCategories}
