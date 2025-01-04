@@ -12,7 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { RefreshCw, X } from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
+import { Loader2, PlusCircle, RefreshCw, X } from "lucide-react";
 import React from "react";
 
 const DialogProduct = ({
@@ -22,11 +23,12 @@ const DialogProduct = ({
   setSearch,
   refetch,
   isRefetching,
-  columns,
   dataTable,
   page,
   metaPage,
   setPage,
+  handleAdd,
+  isPendingAdd,
 }: {
   open: boolean;
   onCloseModal: () => void;
@@ -34,12 +36,72 @@ const DialogProduct = ({
   setSearch: any;
   refetch: any;
   isRefetching: any;
-  columns: any;
   dataTable: any;
   page: any;
   metaPage: any;
   setPage: any;
+  handleAdd: any;
+  isPendingAdd: any;
 }) => {
+  const columnProduct: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPage.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_barcode_product??old_barcode_product",
+      header: "Barcode",
+      cell: ({ row }) =>
+        row.original.new_barcode_product ?? row.original.old_barcode_product,
+    },
+    {
+      accessorKey: "new_name_product",
+      header: "Product Name",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] hyphens-auto">
+          {row.original.new_name_product}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_category_product??new_tag_product",
+      header: "Category",
+      cell: ({ row }) =>
+        row.original.new_category_product ??
+        row.original.new_tag_product ??
+        "-",
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={"Add Product"}>
+            <Button
+              className="items-center border-sky-400 text-black hover:bg-sky-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                handleAdd(row.original.id);
+              }}
+              type="button"
+            >
+              {isPendingAdd ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <PlusCircle className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
+  ];
   return (
     <div>
       <Dialog open={open} onOpenChange={onCloseModal}>
@@ -89,7 +151,7 @@ const DialogProduct = ({
               isSticky
               maxHeight="h-[60vh]"
               isLoading={isRefetching}
-              columns={columns}
+              columns={columnProduct}
               data={dataTable ?? []}
             />
             <Pagination
