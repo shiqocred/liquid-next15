@@ -2,19 +2,14 @@
 
 import {
   ArrowLeft,
-  ChevronDown,
   ChevronDownCircle,
   Circle,
-  CloudUpload,
-  Expand,
-  FileText,
   Loader2,
   PencilRuler,
   Plus,
   RefreshCw,
   Send,
   Trash2,
-  Upload,
   X,
   XCircle,
 } from "lucide-react";
@@ -48,11 +43,6 @@ import { Label } from "@/components/ui/label";
 import dynamic from "next/dynamic";
 import { useGetListProduct } from "../_api/use-get-list-product";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -73,8 +63,6 @@ import {
 } from "@/components/ui/dialog";
 import { useProceeedImage } from "../_api/use-proceed-image";
 import PopoverWithTrigger from "./popover-with-trigger";
-import { Textarea } from "@/components/ui/textarea";
-import UploadPDF from "./upload-pdf";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -83,6 +71,9 @@ const DialogUpload = dynamic(() => import("./dialog-upload"), {
   ssr: false,
 });
 const UploadImage = dynamic(() => import("./upload-image"), {
+  ssr: false,
+});
+const UploadPDF = dynamic(() => import("./upload-pdf"), {
   ssr: false,
 });
 

@@ -80,10 +80,10 @@ const UploadPDF = () => {
 
   // Menggunakan react-dropzone untuk menangani drag-and-drop
   const {
-    getRootProps,
-    getInputProps,
+    // getRootProps,
+    // getInputProps,
     isDragActive,
-    open: openImage,
+    // open: openImage,
   } = useDropzone({
     onDrop,
     onDropRejected,
