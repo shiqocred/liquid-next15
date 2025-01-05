@@ -7,16 +7,18 @@ import {
   Circle,
   CloudUpload,
   Expand,
+  FileText,
   Loader2,
   PencilRuler,
   Plus,
   RefreshCw,
   Send,
   Trash2,
+  Upload,
   X,
   XCircle,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -59,8 +61,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
-import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { useGetSelect } from "../_api/use-get-select";
 import {
@@ -71,14 +71,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useProceeedImage } from "../_api/use-proceed-image";
+import PopoverWithTrigger from "./popover-with-trigger";
+import { Textarea } from "@/components/ui/textarea";
+import UploadPDF from "./upload-pdf";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
 });
-
-const MAX_FILES = 8;
-const MAX_FILE_SIZE_MB = 2;
-const TOAST_DELAY_MS = 500;
+const DialogUpload = dynamic(() => import("./dialog-upload"), {
+  ssr: false,
+});
+const UploadImage = dynamic(() => import("./upload-image"), {
+  ssr: false,
+});
 
 export const Client = () => {
   const [isOpenCategory, setIsOpenCategory] = useState(false);
@@ -88,8 +94,9 @@ export const Client = () => {
   const [isOpenBrand, setIsOpenBrand] = useState(false);
   const [isProduct, setIsProduct] = useState(false);
   const [isOpenImage, setIsOpenImage] = useState(false);
+  const [isOpenUpload, setIsOpenUpload] = useState(false);
 
-  const [second, setSecond] = useState<File[]>([]);
+  const [resProceedImage, setResProceedImage] = useState<string[]>([]);
   const [urlDialog, setUrlDialog] = useState("/images/liquid8_og_800x800.png");
   const [input, setInput] = useState({
     name: "",
@@ -148,6 +155,8 @@ export const Client = () => {
     useRemoveProduct();
 
   const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
+  const { mutate: mutateProceed, isPending: isPendingProceed } =
+    useProceeedImage();
 
   // mutate end ----------------------------------------------------------------
 
@@ -248,6 +257,18 @@ export const Client = () => {
     mutateRemoveProduct({ id });
   };
 
+  const base64ToBlob = (base64: string, mimeType: string): Blob => {
+    const byteString = atob(base64.split(",")[1]); // Decode Base64
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ab], { type: mimeType });
+  };
+
   const handleSubmit = async () => {
     const ok = await confirmSubmit();
 
@@ -267,13 +288,32 @@ export const Client = () => {
     body.append("product_status_id", input.status.id);
     body.append("is_sale", "0");
     input.brand.map((item) => body.append("product_brand_ids[]", item.id));
-    if (second.length > 0) {
-      for (const element of second) {
-        body.append("images[]", element);
+    if (resProceedImage.length > 0) {
+      for (const element of resProceedImage) {
+        const mimeType = "image/jpeg"; // Sesuaikan dengan tipe MIME
+        const blob = base64ToBlob(element, mimeType);
+        body.append("images[]", blob);
       }
     }
 
     mutateSubmit({ body });
+  };
+
+  const handleProceedImage = (files: File[]) => {
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append(`image_${index}`, file);
+    });
+
+    mutateProceed(
+      { body: formData },
+      {
+        onSuccess: (data) => {
+          setResProceedImage((prev) => [...prev, ...data.data.processedImages]);
+          setIsOpenUpload(false);
+        },
+      }
+    );
   };
 
   // handling action end ----------------------------------------------------------------
@@ -290,6 +330,11 @@ export const Client = () => {
       perPage: 0,
       total: 0,
     });
+  };
+
+  // Menghapus file berdasarkan index
+  const handleRemoveFile = (index: number) => {
+    setResProceedImage((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   // handling close end ----------------------------------------------------------------
@@ -324,94 +369,6 @@ export const Client = () => {
       method: "GET",
     });
   }, [isErrorSelect, errorSelect]);
-
-  // *
-  // images
-  // *
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      toast.dismiss(); // Menutup semua toast yang aktif
-
-      // Total file yang akan ada setelah menambahkan file baru
-      const totalFiles = second.length + acceptedFiles.length;
-      const remainingFileSlots = MAX_FILES - second.length;
-
-      // Menyimpan error baru
-      const newErrors: string[] = [];
-
-      // Cek batas jumlah file
-      if (second.length >= MAX_FILES) {
-        newErrors.push(`You can only upload up to ${MAX_FILES} files.`);
-      } else if (totalFiles > MAX_FILES) {
-        newErrors.push(
-          `You can only upload ${remainingFileSlots} more file(s).`
-        );
-      }
-
-      // Cek batas ukuran file dan hanya tambahkan file yang valid
-      const validFiles: File[] = [];
-      acceptedFiles.slice(0, remainingFileSlots).forEach((file) => {
-        const fileSizeMB = file.size / (1024 * 1024); // Mengonversi byte ke MB
-        if (fileSizeMB > MAX_FILE_SIZE_MB) {
-          newErrors.push(
-            `File ${file.name} is larger than ${MAX_FILE_SIZE_MB} MB.`
-          );
-        } else {
-          validFiles.push(file);
-        }
-      });
-
-      // Menampilkan toast dengan delay untuk setiap error
-      newErrors.forEach((error, index) => {
-        setTimeout(() => {
-          toast.error(error); // Menampilkan toast error
-        }, index * TOAST_DELAY_MS); // Delay berdasarkan urutan error
-      });
-
-      // Jika tidak ada error, tambahkan file yang valid
-      if (validFiles.length > 0) {
-        setSecond((prevFiles) => [...prevFiles, ...validFiles]); // Tambahkan file yang valid
-      }
-    },
-    [second]
-  );
-
-  // Menangani file yang ditolak
-  const onDropRejected = useCallback((rejectedFiles: any[]) => {
-    toast.dismiss(); // Menutup semua toast yang aktif
-
-    rejectedFiles.forEach((rejectedFile, index) => {
-      const { file, errors } = rejectedFile;
-      errors.forEach((error: any, errorIndex: number) => {
-        setTimeout(() => {
-          if (error.code === "file-too-large") {
-            toast.error(
-              `File ${file.name} is larger than ${MAX_FILE_SIZE_MB} MB.`
-            );
-          }
-        }, (index + errorIndex) * TOAST_DELAY_MS); // Delay berdasarkan urutan error
-      });
-    });
-    if (rejectedFiles[0].errors[0].code === "too-many-files") {
-      toast.error(`You can only upload up to ${MAX_FILES} files.`);
-    }
-  }, []);
-
-  // Menghapus file berdasarkan index
-  const handleRemoveFile = (index: number) => {
-    setSecond((prevFiles) => prevFiles.filter((_, i) => i !== index));
-  };
-
-  // Menggunakan react-dropzone untuk menangani drag-and-drop
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    onDrop,
-    onDropRejected,
-    accept: { "image/*": [] }, // Hanya mengizinkan gambar
-    noClick: true, // Tidak memicu file picker saat halaman diklik, kecuali tombol kecil
-    noKeyboard: true, // Mencegah file picker terbuka dengan keyboard
-    maxFiles: MAX_FILES,
-    maxSize: MAX_FILE_SIZE_MB * 1024 * 1024, // Konversi dari MB ke byte
-  });
 
   const columnPalet: ColumnDef<any>[] = [
     {
@@ -502,22 +459,20 @@ export const Client = () => {
         handleAdd={handleAddProduct}
         isPendingAdd={isPendingAddProduct}
       />
+      <DialogUpload
+        open={isOpenUpload}
+        onClose={() => {
+          if (isOpenUpload) {
+            setIsOpenUpload(false);
+          }
+        }}
+        handleProceed={handleProceedImage}
+        setIsOpenImage={setIsOpenImage}
+        setUrlDialog={setUrlDialog}
+        isPending={isPendingProceed}
+        images={resProceedImage.length}
+      />
       <div className="flex flex-col gap-4 w-full">
-        {second.length < 8 && (
-          <div
-            {...getRootProps()}
-            className={`top-0 left-0 w-full h-full flex items-center justify-center p-6 bg-black/45 backdrop-blur-sm pointer-events-auto ${
-              isDragActive ? "opacity-100 z-20 fixed" : "opacity-0 z-0 absolute"
-            }`}
-          >
-            <div className="w-full h-full flex items-center justify-center border-4 border-sky-100 rounded-lg border-dashed">
-              <input {...getInputProps()} />
-              <p className="text-5xl text-sky-100 font-bold uppercase">
-                Drop image anywhere
-              </p>
-            </div>
-          </div>
-        )}
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -613,236 +568,129 @@ export const Client = () => {
             <div className="flex w-full gap-4">
               <div className="z-10 w-full flex flex-col gap-1">
                 <Label>Category</Label>
-                <Popover open={isOpenCategory} onOpenChange={setIsOpenCategory}>
-                  <PopoverTrigger asChild>
-                    <Button className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2">
-                      {input.category.name
-                        ? input.category.name
-                        : "Select Category..."}
-                      <div className="size-8 rounded-full flex items-center justify-center group-hover:bg-sky-50">
-                        <ChevronDown className="size-4" />
-                      </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="p-0"
-                    style={{ width: "var(--radix-popover-trigger-width)" }}
-                  >
-                    <Command>
-                      <CommandInput />
-                      <CommandList className="p-1">
-                        <CommandGroup>
-                          <CommandEmpty>No Data Found.</CommandEmpty>
-                          {dataListCategories.map((item) => (
-                            <CommandItem
-                              key={item.id}
-                              className="my-2 first:mt-0 last:mb-0 flex gap-2 items-center"
-                              onSelect={() => {
-                                setInput((prev) => ({
-                                  ...prev,
-                                  category: {
-                                    id: item.id,
-                                    name: item.name_category,
-                                  },
-                                }));
-                                setIsOpenCategory(false);
-                              }}
-                            >
-                              <div className="size-4 rounded-full border border-gray-500 flex-none flex items-center justify-center">
-                                {input.category.id === item.id && (
-                                  <Circle className="fill-black size-2.5" />
-                                )}
-                              </div>
-                              <div className="w-full font-medium">
-                                {item.name_category}
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <PopoverWithTrigger
+                  open={isOpenCategory}
+                  setIsOpen={setIsOpenCategory}
+                  data={dataListCategories}
+                  dataId={input.category.id}
+                  trigger={
+                    input.category.name
+                      ? input.category.name
+                      : "Select Category..."
+                  }
+                  onSelect={(item: any) => {
+                    setInput((prev) => ({
+                      ...prev,
+                      category: {
+                        id: item.id,
+                        name: item.name_category,
+                      },
+                    }));
+                    setIsOpenCategory(false);
+                  }}
+                  itemSelect={(item: any) => (
+                    <div className="w-full font-medium">
+                      {item.name_category}
+                    </div>
+                  )}
+                />
               </div>
               <div className="z-10 w-full flex flex-col gap-1">
                 <Label>Warehouse</Label>
-                <Popover
+                <PopoverWithTrigger
                   open={isOpenWarehouse}
-                  onOpenChange={setIsOpenWarehouse}
-                >
-                  <PopoverTrigger asChild>
-                    <Button className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2">
-                      {input.warehouse.name
-                        ? input.warehouse.name
-                        : "Select Warehouse..."}
-                      <div className="size-8 rounded-full flex items-center justify-center group-hover:bg-sky-50">
-                        <ChevronDown className="size-4" />
+                  setIsOpen={setIsOpenWarehouse}
+                  data={dataListWarehouses}
+                  dataId={input.warehouse.id}
+                  trigger={
+                    input.warehouse.name
+                      ? input.warehouse.name
+                      : "Select Warehouse..."
+                  }
+                  onSelect={(item: any) => {
+                    setInput((prev) => ({
+                      ...prev,
+                      warehouse: {
+                        id: item.id,
+                        name: item.nama,
+                      },
+                    }));
+                    setIsOpenWarehouse(false);
+                  }}
+                  itemSelect={(item: any) => (
+                    <div className="w-full flex flex-col gap-1">
+                      <div className="w-full font-medium capitalize">
+                        {item.nama}
                       </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="p-0"
-                    style={{ width: "var(--radix-popover-trigger-width)" }}
-                  >
-                    <Command>
-                      <CommandInput placeholder="Search Warehouse" />
-                      <CommandList className="p-1">
-                        <CommandGroup heading="List Warehouse">
-                          <CommandEmpty>No Data Found.</CommandEmpty>
-                          {dataListWarehouses.map((item) => (
-                            <CommandItem
-                              key={item.id}
-                              className="border border-gray-500 my-2 first:mt-0 last:mb-0 flex gap-2 items-center"
-                              onSelect={() => {
-                                setInput((prev) => ({
-                                  ...prev,
-                                  warehouse: {
-                                    id: item.id,
-                                    name: item.nama,
-                                  },
-                                }));
-                                setIsOpenWarehouse(false);
-                              }}
-                            >
-                              <div className="size-4 rounded-full border border-gray-500 flex-none flex items-center justify-center">
-                                {input.warehouse.id === item.id && (
-                                  <Circle className="fill-black size-2.5" />
-                                )}
-                              </div>
-                              <div className="w-full flex flex-col gap-1">
-                                <div className="w-full font-medium capitalize">
-                                  {item.nama}
-                                </div>
-                                <Separator className="bg-gray-500" />
-                                <p className="text-xs text-start w-full text-gray-500">
-                                  Lat. {item.latitude} | Long. {item.longitude}
-                                </p>
-                                <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                                  {item.alamat}
-                                </p>
-                                <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                                  {item.kecamatan}, {item.kabupaten},{" "}
-                                  {item.provinsi}
-                                </p>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                      <Separator className="bg-gray-500" />
+                      <p className="text-xs text-start w-full text-gray-500">
+                        Lat. {item.latitude} | Long. {item.longitude}
+                      </p>
+                      <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                        {item.alamat}
+                      </p>
+                      <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                        {item.kecamatan}, {item.kabupaten}, {item.provinsi}
+                      </p>
+                    </div>
+                  )}
+                />
               </div>
             </div>
             <div className="flex w-full gap-4">
               <div className="z-10 w-full flex flex-col gap-1">
                 <Label>Condition</Label>
-                <Popover
+                <PopoverWithTrigger
                   open={isOpenCondition}
-                  onOpenChange={setIsOpenCondition}
-                >
-                  <PopoverTrigger asChild>
-                    <Button className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2">
-                      {input.condition.name
-                        ? input.condition.name
-                        : "Select Condition..."}
-                      <div className="size-8 rounded-full flex items-center justify-center group-hover:bg-sky-50">
-                        <ChevronDown className="size-4" />
-                      </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="p-0"
-                    style={{ width: "var(--radix-popover-trigger-width)" }}
-                  >
-                    <Command>
-                      <CommandInput placeholder="Search Condition..." />
-                      <CommandList className="p-1">
-                        <CommandGroup heading="List Condition">
-                          <CommandEmpty>No Data Found</CommandEmpty>
-                          {dataListProductConditions.map((item) => (
-                            <CommandItem
-                              key={item.id}
-                              className="border border-gray-500 my-2 first:mt-0 last:mb-0 flex gap-2 items-center"
-                              onSelect={() => {
-                                setInput((prev) => ({
-                                  ...prev,
-                                  condition: {
-                                    id: item.id,
-                                    name: item.condition_name,
-                                  },
-                                }));
-                                setIsOpenCondition(false);
-                              }}
-                            >
-                              <div className="size-4 rounded-full border border-gray-500 flex-none flex items-center justify-center">
-                                {input.condition.id === item.id && (
-                                  <Circle className="fill-black size-2.5" />
-                                )}
-                              </div>
-                              <div className="w-full font-medium">
-                                {item.condition_name}
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                  setIsOpen={setIsOpenCondition}
+                  data={dataListProductConditions}
+                  dataId={input.condition.id}
+                  trigger={
+                    input.condition.name
+                      ? input.condition.name
+                      : "Select Condition..."
+                  }
+                  onSelect={(item: any) => {
+                    setInput((prev) => ({
+                      ...prev,
+                      condition: {
+                        id: item.id,
+                        name: item.condition_name,
+                      },
+                    }));
+                    setIsOpenCondition(false);
+                  }}
+                  itemSelect={(item: any) => (
+                    <div className="w-full font-medium">
+                      {item.condition_name}
+                    </div>
+                  )}
+                />
               </div>
               <div className="z-10 w-full flex flex-col gap-1">
                 <Label>Status</Label>
-                <Popover open={isOpenStatus} onOpenChange={setIsOpenStatus}>
-                  <PopoverTrigger asChild>
-                    <Button className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2">
-                      {input.status.name
-                        ? input.status.name
-                        : "Select Status..."}
-                      <div className="size-8 rounded-full flex items-center justify-center group-hover:bg-sky-50">
-                        <ChevronDown className="size-4" />
-                      </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="p-0"
-                    style={{ width: "var(--radix-popover-trigger-width)" }}
-                  >
-                    <Command>
-                      <CommandInput placeholder="Search Status" />
-                      <CommandList className="p-1">
-                        <CommandGroup heading="List Status">
-                          <CommandEmpty>No Data Found.</CommandEmpty>
-                          {dataListProductStatus.map((item) => (
-                            <CommandItem
-                              key={item.id}
-                              className="border border-gray-500 my-2 first:mt-0 last:mb-0 flex gap-2 items-center"
-                              onSelect={() => {
-                                setInput((prev) => ({
-                                  ...prev,
-                                  status: {
-                                    id: item.id,
-                                    name: item.status_name,
-                                  },
-                                }));
-                                setIsOpenStatus(false);
-                              }}
-                            >
-                              <div className="size-4 rounded-full border border-gray-500 flex-none flex items-center justify-center">
-                                {input.status.id === item.id && (
-                                  <Circle className="fill-black size-2.5" />
-                                )}
-                              </div>
-                              <div className="w-full font-medium">
-                                {item.status_name}
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <PopoverWithTrigger
+                  open={isOpenStatus}
+                  setIsOpen={setIsOpenStatus}
+                  data={dataListProductStatus}
+                  dataId={input.status.id}
+                  trigger={
+                    input.status.name ? input.status.name : "Select Status..."
+                  }
+                  onSelect={(item: any) => {
+                    setInput((prev) => ({
+                      ...prev,
+                      status: {
+                        id: item.id,
+                        name: item.status_name,
+                      },
+                    }));
+                    setIsOpenStatus(false);
+                  }}
+                  itemSelect={(item: any) => (
+                    <div className="w-full font-medium">{item.status_name}</div>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -852,7 +700,7 @@ export const Client = () => {
                 <DialogTrigger asChild>
                   <Button
                     type="button"
-                    className="flex items-center gap-3 font-normal text-black hover:bg-transparent h-auto bg-transparent p-0 shadow-none"
+                    className="flex items-center gap-3 font-normal text-black hover:bg-sky-100 h-auto bg-transparent p-0 px-1.5 rounded-sm shadow-none"
                   >
                     <h5 className=" flex-none font-semibold">Brands</h5>
                     <ChevronDownCircle className="size-4" />
@@ -1031,73 +879,14 @@ export const Client = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col w-full gap-4 bg-white p-5 rounded-md shadow">
-          <div className="w-full flex justify-between items-center border-b border-gray-500 pb-4">
-            <div className="flex gap-2 items-center">
-              <div className="size-8 rounded-full bg-sky-100 flex items-center justify-center flex-none">
-                <CloudUpload className="size-4" />
-              </div>
-              <h5 className="z-10 font-semibold">Upload Image</h5>
-            </div>
-            <div className="flex items-center">
-              <p className="text-sm z-10 font-medium px-5">Drop a file here</p>
-              <div className="text-sm z-10 font-semibold size-7 rounded-full flex items-center justify-center bg-gray-200">
-                or
-              </div>
-              <Button
-                type={"button"}
-                onClick={open}
-                className="z-10 bg-transparent hover:bg-transparent text-sky-500 hover:text-sky-700 shadow-none rounded-none underline underline-offset-2 px-5 py-0 h-auto font-medium"
-              >
-                Upload File
-              </Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-8 gap-4">
-            {second.length > 0 ? (
-              <>
-                {second.map((item, i) => (
-                  <div
-                    key={item.name}
-                    className="relative w-full aspect-square shadow border"
-                  >
-                    <div className="relative w-full h-full overflow-hidden rounded group">
-                      <Image
-                        alt=""
-                        fill
-                        src={URL.createObjectURL(item)}
-                        className="object-cover group-hover:scale-110 transition-all duration-300"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsOpenImage(true);
-                          setUrlDialog(URL.createObjectURL(item));
-                        }}
-                        className="w-full h-full group-hover:delay-500 delay-0 transition-all duration-300 group-hover:opacity-100 opacity-0 flex items-center justify-center absolute top-0 left-0 bg-black/5 backdrop-blur-sm border text-black rounded"
-                      >
-                        <div className="size-8 flex items-center justify-center bg-white rounded-full">
-                          <Expand className="size-5" />
-                        </div>
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile(i)}
-                      className="size-5 hover:scale-110 transition-all rounded-full flex items-center justify-center shadow absolute -top-2 -right-2 bg-red-500 border-2 border-white text-white"
-                    >
-                      <X className="size-2.5" />
-                    </button>
-                  </div>
-                ))}
-              </>
-            ) : (
-              <div className="col-span-8 h-36 w-full flex items-center justify-center border-2 border-dashed border-sky-400/80 rounded">
-                <p className="text-sm font-medium">No image yet.</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <UploadPDF />
+        <UploadImage
+          setIsOpenUpload={setIsOpenUpload}
+          resProceedImage={resProceedImage}
+          handleRemoveFile={handleRemoveFile}
+          setIsOpenImage={setIsOpenImage}
+          setUrlDialog={setUrlDialog}
+        />
         <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
           <div className="flex w-full justify-between gap-4 items-center">
             <h5 className="pr-5 border-b border-gray-500 text-lg h-fit font-bold z-10">
