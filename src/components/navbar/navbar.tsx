@@ -55,6 +55,7 @@ const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [openScan, setOpenScan] = useState(false);
   const [isNotif, setIsNotif] = useState(false);
   const [profileData, setProfileData] = useState<any>();
   const [ping, setPing] = useState<number | null | "connecting">("connecting");
@@ -87,6 +88,7 @@ const Navbar = () => {
     p: page,
     q: searchValue,
     role: profileData?.check_scan ?? "false",
+    open: openScan,
   });
 
   const {
@@ -94,7 +96,7 @@ const Navbar = () => {
     isError: isErrorNotif,
     error: errorNotif,
     isLoading: isLoadingNotif,
-  } = useGetNotifWidget();
+  } = useGetNotifWidget({ open: isNotif });
 
   const scanData: any[] = useMemo(() => {
     return dataScan?.data?.data?.resource?.data;
@@ -223,6 +225,7 @@ const Navbar = () => {
           </div>
           <Separator orientation="vertical" />
           <div className="flex gap-2 items-center">
+            <Skeleton className="w-8 h-8 rounded-full" />
             <Skeleton className="w-8 h-8 rounded-full" />
             <Skeleton className="w-8 h-8 rounded-full" />
           </div>
@@ -436,7 +439,7 @@ const Navbar = () => {
             </PopoverContent>
           </Popover>
           {profileData?.check_scan === "true" && (
-            <Dialog>
+            <Dialog open={openScan} onOpenChange={setOpenScan}>
               <TooltipProviderPage
                 value="Monitoring Scan"
                 className="bg-white border text-black"

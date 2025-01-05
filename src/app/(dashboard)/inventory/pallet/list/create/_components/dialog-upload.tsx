@@ -26,6 +26,7 @@ const DialogUpload = ({
   setIsOpenImage,
   setUrlDialog,
   isPending,
+  images,
 }: {
   open: boolean;
   onClose: () => void;
@@ -33,6 +34,7 @@ const DialogUpload = ({
   setIsOpenImage: any;
   setUrlDialog: any;
   isPending: boolean;
+  images: number;
 }) => {
   const [fileUpload, setFileUpload] = useState<File[]>([]);
 
@@ -44,16 +46,19 @@ const DialogUpload = ({
       toast.dismiss(); // Menutup semua toast yang aktif
 
       // Total file yang akan ada setelah menambahkan file baru
-      const totalFiles = fileUpload.length + acceptedFiles.length;
-      const remainingFileSlots = MAX_FILES - fileUpload.length;
+      const totalFiles = images + acceptedFiles.length + fileUpload.length;
+      console.log(
+        totalFiles,
+        fileUpload.length + images,
+        fileUpload.length + acceptedFiles.length + images
+      );
+      const remainingFileSlots = MAX_FILES - (fileUpload.length + images);
 
       // Menyimpan error baru
       const newErrors: string[] = [];
 
       // Cek batas jumlah file
-      if (fileUpload.length >= MAX_FILES) {
-        newErrors.push(`You can only upload up to ${MAX_FILES} files.`);
-      } else if (totalFiles > MAX_FILES) {
+      if (totalFiles > MAX_FILES) {
         newErrors.push(
           `You can only upload ${remainingFileSlots} more file(s).`
         );
@@ -156,14 +161,15 @@ const DialogUpload = ({
               <div
                 className={cn(
                   "w-full grid gap-4",
-                  fileUpload.length === 1 && "max-w-md grid-cols-1",
-                  fileUpload.length === 2 && "max-w-md grid-cols-2",
-                  fileUpload.length === 3 && "max-w-md grid-cols-3",
-                  fileUpload.length === 4 && "max-w-md grid-cols-4",
-                  fileUpload.length === 5 && "max-w-md grid-cols-5",
-                  fileUpload.length === 6 && "max-w-md grid-cols-6",
-                  fileUpload.length === 7 && "max-w-md grid-cols-7",
-                  fileUpload.length === 8 && "max-w-md grid-cols-8"
+                  fileUpload.length === 1 && "max-w-[20vw] grid-cols-1",
+                  fileUpload.length === 2 && "max-w-[30vw] grid-cols-2",
+                  fileUpload.length === 3 && "max-w-[50vw] grid-cols-3",
+                  fileUpload.length === 4 && "max-w-[70vw] grid-cols-4",
+                  fileUpload.length === 5 && "max-w-[90vw] grid-cols-5",
+                  fileUpload.length === 6 && "grid-cols-6",
+                  fileUpload.length === 7 &&
+                    "max-w-[70vw] grid-rows-2 grid-cols-4",
+                  fileUpload.length === 8 && "grid-rows-2 grid-cols-4"
                 )}
               >
                 {fileUpload.length > 0 &&
@@ -202,7 +208,7 @@ const DialogUpload = ({
                     </div>
                   ))}
               </div>
-              {fileUpload.length < 8 && (
+              {fileUpload.length + images < 8 && (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed border-sky-400 rounded">
                   <Button
                     className="bg-sky-400/80 hover:bg-sky-400 text-black rounded-full z-10"
@@ -217,7 +223,7 @@ const DialogUpload = ({
                 </div>
               )}
             </div>
-            {fileUpload.length < 8 && (
+            {fileUpload.length + images < 8 && (
               <div
                 {...getRootProps()}
                 className={`top-0 left-0 w-full h-full flex items-center justify-center p-6 bg-black/45 backdrop-blur-sm pointer-events-auto ${

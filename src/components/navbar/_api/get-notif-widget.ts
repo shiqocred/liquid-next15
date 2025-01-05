@@ -3,10 +3,10 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetNotifWidget = () => {
+export const useGetNotifWidget = ({ open }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["notif_widget"],
+    queryKey: ["notif_widget", { open }],
     queryFn: async () => {
       const res = await axios.get(`${baseUrl}/notif_widget`, {
         headers: {
@@ -16,6 +16,7 @@ export const useGetNotifWidget = () => {
       return res;
     },
     refetchInterval: 60000,
+    enabled: open,
   });
   return query;
 };

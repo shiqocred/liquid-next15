@@ -28,8 +28,14 @@ export async function POST(req: NextRequest) {
       "public/images/watermark2.png"
     );
 
-    const watermark1 = await sharp(watermark1Path).resize(150, 150).toBuffer();
-    const watermark2 = await sharp(watermark2Path).resize(150, 150).toBuffer();
+    const watermark1 = await sharp(watermark1Path)
+      .resize(150, 150)
+      .png({ quality: 80, progressive: true })
+      .toBuffer();
+    const watermark2 = await sharp(watermark2Path)
+      .resize(150, 150)
+      .png({ quality: 80, progressive: true })
+      .toBuffer();
 
     const margin = 38; // Margin from edges and between watermarks
 
@@ -47,19 +53,37 @@ export async function POST(req: NextRequest) {
 
         // Resize image to 1080x1080 and add watermarks
         const resizedImage = await image
+          .flatten({ background: { r: 255, g: 165, b: 0 } })
           .resize(1080, 1080, {
             fit: "cover",
-            background: { r: 255, g: 165, b: 0, alpha: 1 },
           })
           .toBuffer();
 
-        const finalImage = await sharp(resizedImage)
+        let quality = 100;
+        let finalImage = await sharp(resizedImage)
           .composite([
             { input: watermark1, top: watermark1Y, left: watermark1X },
             { input: watermark2, top: watermark2Y, left: watermark2X },
           ])
-          .jpeg()
+          .jpeg({
+            quality,
+            progressive: true,
+          })
           .toBuffer();
+
+        while (finalImage.length > 2 * 1024 * 1024 && quality > 30) {
+          quality -= 5;
+          finalImage = await sharp(resizedImage)
+            .composite([
+              { input: watermark1, top: watermark1Y, left: watermark1X },
+              { input: watermark2, top: watermark2Y, left: watermark2X },
+            ])
+            .jpeg({
+              quality,
+              progressive: true,
+            })
+            .toBuffer();
+        }
 
         return `data:image/jpeg;base64,${finalImage.toString("base64")}`;
       })
