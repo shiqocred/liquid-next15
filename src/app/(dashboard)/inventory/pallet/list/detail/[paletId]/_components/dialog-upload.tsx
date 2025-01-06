@@ -14,6 +14,7 @@ import Image from "next/image";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
+import { useProceeedImage } from "../_api/use-proceed-image";
 
 const MAX_FILES = 8;
 const MAX_FILE_SIZE_MB = 2;
@@ -22,21 +23,42 @@ const TOAST_DELAY_MS = 500;
 const DialogUpload = ({
   open,
   onClose,
-  handleProceed,
+  handleUpload,
   setIsOpenImage,
   setUrlDialog,
   isPending,
   images,
+  isSuccess,
 }: {
   open: boolean;
   onClose: () => void;
-  handleProceed: any;
+  handleUpload: any;
   setIsOpenImage: any;
   setUrlDialog: any;
   isPending: boolean;
   images: number;
+  isSuccess: boolean;
 }) => {
   const [fileUpload, setFileUpload] = useState<File[]>([]);
+
+  const { mutate: mutateProceed, isPending: isPendingProceed } =
+    useProceeedImage();
+
+  const handleProceedImage = () => {
+    const formData = new FormData();
+    fileUpload.forEach((file, index) => {
+      formData.append(`image_${index}`, file);
+    });
+
+    mutateProceed(
+      { body: formData },
+      {
+        onSuccess: (data) => {
+          handleUpload(data.data.processedImages);
+        },
+      }
+    );
+  };
 
   // *
   // images
@@ -145,10 +167,16 @@ const DialogUpload = ({
         <DialogHeader>
           <DialogTitle>Upload Image</DialogTitle>
         </DialogHeader>
-        {isPending ? (
+        {isPending || isPendingProceed || isSuccess ? (
           <div className="w-full h-[calc(100vh-130px)] border-2 border-sky-400 border-dashed rounded-md flex flex-col gap-2 items-center justify-center">
             <Loader className="size-6 animate-spin" />
-            <p className="ml-1 text-sm">Processing...</p>
+            <p className="ml-1 text-sm">
+              {isPendingProceed
+                ? "Processing..."
+                : isSuccess
+                ? "Closing Dialog..."
+                : "Uploading..."}
+            </p>
           </div>
         ) : (
           <>
@@ -251,7 +279,7 @@ const DialogUpload = ({
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleProceed(fileUpload);
+                  handleProceedImage();
                 }}
               >
                 Upload
