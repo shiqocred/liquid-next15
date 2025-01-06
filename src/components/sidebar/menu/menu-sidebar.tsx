@@ -92,10 +92,6 @@ const sidebarMenu = [
             title: "Product Approve",
             href: "/inbound/check-product/product-approve",
           },
-          // {
-          //   title: "Approvement Document",
-          //   href: "/inbound/check-product/approvement-document",
-          // },
           {
             title: "Manual Inbound",
             href: "/inbound/check-product/manual-inbound",
@@ -231,10 +227,6 @@ const sidebarMenu = [
           {
             title: "Brand",
             href: "/inventory/pallet/brand",
-          },
-          {
-            title: "Transportation",
-            href: "/inventory/pallet/transportation",
           },
         ],
       },
