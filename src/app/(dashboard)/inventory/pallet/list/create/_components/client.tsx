@@ -87,6 +87,7 @@ export const Client = () => {
   const [isOpenImage, setIsOpenImage] = useState(false);
   const [isOpenUpload, setIsOpenUpload] = useState(false);
 
+  const [uploadPDF, setUploadPDF] = useState<File[]>([]);
   const [resProceedImage, setResProceedImage] = useState<string[]>([]);
   const [urlDialog, setUrlDialog] = useState("/images/liquid8_og_800x800.png");
   const [input, setInput] = useState({
@@ -96,6 +97,7 @@ export const Client = () => {
     condition: { id: "", name: "" },
     status: { id: "", name: "" },
     brand: [] as { id: string; name: string }[],
+    description: "",
     total: "0",
   });
 
@@ -272,7 +274,7 @@ export const Client = () => {
     body.append("category_id", input.category.id);
     body.append("category_palet", input.category.name);
     body.append("category_palet", input.category.name);
-    body.append("description", "");
+    body.append("description", input.description);
     body.append("is_active", "1");
     body.append("warehouse_id", input.warehouse.id);
     body.append("product_condition_id", input.condition.id);
@@ -284,6 +286,11 @@ export const Client = () => {
         const mimeType = "image/jpeg"; // Sesuaikan dengan tipe MIME
         const blob = base64ToBlob(element, mimeType);
         body.append("images[]", blob);
+      }
+    }
+    if (uploadPDF.length > 0) {
+      for (const element of uploadPDF) {
+        body.append("file_pdf", element);
       }
     }
 
@@ -870,7 +877,12 @@ export const Client = () => {
             </div>
           </div>
         </div>
-        <UploadPDF />
+        <UploadPDF
+          files={uploadPDF}
+          setFiles={setUploadPDF}
+          input={input}
+          setInput={setInput}
+        />
         <UploadImage
           setIsOpenUpload={setIsOpenUpload}
           resProceedImage={resProceedImage}
