@@ -3,17 +3,25 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import { ArrowDown, FileText, Trash2 } from "lucide-react";
+import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
 const MAX_FILE_SIZE_MB = 5;
 const TOAST_DELAY_MS = 500;
 
-const UploadPDF = () => {
-  const [fileUpload, setFileUpload] = useState<File[]>([]);
-
+const UploadPDF = ({
+  files,
+  setFiles,
+  input,
+  setInput,
+}: {
+  files: File[];
+  setFiles: any;
+  input: any;
+  setInput: any;
+}) => {
   // *
   // images
   // *
@@ -46,10 +54,10 @@ const UploadPDF = () => {
 
       // Jika tidak ada error, tambahkan file yang valid
       if (validFiles.length > 0) {
-        setFileUpload((prevFiles) => [...prevFiles, ...validFiles]); // Tambahkan file yang valid
+        setFiles((prevFiles: any) => [...prevFiles, ...validFiles]); // Tambahkan file yang valid
       }
     },
-    [fileUpload]
+    [files]
   );
 
   // Menangani file yang ditolak
@@ -75,16 +83,11 @@ const UploadPDF = () => {
 
   // Menghapus file berdasarkan index
   //   const handleRemoveFile = (index: number) => {
-  //     setFileUpload((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  //     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   //   };
 
   // Menggunakan react-dropzone untuk menangani drag-and-drop
-  const {
-    // getRootProps,
-    // getInputProps,
-    isDragActive,
-    // open: openImage,
-  } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     onDropRejected,
     accept: { "application/pdf": [".pdf"] },
@@ -106,19 +109,50 @@ const UploadPDF = () => {
       <div className="flex w-full gap-4">
         <div className="flex flex-col w-full gap-1.5">
           <Label>Upload File</Label>
-          {isDragActive ? (
-            <div className="w-full h-full flex items-center justify-center gap-2 border-[1.5px] border-dashed border-sky-400 rounded">
-              <p className="text-sm">Drop File Here</p>
+          {files.length === 0 ? (
+            <div
+              {...getRootProps()}
+              className="w-full h-full flex items-center justify-center gap-2 border-[1.5px] border-dashed border-sky-400 rounded"
+            >
+              <input {...getInputProps()} />
+              {isDragActive ? (
+                <>
+                  <ArrowDown className="animate-bounce size-4" />
+                  <p className="text-sm">Drop File Here</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm">Drop File Here</p>
+                  <p className="text-sm font-semibold text-gray-500">or</p>
+                  <Button
+                    className="rounded-full z-10 p-0 h-auto underline hover:bg-transparent text-sky-700 hover:text-sky-900 underline-offset-2"
+                    variant={"ghost"}
+                    onClick={open}
+                  >
+                    Upload
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center gap-2 border-[1.5px] border-dashed border-sky-400 rounded">
-              <p className="text-sm">Drop File Here</p>
-              <p className="text-sm font-semibold text-gray-500">or</p>
+            <div className="w-full p-3 flex bg-sky-50 rounded-md border-sky-400/80 border gap-3">
+              <div className="size-9 flex-none rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white shadow">
+                <FileText className="size-4" />
+              </div>
+              <div className="flex flex-col pl-3 border-x border-sky-400/80 justify-center w-full">
+                <p className="line-clamp-1 font-semibold text-sm">
+                  {files[0].name}
+                </p>
+                <p className="text-xs">
+                  {(files[0].size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
               <Button
-                className="rounded-full z-10 p-0 h-auto underline hover:bg-transparent text-sky-700 hover:text-sky-900 underline-offset-2"
-                variant={"ghost"}
+                className="rounded-full ml-auto flex-none bg-transparent hover:bg-red-50 text-red-500 shadow-none [&_svg]:size-5"
+                size={"icon"}
+                onClick={() => setFiles([])}
               >
-                Upload
+                <Trash2 />
               </Button>
             </div>
           )}
@@ -128,6 +162,13 @@ const UploadPDF = () => {
           <Textarea
             rows={6}
             className="resize-none border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0"
+            value={input.description}
+            onChange={(e) =>
+              setInput((prev: any) => ({
+                ...prev,
+                description: e.target.value,
+              }))
+            }
           />
         </div>
       </div>

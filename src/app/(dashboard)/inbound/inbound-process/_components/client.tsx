@@ -11,6 +11,7 @@ import {
   Check,
   Disc,
   FileSpreadsheet,
+  FileText,
   FolderEdit,
   Gem,
   Loader,
@@ -193,8 +194,10 @@ export const Client = () => {
                 <Check className="w-5 h-5" />
               ) : isErrorUpload ? (
                 <AlertCircle className="w-5 h-5" />
-              ) : (
+              ) : isPendingUpload ? (
                 <Loader className="size-5 animate-spin" />
+              ) : (
+                <FileText className="w-5 h-5" />
               )}
             </div>
           ) : (
@@ -219,7 +222,9 @@ export const Client = () => {
                   ? "completed"
                   : isErrorUpload
                   ? "failed"
-                  : "pending"
+                  : isPendingUpload
+                  ? "pending"
+                  : "click next for upload"
                 : "current"}
             </p>
           </div>
