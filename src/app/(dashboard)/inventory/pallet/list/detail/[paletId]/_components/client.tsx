@@ -11,7 +11,7 @@ import {
   FileDown,
   Loader2,
   Plus,
-  PlusCircle,
+  // PlusCircle,
   Printer,
   RefreshCw,
   ScanBarcode,
@@ -613,65 +613,65 @@ export const Client = () => {
     },
   ];
 
-  const columnProduct: ColumnDef<any>[] = [
-    {
-      header: () => <div className="text-center">No</div>,
-      id: "id",
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {(metaPageProduct.from + row.index).toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "new_barcode_product??old_barcode_product",
-      header: "Barcode",
-      cell: ({ row }) =>
-        row.original.new_barcode_product ?? row.original.old_barcode_product,
-    },
-    {
-      accessorKey: "new_name_product",
-      header: "Product Name",
-      cell: ({ row }) => (
-        <div className="max-w-[500px] hyphens-auto">
-          {row.original.new_name_product}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "new_category_product??new_tag_product",
-      header: "Category",
-      cell: ({ row }) =>
-        row.original.new_category_product ??
-        row.original.new_tag_product ??
-        "-",
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => (
-        <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={"Add Product"}>
-            <Button
-              className="items-center border-sky-400 text-black hover:bg-sky-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              onClick={(e) => {
-                e.preventDefault();
-                handleAddProduct(row.original.id);
-              }}
-              type="button"
-            >
-              {isPendingAddProduct ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <PlusCircle className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
-        </div>
-      ),
-    },
-  ];
+  // const columnProduct: ColumnDef<any>[] = [
+  //   {
+  //     header: () => <div className="text-center">No</div>,
+  //     id: "id",
+  //     cell: ({ row }) => (
+  //       <div className="text-center tabular-nums">
+  //         {(metaPageProduct.from + row.index).toLocaleString()}
+  //       </div>
+  //     ),
+  //   },
+  //   {
+  //     accessorKey: "new_barcode_product??old_barcode_product",
+  //     header: "Barcode",
+  //     cell: ({ row }) =>
+  //       row.original.new_barcode_product ?? row.original.old_barcode_product,
+  //   },
+  //   {
+  //     accessorKey: "new_name_product",
+  //     header: "Product Name",
+  //     cell: ({ row }) => (
+  //       <div className="max-w-[500px] hyphens-auto">
+  //         {row.original.new_name_product}
+  //       </div>
+  //     ),
+  //   },
+  //   {
+  //     accessorKey: "new_category_product??new_tag_product",
+  //     header: "Category",
+  //     cell: ({ row }) =>
+  //       row.original.new_category_product ??
+  //       row.original.new_tag_product ??
+  //       "-",
+  //   },
+  //   {
+  //     accessorKey: "action",
+  //     header: () => <div className="text-center">Action</div>,
+  //     cell: ({ row }) => (
+  //       <div className="flex gap-4 justify-center items-center">
+  //         <TooltipProviderPage value={"Add Product"}>
+  //           <Button
+  //             className="items-center border-sky-400 text-black hover:bg-sky-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+  //             variant={"outline"}
+  //             onClick={(e) => {
+  //               e.preventDefault();
+  //               handleAddProduct(row.original.id);
+  //             }}
+  //             type="button"
+  //           >
+  //             {isPendingAddProduct ? (
+  //               <Loader2 className="w-4 h-4 animate-spin" />
+  //             ) : (
+  //               <PlusCircle className="w-4 h-4" />
+  //             )}
+  //           </Button>
+  //         </TooltipProviderPage>
+  //       </div>
+  //     ),
+  //   },
+  // ];
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -725,11 +725,13 @@ export const Client = () => {
         setSearch={setProductSearch}
         refetch={refetchProduct}
         isRefetching={isRefetchingProduct}
-        columns={columnProduct}
+        // columns={columnProduct}
         dataTable={dataListProduct}
         page={pageProduct}
         metaPage={metaPageProduct}
         setPage={setPageProduct}
+        handleAdd={handleAddProduct}
+        isPendingAdd={isPendingAddProduct}
       />
       <Dialog
         open={isOpenUpload}
