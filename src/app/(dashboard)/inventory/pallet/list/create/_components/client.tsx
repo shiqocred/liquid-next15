@@ -14,7 +14,13 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
+import {
+  alertError,
+  base64ToBlob,
+  cn,
+  formatRupiah,
+  setPaginate,
+} from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -99,6 +105,7 @@ export const Client = () => {
     brand: [] as { id: string; name: string }[],
     description: "",
     total: "0",
+    totalNew: "0",
   });
 
   // search, debounce, paginate strat ----------------------------------------------------------------
@@ -220,7 +227,8 @@ export const Client = () => {
     });
     setInput((prev) => ({
       ...prev,
-      total: Math.ceil(dataResource?.total_new_price).toString(),
+      total: Math.ceil(dataResource?.total_old_price).toString(),
+      totalNew: Math.ceil(dataResource?.total_new_price).toString(),
     }));
   }, [data]);
 
@@ -250,18 +258,6 @@ export const Client = () => {
     mutateRemoveProduct({ id });
   };
 
-  const base64ToBlob = (base64: string, mimeType: string): Blob => {
-    const byteString = atob(base64.split(",")[1]); // Decode Base64
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-
-    return new Blob([ab], { type: mimeType });
-  };
-
   const handleSubmit = async () => {
     const ok = await confirmSubmit();
 
@@ -272,7 +268,6 @@ export const Client = () => {
     body.append("total_price_palet", input.total);
     body.append("total_product_palet", dataList?.length.toString());
     body.append("category_id", input.category.id);
-    body.append("category_palet", input.category.name);
     body.append("category_palet", input.category.name);
     body.append("description", input.description);
     body.append("is_active", "1");
@@ -547,10 +542,18 @@ export const Client = () => {
             </div>
             <div className="z-10 w-full flex gap-4">
               <div className="w-full flex flex-col gap-1">
-                <Label>Total Price</Label>
+                <Label>Total Old Price</Label>
                 <Input
                   className="border-0 shadow-none focus-visible:ring-transparent focus-visible:outline-none rounded-none focus-visible:border-b focus-visible:border-sky-500 hover:underline hover:underline-offset-2 focus-visible:no-underline disabled:opacity-100 disabled:cursor-default"
                   value={formatRupiah(parseFloat(input.total))}
+                  disabled
+                />
+              </div>
+              <div className="w-full flex flex-col gap-1">
+                <Label>Total Price</Label>
+                <Input
+                  className="border-0 shadow-none focus-visible:ring-transparent focus-visible:outline-none rounded-none focus-visible:border-b focus-visible:border-sky-500 hover:underline hover:underline-offset-2 focus-visible:no-underline disabled:opacity-100 disabled:cursor-default"
+                  value={formatRupiah(parseFloat(input.totalNew))}
                   disabled
                 />
               </div>
