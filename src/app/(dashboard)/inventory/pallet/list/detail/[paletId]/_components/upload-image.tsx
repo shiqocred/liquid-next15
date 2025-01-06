@@ -1,18 +1,19 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { urlWeb } from "@/lib/baseUrl";
 import { CloudUpload, Expand, Upload, X } from "lucide-react";
 import Image from "next/image";
 
 const UploadImage = ({
   setIsOpenUpload,
-  resProceedImage,
+  images,
   handleRemoveFile,
   setIsOpenImage,
   setUrlDialog,
 }: {
   setIsOpenUpload: any;
-  resProceedImage: any[];
+  images: any[];
   handleRemoveFile: any;
   setIsOpenImage: any;
   setUrlDialog: any;
@@ -26,7 +27,7 @@ const UploadImage = ({
           </div>
           <h5 className="z-10 font-semibold">Upload Image</h5>
         </div>
-        {resProceedImage.length < 8 && (
+        {images.length < 8 && (
           <div className="flex items-center">
             <Button
               type={"button"}
@@ -41,25 +42,25 @@ const UploadImage = ({
         )}
       </div>
       <div className="grid grid-cols-8 gap-4">
-        {resProceedImage.length > 0 ? (
+        {images.length > 0 ? (
           <>
-            {resProceedImage.map((item, i) => (
+            {images.map((item) => (
               <div
-                key={item + i}
+                key={item.id}
                 className="relative w-full aspect-square shadow border"
               >
                 <div className="relative w-full h-full overflow-hidden rounded group">
                   <Image
                     alt=""
                     fill
-                    src={item}
+                    src={`${urlWeb + item.file_path}`}
                     className="object-cover group-hover:scale-110 transition-all duration-300"
                   />
                   <button
                     type="button"
                     onClick={() => {
                       setIsOpenImage(true);
-                      setUrlDialog(item);
+                      setUrlDialog(`${urlWeb + item.file_path}`);
                     }}
                     className="w-full h-full group-hover:delay-500 delay-0 transition-all duration-300 group-hover:opacity-100 opacity-0 flex items-center justify-center absolute top-0 left-0 bg-black/5 backdrop-blur-sm border text-black rounded"
                   >
@@ -70,7 +71,7 @@ const UploadImage = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleRemoveFile(i)}
+                  onClick={() => handleRemoveFile(item.id)}
                   className="size-5 hover:scale-110 transition-all rounded-full flex items-center justify-center shadow absolute -top-2 -right-2 bg-red-500 border-2 border-white text-white"
                 >
                   <X className="size-2.5" />
