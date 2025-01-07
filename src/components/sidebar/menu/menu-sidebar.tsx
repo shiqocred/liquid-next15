@@ -338,7 +338,7 @@ const MenuInbound = ({ pathname, setOpen }: MenuInboundProps) => {
           <div className="flex flex-col gap-1 w-full px-3">
             {item.menu.map((item, i) => (
               <ButtonSidebar
-                key={i}
+                key={item.title + i}
                 label={item.title}
                 icon={item.icon}
                 href={item.href}
