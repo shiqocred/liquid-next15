@@ -1,21 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
-export const useGetDetailTransportationPalet = ({ id }: any) => {
-  const accessToken = useCookies().get("accessToken");
+export const useGetNotifWidget = ({ open }: any) => {
+  const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["transportation-palet-detail", id],
+    queryKey: ["notif_widget", { open }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/vehicle-types/${id}`, {
+      const res = await axios.get(`${baseUrl}/notif_widget`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       return res;
     },
-    enabled: !!id,
+    refetchInterval: 60000,
+    enabled: open,
   });
   return query;
 };

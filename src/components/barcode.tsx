@@ -48,8 +48,10 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
                   height={50}
                 />
               )}
-              <div className="border w-[80] py-1 px-2 text-center border-black flex-none">
-                <p className="font-bold text-[10px] leading-3">{category}</p>
+              <div className="border w-[80] py-1 px-2 text-center border-black">
+                <p className="font-bold text-[10px] leading-3 hyphens-auto">
+                  {category}
+                </p>
               </div>
             </div>
             <div className="flex text-base font-semibold gap-1">
@@ -58,7 +60,12 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
                 <p>{!isBundle ? "Harga Diskon" : "Custom Display"}</p>
               </div>
               <div className="flex flex-col">
-                <p>: {formatRupiah(parseFloat(oldPrice))}</p>
+                <p>
+                  :{" "}
+                  <span className="line-through">
+                    {formatRupiah(parseFloat(oldPrice))}
+                  </span>
+                </p>
                 <p>: {formatRupiah(parseFloat(newPrice))}</p>
               </div>
             </div>

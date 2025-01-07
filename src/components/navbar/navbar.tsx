@@ -1,8 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
-import { Bell, Circle, Crown, LogOut, Menu, Wifi } from "lucide-react";
+import {
+  Bell,
+  Circle,
+  Crown,
+  LogOut,
+  Menu,
+  RefreshCw,
+  ScanLine,
+  Wifi,
+} from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import Image from "next/image";
@@ -18,56 +27,115 @@ import {
 } from "../ui/sheet";
 import { MenuSidebar } from "../sidebar/menu";
 import { usePathname, useRouter } from "next/navigation";
-import { useCookies } from "next-client-cookies";
+import { deleteCookie, getCookie, hasCookie } from "cookies-next/client";
 import { Skeleton } from "../ui/skeleton";
 import { toast } from "sonner";
-import axios from "axios";
-import { baseUrl, urlWeb } from "@/lib/baseUrl";
-import { cn } from "@/lib/utils";
+import axios, { AxiosError } from "axios";
+import { urlWeb } from "@/lib/baseUrl";
+import { alertError, cn, setPaginate } from "@/lib/utils";
 import { formatDistanceStrict } from "date-fns";
 import { id as indonesia } from "date-fns/locale";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { useGetScan } from "./_api/get-scan";
+import Pagination from "../pagination";
+import { DataTable } from "../data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { useDebounce } from "@/hooks/use-debounce";
+import { Input } from "../ui/input";
+import { useGetNotifWidget } from "./_api/get-notif-widget";
 
 const Navbar = () => {
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
-  const cookies = useCookies();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [openScan, setOpenScan] = useState(false);
   const [isNotif, setIsNotif] = useState(false);
   const [profileData, setProfileData] = useState<any>();
   const [ping, setPing] = useState<number | null | "connecting">("connecting");
-  const [loading, setLoading] = useState(false);
+
+  const [dataSearch, setDataSearch] = useState("");
+  const searchValue = useDebounce(dataSearch);
+  const [page, setPage] = useState(1);
+  const [metaPage, setMetaPage] = useState({
+    last: 1, //page terakhir
+    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
+    total: 1, //total data
+    perPage: 1,
+  });
 
   const handleLogout = () => {
-    cookies.remove("profile");
-    cookies.remove("accessToken");
+    deleteCookie("profile");
+    deleteCookie("accessToken");
     toast.success("Logout successfully");
     router.push("/login");
   };
 
-  // cookies
-  const accessToken = cookies.get("accessToken");
+  const {
+    data: dataScan,
+    isSuccess: isSuccessScan,
+    isError: isErrorScan,
+    error: errorScan,
+    refetch: refetchScan,
+    isLoading: isLoadingScan,
+  } = useGetScan({
+    p: page,
+    q: searchValue,
+    role: profileData?.check_scan ?? "false",
+    open: openScan,
+  });
 
-  // state data
-  const [data, setData] = useState<any[]>([]);
+  const {
+    data: dataNotif,
+    isError: isErrorNotif,
+    error: errorNotif,
+    isLoading: isLoadingNotif,
+  } = useGetNotifWidget({ open: isNotif });
 
-  // handle GET Data
-  const handleGetNotifWidget = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${baseUrl}/notif_widget`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      setData(response.data.data.resource);
-    } catch (err: any) {
-      console.log("ERROR_GET_NOTIF:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const scanData: any[] = useMemo(() => {
+    return dataScan?.data?.data?.resource?.data;
+  }, [dataScan]);
+
+  const notifData: any[] = useMemo(() => {
+    return dataNotif?.data?.data?.resource;
+  }, [dataNotif]);
+
+  // get pagetination
+  useEffect(() => {
+    setPaginate({
+      isSuccess: isSuccessScan,
+      data: dataScan,
+      dataPaginate: dataScan?.data.data.resource,
+      setMetaPage: setMetaPage,
+      setPage: setPage,
+    });
+  }, [dataScan]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorScan,
+      error: errorScan as AxiosError,
+      action: "get data",
+      data: "Scan Data",
+      method: "GET",
+    });
+  }, [isErrorScan, errorScan]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorNotif,
+      error: errorNotif as AxiosError,
+      action: "get data",
+      data: "Notif Data",
+      method: "GET",
+    });
+  }, [isErrorNotif, errorNotif]);
 
   const handleGetSpeed = async () => {
     const startTime = performance.now();
@@ -86,11 +154,11 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    if (cookies.get("profile")) {
-      const data = JSON.parse(cookies.get("profile") ?? "");
+    if (hasCookie("profile")) {
+      const data = JSON.parse(getCookie("profile") ?? "");
       setProfileData(data);
     }
-  }, [cookies.get("profile")]);
+  }, [hasCookie("profile")]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -102,8 +170,32 @@ const Navbar = () => {
 
   useEffect(() => {
     setIsMounted(true);
-    handleGetNotifWidget();
   }, []);
+
+  const columnListScan: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPage.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "username",
+      header: "Username",
+    },
+    {
+      accessorKey: "total_scans_today",
+      header: () => <div className="text-center">Scan Today</div>,
+      cell: ({ row }) => (
+        <div className="text-center">
+          {row.original.total_scans_today?.toLocaleString() ?? "-"}
+        </div>
+      ),
+    },
+  ];
 
   if (!isMounted) {
     return (
@@ -133,6 +225,7 @@ const Navbar = () => {
           </div>
           <Separator orientation="vertical" />
           <div className="flex gap-2 items-center">
+            <Skeleton className="w-8 h-8 rounded-full" />
             <Skeleton className="w-8 h-8 rounded-full" />
             <Skeleton className="w-8 h-8 rounded-full" />
           </div>
@@ -257,7 +350,7 @@ const Navbar = () => {
           <Popover open={isNotif} onOpenChange={setIsNotif}>
             <PopoverTrigger asChild>
               <Button
-                disabled={loading}
+                disabled={isLoadingNotif}
                 className="w-8 h-8 p-0 rounded-full bg-transparent hover:bg-gray-50 text-black relative border-sky-400 border"
               >
                 <Bell className="w-4 h-4" />
@@ -284,7 +377,7 @@ const Navbar = () => {
                 </Button>
               </div>
               <Separator />
-              {data.map((item) => (
+              {notifData?.map((item) => (
                 <div
                   key={item.id}
                   className=" flex hover:bg-gray-50 px-2.5 py-2 rounded items-center cursor-default justify-between"
@@ -299,16 +392,16 @@ const Navbar = () => {
                     )}
                   >
                     <p className="text-xs capitalize flex gap-1">
-                      {item.notification_name} -
+                      {item.notification_name}
                       <span className="font-semibold underline">
                         {item.status === "sale" && item.approved === "0"
-                          ? "Required"
+                          ? " - Required"
                           : ""}
                         {item.status === "sale" && item.approved === "1"
-                          ? "Rejected"
+                          ? " - Rejected"
                           : ""}
                         {item.status === "sale" && item.approved === "2"
-                          ? "Approved"
+                          ? " - Approved"
                           : ""}
                       </span>
                     </p>
@@ -345,6 +438,64 @@ const Navbar = () => {
               </div>
             </PopoverContent>
           </Popover>
+          {profileData?.check_scan === "true" && (
+            <Dialog open={openScan} onOpenChange={setOpenScan}>
+              <TooltipProviderPage
+                value="Monitoring Scan"
+                className="bg-white border text-black"
+                align="end"
+                sideOffset={15}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    disabled={isLoadingScan}
+                    className="w-8 h-8 p-0 rounded-full bg-transparent hover:bg-gray-50 text-black relative border border-amber-500"
+                  >
+                    <ScanLine className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+              </TooltipProviderPage>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Monitoring Scan</DialogTitle>
+                </DialogHeader>
+                <div className="flex items-center gap-3 w-full">
+                  <Input
+                    className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
+                    value={dataSearch}
+                    onChange={(e) => setDataSearch(e.target.value)}
+                    placeholder="Search..."
+                    autoFocus
+                  />
+                  <TooltipProviderPage value={"Reload Data"}>
+                    <Button
+                      onClick={() => refetchScan()}
+                      className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                      variant={"outline"}
+                    >
+                      <RefreshCw
+                        className={cn(
+                          "w-4 h-4",
+                          isLoadingScan ? "animate-spin" : ""
+                        )}
+                      />
+                    </Button>
+                  </TooltipProviderPage>
+                </div>
+                <DataTable
+                  columns={columnListScan}
+                  data={scanData ?? []}
+                  isLoading={isLoadingScan}
+                  isSticky
+                  maxHeight="max-h-[60vh]"
+                />
+                <Pagination
+                  pagination={{ ...metaPage, current: page }}
+                  setPagination={setPage}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
         <Separator orientation="vertical" />
         <TooltipProviderPage value="Logout" align="end" sideOffset={15}>

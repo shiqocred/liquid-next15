@@ -224,14 +224,14 @@ export const Client = () => {
       accessorKey: "brand_name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.brand_name}</div>
+        <div className="hyphens-auto">{row.original.brand_name}</div>
       ),
     },
     {
       accessorKey: "brand_slug",
       header: "Slug",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.brand_slug}</div>
+        <div className="hyphens-auto">{row.original.brand_slug}</div>
       ),
     },
     {
@@ -373,7 +373,7 @@ export const Client = () => {
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                   )}
-                  Add Status
+                  Add Brand
                 </Button>
               </div>
             </div>

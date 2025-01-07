@@ -15,9 +15,11 @@ import {
   ArrowUpRightFromSquare,
   CalendarIcon,
   ChevronDown,
+  FileDown,
   LayoutGrid,
   LayoutList,
   Loader,
+  Loader2,
   RefreshCcw,
   Search,
   X,
@@ -63,6 +65,8 @@ import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
 import Link from "next/link";
+import { useExportYearData } from "../_api/use-export-year";
+import { useExportSelectedData } from "../_api/use-export-sale";
 
 interface ChartData {
   date: string;
@@ -129,7 +133,7 @@ export const columnsStorage: ColumnDef<any>[] = [
     accessorKey: "buyer_name_document_sale",
     header: "Buyer Name",
     cell: ({ row }) => (
-      <div className="break-all max-w-[500px]">
+      <div className="hyphens-auto max-w-[500px]">
         {row.original.buyer_name_document_sale}
       </div>
     ),
@@ -177,6 +181,11 @@ export const Client = () => {
     to: undefined,
   });
 
+  const { mutate: mutateExportYear, isPending: isPendingExportYear } =
+    useExportYearData();
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportSelectedData();
+
   const { data, refetch, isPending, isRefetching, isLoading, isError, error } =
     useGetGeneralSale({
       from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
@@ -201,6 +210,39 @@ export const Client = () => {
   const clearSearch = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setDataSearch("");
+  };
+
+  const handleExportYear = async () => {
+    mutateExportYear(
+      { year: new Date().getFullYear().toString() },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
+  const handleExport = async () => {
+    mutateExport(
+      {
+        from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
+        to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+      },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
   };
 
   useEffect(() => {
@@ -439,8 +481,8 @@ export const Client = () => {
         </div>
       </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 items-center flex-col">
-        <div className="w-full flex justify-between items-center">
-          <div className="flex items-center gap-5" style={{ width: "60%" }}>
+        <div className="w-full flex justify-between items-center gap-5">
+          <div className="flex items-center gap-5 w-2/3">
             <div className="relative w-full flex items-center mb-0">
               <Label className="absolute left-3" htmlFor="search">
                 <Search className="w-4 h-4" />
@@ -489,6 +531,40 @@ export const Client = () => {
                 <LayoutGrid className="h-4 w-4" />
               </button>
             </div>
+          </div>
+          <div className="flex gap-4">
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                handleExportYear();
+              }}
+              className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingExport || isPendingExportYear}
+              variant={"outline"}
+            >
+              {isPendingExport || isPendingExportYear ? (
+                <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+              ) : (
+                <FileDown className={"w-4 h-4 mr-1"} />
+              )}
+              Export Year Data
+            </Button>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                handleExport();
+              }}
+              className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingExport || isPendingExportYear}
+              variant={"outline"}
+            >
+              {isPendingExport || isPendingExportYear ? (
+                <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+              ) : (
+                <FileDown className={"w-4 h-4 mr-1"} />
+              )}
+              Export Data
+            </Button>
           </div>
         </div>
         {layout === "grid" ? (

@@ -277,7 +277,9 @@ export const Client = () => {
               row.original.status.toLowerCase() === "done" &&
                 "bg-green-400 hover:bg-green-400",
               row.original.status.toLowerCase() === "sale" &&
-                "bg-indigo-400 hover:bg-indigo-400"
+                "bg-indigo-400 hover:bg-indigo-400",
+              row.original.status.toLowerCase() === "staging" &&
+                "bg-red-400 hover:bg-red-400"
             )}
           >
             {row.original.status}
@@ -354,7 +356,7 @@ export const Client = () => {
       accessorKey: "product_name_sale",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] break-all">
+        <div className="max-w-[500px] hyphens-auto">
           {row.original.product_name_sale}
         </div>
       ),

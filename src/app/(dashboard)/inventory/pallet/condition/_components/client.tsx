@@ -224,14 +224,14 @@ export const Client = () => {
       accessorKey: "condition_name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.condition_name}</div>
+        <div className="hyphens-auto">{row.original.condition_name}</div>
       ),
     },
     {
       accessorKey: "condition_slug",
       header: "Slug",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.condition_slug}</div>
+        <div className="hyphens-auto">{row.original.condition_slug}</div>
       ),
     },
     {

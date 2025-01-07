@@ -9,9 +9,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useDebounce } from "@/hooks/use-debounce";
-import { ReceiptText, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  ReceiptText,
+  RefreshCw,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, setPaginate } from "@/lib/utils";
+import { alertError, cn, promiseToast, setPaginate } from "@/lib/utils";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useGetManifestInbound } from "../_api/use-get-manifest-inbound";
 import { ColumnDef } from "@tanstack/react-table";
@@ -46,7 +52,7 @@ export const Client = () => {
     perPage: 1,
   });
 
-  const { mutate } = useDeleteHistory();
+  const { mutate, isPending: isPendingDelete } = useDeleteHistory();
   const {
     data,
     isError,
@@ -92,7 +98,22 @@ export const Client = () => {
 
     if (!ok) return;
 
-    mutate(id);
+    const promise = new Promise((resolve, reject) => {
+      mutate(
+        { id },
+        {
+          onSuccess: (data) => resolve(data),
+          onError: (error) => reject(error),
+        }
+      );
+    });
+
+    promiseToast({
+      promise,
+      loading: "Deleting...",
+      success: "Manifest Inbound Successfully Deleted",
+      error: "Manifest Inbound failed to delete",
+    });
   };
 
   const columnManifestInbound: ColumnDef<any>[] = [
@@ -109,7 +130,7 @@ export const Client = () => {
       accessorKey: "base_document",
       header: "Document Name",
       cell: ({ row }) => (
-        <div className="break-all max-w-[500px]">
+        <div className="hyphens-auto max-w-[500px]">
           {row.original.base_document}
         </div>
       ),
@@ -163,8 +184,9 @@ export const Client = () => {
           <TooltipProviderPage value="Check">
             <Button
               asChild
-              className="items-center w-9 px-0 flex-none border-green-400 text-green-700 hover:text-green-700 hover:bg-green-50"
+              className="items-center w-9 px-0 flex-none border-green-400 text-green-700 hover:text-green-700 hover:bg-green-50 disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-green-50"
               variant={"outline"}
+              disabled={isPendingDelete}
               onClick={() => {
                 queryClient.invalidateQueries({
                   queryKey: [
@@ -180,15 +202,20 @@ export const Client = () => {
               <Link
                 href={`/inbound/check-product/manifest-inbound/${row.original.code_document}/check`}
               >
-                <ShieldCheck className="w-4 h-4" />
+                {isPendingDelete ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ShieldCheck className="size-4" />
+                )}
               </Link>
             </Button>
           </TooltipProviderPage>
           <TooltipProviderPage value="Detail">
             <Button
               asChild
-              className="items-center w-9 px-0 flex-none border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50"
+              className="items-center w-9 px-0 flex-none border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-sky-50"
               variant={"outline"}
+              disabled={isPendingDelete}
               onClick={() => {
                 queryClient.invalidateQueries({
                   queryKey: [
@@ -201,21 +228,30 @@ export const Client = () => {
               <Link
                 href={`/inbound/check-product/manifest-inbound/${row.original.code_document}/detail`}
               >
-                <ReceiptText className="w-4 h-4" />
+                {isPendingDelete ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ReceiptText className="size-4" />
+                )}
               </Link>
             </Button>
           </TooltipProviderPage>
           <TooltipProviderPage value="Delete">
             <Button
-              className="items-center px-0  border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 w-9"
+              className="items-center px-0  border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 w-9 disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-red-50"
               variant={"outline"}
+              disabled={isPendingDelete}
               type="button"
               onClick={(e) => {
                 e.preventDefault();
                 handleDelete(row.original.id);
               }}
             >
-              <Trash2 className="w-4 h-4" />
+              {isPendingDelete ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
             </Button>
           </TooltipProviderPage>
         </div>

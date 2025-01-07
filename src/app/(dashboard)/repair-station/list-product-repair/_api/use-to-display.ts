@@ -3,42 +3,39 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: string;
+  id: any;
+  body: any;
 };
-
 type Error = AxiosError;
 
-export const useDeleteTransportationPalet = () => {
-  const accessToken = useCookies().get("accessToken");
+export const useToDisplay = () => {
+  const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/vehicle-types/${id}`, {
+    mutationFn: async ({ body, id }) => {
+      const res = await axios.post(`${baseUrl}/repair/update/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       return res;
     },
-    onSuccess: (data) => {
-      toast.success("Transportation successfully Deleted");
+    onSuccess: () => {
+      toast.success("Product successfully moved");
       queryClient.invalidateQueries({
-        queryKey: ["list-transportation-palet"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["transportation-palet-detail", data.data.data.resource.id],
+        queryKey: ["list-lpr"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Transportation failed to delete`);
-        console.log("ERROR_DELETE_TRANSPORTATION:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to move`);
+        console.log("ERROR_MOVED_PRODUCT:", err);
       }
     },
   });

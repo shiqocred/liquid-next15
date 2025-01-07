@@ -3,7 +3,7 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   [key: string]: string;
@@ -12,7 +12,7 @@ type RequestType = {
 type Error = AxiosError;
 
 export const useSubmitProduct = () => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
@@ -24,14 +24,25 @@ export const useSubmitProduct = () => {
       });
       return res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["check-history"] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          "check-barcode-manifest-inbound",
+          data?.data?.data?.resource?.code_document,
+          data?.data?.data?.resource?.old_barcode_product,
+        ],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to submit`);
+        toast.error(
+          `ERROR ${err?.status}: ${
+            (err.response?.data as any).data.message ||
+            "Product failed to submit"
+          } `
+        );
         console.log("ERROR_SUBMIT_PRODUCT:", err);
       }
     },

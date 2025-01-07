@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import QueryProviders from "@/providers/query-provider";
-import { CookiesProvider } from "next-client-cookies/server";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -40,14 +39,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CookiesProvider>
-          <QueryProviders>
-            <NuqsAdapter>
-              <Toaster />
-              {children}
-            </NuqsAdapter>
-          </QueryProviders>
-        </CookiesProvider>
+        <QueryProviders>
+          <NuqsAdapter>
+            <Toaster />
+            {children}
+          </NuqsAdapter>
+        </QueryProviders>
       </body>
     </html>
   );

@@ -4,20 +4,23 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowRight,
   Ban,
   Barcode,
   Check,
   Disc,
   FileSpreadsheet,
+  FileText,
   FolderEdit,
   Gem,
+  Loader,
   MoreHorizontal,
   RefreshCcw,
   Save,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, promiseToast } from "@/lib/utils";
 import { useUploadInbound } from "../_api/use-upload-inbound";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -25,6 +28,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useDropzone } from "react-dropzone";
 import { useMergeHeader } from "../_api/use-merge-header";
 import Loading from "@/app/(dashboard)/loading";
+import { AxiosError } from "axios";
 
 interface UploadedFileProps {
   file: File;
@@ -49,8 +53,20 @@ const variants = {
 
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const { mutate: mutateUpload } = useUploadInbound();
-  const { mutate: mutateMerge } = useMergeHeader();
+  const {
+    mutate: mutateUpload,
+    isPending: isPendingUpload,
+    isSuccess: isSuccessUpload,
+    isError: isErrorUpload,
+    error: errorUpload,
+  } = useUploadInbound();
+  const {
+    mutate: mutateMerge,
+    isPending: isPendingMerge,
+    isSuccess: isSuccessMerge,
+    isError: isErrorMerge,
+    error: errorMerge,
+  } = useMergeHeader();
 
   // slide core
   const [direction, setDirection] = useState(0);
@@ -83,28 +99,55 @@ export const Client = () => {
     if (selectedFile?.file) {
       body.append("file", selectedFile.file);
     }
-    mutateUpload(body, {
-      onSuccess: (data) => {
-        setResults(data.data.data.resource);
-        setHeaders(data.data.data.resource.headers);
-      },
+
+    const promise = new Promise((resolve, reject) => {
+      mutateUpload(body, {
+        onSuccess: (data) => {
+          resolve(data);
+          setResults(data.data.data.resource);
+          setHeaders(data.data.data.resource.headers);
+        },
+        onError: (error) => reject(error),
+      });
+    });
+
+    promiseToast({
+      promise,
+      loading: "Uploading...",
+      success: "File Successfully uploaded",
+      error: "File failed to upload",
     });
   };
 
   const handleComplete = async () => {
-    mutateMerge({
-      code_document: results.code_document,
-      headerMappings: {
-        old_barcode_product: [selected.barcode],
-        old_name_product: [selected.name],
-        old_quantity_product: [selected.qty],
-        old_price_product: [selected.price],
-      },
+    const promise = new Promise((resolve, reject) => {
+      mutateMerge(
+        {
+          code_document: results.code_document,
+          headerMappings: {
+            old_barcode_product: [selected.barcode],
+            old_name_product: [selected.name],
+            old_quantity_product: [selected.qty],
+            old_price_product: [selected.price],
+          },
+        },
+        {
+          onSuccess: (data) => resolve(data),
+          onError: (error) => reject(error),
+        }
+      );
+    });
+
+    promiseToast({
+      promise,
+      loading: "Submiting...",
+      success: "File Successfully merged",
+      error: "File failed to merge",
     });
   };
 
   // handle upload file
-  const onDrop = async (acceptedFiles: File[]) => {
+  const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       setSelectedFile({
@@ -139,8 +182,23 @@ export const Client = () => {
       <div className="grid grid-cols-4 w-full bg-white rounded-md overflow-hidden shadow">
         <div className="flex border-r px-4 items-center gap-4 w-full h-20">
           {selectedFile ? (
-            <div className="w-10 h-10 rounded-full shadow justify-center flex items-center bg-green-100 text-green-500">
-              <Check className="w-5 h-5" />
+            <div
+              className={cn(
+                "w-10 h-10 rounded-full shadow justify-center flex items-center",
+                isSuccessUpload
+                  ? "bg-green-100 text-green-500"
+                  : "bg-gray-100 text-gray-500"
+              )}
+            >
+              {isSuccessUpload ? (
+                <Check className="w-5 h-5" />
+              ) : isErrorUpload ? (
+                <AlertCircle className="w-5 h-5" />
+              ) : isPendingUpload ? (
+                <Loader className="size-5 animate-spin" />
+              ) : (
+                <FileText className="w-5 h-5" />
+              )}
             </div>
           ) : (
             <div className="w-10 h-10 rounded-full shadow justify-center flex items-center bg-gray-100">
@@ -152,10 +210,22 @@ export const Client = () => {
             <p
               className={cn(
                 "text-xs",
-                selectedFile ? "text-green-500" : "text-gray-400"
+                selectedFile && isSuccessUpload
+                  ? "text-green-500"
+                  : isErrorUpload
+                  ? "text-red-400"
+                  : "text-gray-400"
               )}
             >
-              {selectedFile ? "completed" : "current"}
+              {selectedFile
+                ? isSuccessUpload
+                  ? "completed"
+                  : isErrorUpload
+                  ? "failed"
+                  : isPendingUpload
+                  ? "pending"
+                  : "click next for upload"
+                : "current"}
             </p>
           </div>
         </div>
@@ -165,8 +235,17 @@ export const Client = () => {
           </div>
           <div className="flex flex-col">
             <h5 className="font-medium capitalize">pick header</h5>
-            <p className="text-xs text-gray-400">
-              {direction === 1 ? "current" : "not complete"}
+            <p
+              className={cn(
+                "text-xs",
+                isErrorMerge ? "text-red-400" : "text-gray-400"
+              )}
+            >
+              {direction === 1
+                ? "current"
+                : isErrorMerge
+                ? "failed"
+                : "not complete"}
             </p>
           </div>
         </div>
@@ -254,7 +333,7 @@ export const Client = () => {
             animate="center"
             exit={variants.enter(direction)}
             transition={{ duration: 0.3 }}
-            className="absolute w-full"
+            className="w-full"
           >
             {direction === 0 && (
               <div className="p-4 bg-white rounded shadow">
@@ -316,164 +395,196 @@ export const Client = () => {
             {direction === 1 && (
               <div className="p-4 bg-white rounded shadow flex flex-col gap-6">
                 <h2 className="text-xl font-bold">Pick Header</h2>
-                <div className="w-full flex flex-col border rounded border-gray-500 p-3">
-                  <div className="flex items-center text-sm font-semibold border-b border-gray-500 pb-3">
-                    <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    <div className="flex w-full items-center justify-between">
-                      <p>Uploaded File</p>
-                      <Badge className="bg-gray-200 hover:bg-gray-200 border border-black rounded-full text-black">
-                        {results?.code_document}
-                      </Badge>
-                    </div>
+                {isPendingUpload ||
+                isPendingMerge ||
+                isSuccessMerge ||
+                isErrorUpload ||
+                isErrorMerge ? (
+                  <div className="w-full flex flex-col border rounded border-gray-500 p-3 h-[300px] items-center justify-center">
+                    {isErrorMerge || isErrorUpload ? (
+                      <AlertTriangle className="size-6" />
+                    ) : (
+                      <Loader className="size-6 animate-spin" />
+                    )}
+                    <p className="text-sm mt-1 ml-2">
+                      {isPendingUpload
+                        ? "uploading..."
+                        : isPendingMerge
+                        ? "submiting..."
+                        : isErrorUpload
+                        ? `Error ${
+                            (errorUpload as AxiosError).status
+                          }: Failed to upload`
+                        : isErrorMerge
+                        ? `Error ${
+                            (errorMerge as AxiosError).status
+                          }: Failed to merge`
+                        : "redirecting..."}
+                    </p>
                   </div>
-                  <div className="flex gap-3 border-b py-5 border-gray-500">
-                    <div className="flex flex-col pl-6 w-full overflow-hidden gap-1">
-                      <p className="text-xs font-medium">File Name</p>
-                      <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                        {results?.file_name}
-                      </p>
+                ) : (
+                  <div className="w-full flex flex-col border rounded border-gray-500 p-3">
+                    <div className="flex items-center text-sm font-semibold border-b border-gray-500 pb-3">
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      <div className="flex w-full items-center justify-between">
+                        <p>Uploaded File</p>
+                        <Badge className="bg-gray-200 hover:bg-gray-200 border border-black rounded-full text-black">
+                          {results?.code_document}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="w-1/3 flex-none pl-6 flex gap-2 ">
-                      <div className="flex flex-col w-2/3 overflow-hidden gap-1">
-                        <p className="text-xs font-medium">Total Columns</p>
+                    <div className="flex gap-3 border-b py-5 border-gray-500">
+                      <div className="flex flex-col pl-6 w-full overflow-hidden gap-1">
+                        <p className="text-xs font-medium">File Name</p>
                         <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                          {results?.fileDetails.total_column_count}
+                          {results?.file_name}
                         </p>
                       </div>
-                      <div className="flex flex-col w-1/3 overflow-hidden gap-1">
-                        <p className="text-xs font-medium">Total Row</p>
-                        <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                          {results?.fileDetails.total_row_count}
-                        </p>
+                      <div className="w-1/3 flex-none pl-6 flex gap-2 ">
+                        <div className="flex flex-col w-2/3 overflow-hidden gap-1">
+                          <p className="text-xs font-medium">Total Columns</p>
+                          <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                            {results?.fileDetails.total_column_count}
+                          </p>
+                        </div>
+                        <div className="flex flex-col w-1/3 overflow-hidden gap-1">
+                          <p className="text-xs font-medium">Total Row</p>
+                          <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                            {results?.fileDetails.total_row_count}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-full flex">
+                      <div className="w-full flex justify-center mt-2 flex-col items-start">
+                        <div className="text-sm py-3 font-semibold flex items-center">
+                          <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
+                            <Barcode className="w-4 h-4" />
+                          </div>
+                          Barcode
+                        </div>
+                        <RadioGroup
+                          value={selected.barcode}
+                          onValueChange={(e) =>
+                            setSelected((prev) => ({ ...prev, barcode: e }))
+                          }
+                          className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
+                        >
+                          {headers.map((item) => (
+                            <Label
+                              key={item + "barcode"}
+                              htmlFor={item + "barcode"}
+                              className={cn(
+                                "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
+                                selected.barcode === item &&
+                                  "bg-sky-100 hover:bg-sky-200"
+                              )}
+                            >
+                              <RadioGroupItem
+                                value={item}
+                                id={item + "barcode"}
+                              />
+                              <p>{item}</p>
+                            </Label>
+                          ))}
+                        </RadioGroup>
+                      </div>
+                      <div className="w-full flex justify-center mt-2 flex-col items-start border-l ml-3 pl-3 border-gray-500">
+                        <div className="text-sm py-3 font-semibold flex items-center">
+                          <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
+                            <FolderEdit className="w-4 h-4" />
+                          </div>
+                          Product Name
+                        </div>
+                        <RadioGroup
+                          value={selected.name}
+                          onValueChange={(e) =>
+                            setSelected((prev) => ({ ...prev, name: e }))
+                          }
+                          className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
+                        >
+                          {headers.map((item) => (
+                            <Label
+                              key={item + "name"}
+                              htmlFor={item + "name"}
+                              className={cn(
+                                "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
+                                selected.name === item &&
+                                  "bg-sky-100 hover:bg-sky-200"
+                              )}
+                            >
+                              <RadioGroupItem value={item} id={item + "name"} />
+                              <p>{item}</p>
+                            </Label>
+                          ))}
+                        </RadioGroup>
+                      </div>
+                      <div className="w-full flex justify-center mt-2 flex-col items-start border-l ml-3 pl-3 border-gray-500">
+                        <div className="text-sm py-3 font-semibold flex items-center">
+                          <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
+                            <Disc className="w-4 h-4" />
+                          </div>
+                          Qty
+                        </div>
+                        <RadioGroup
+                          value={selected.qty}
+                          onValueChange={(e) =>
+                            setSelected((prev) => ({ ...prev, qty: e }))
+                          }
+                          className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
+                        >
+                          {headers.map((item) => (
+                            <Label
+                              key={item + "qty"}
+                              htmlFor={item + "qty"}
+                              className={cn(
+                                "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
+                                selected.qty === item &&
+                                  "bg-sky-100 hover:bg-sky-200"
+                              )}
+                            >
+                              <RadioGroupItem value={item} id={item + "qty"} />
+                              <p>{item}</p>
+                            </Label>
+                          ))}
+                        </RadioGroup>
+                      </div>
+                      <div className="w-full flex justify-center mt-2 flex-col items-start border-l ml-3 pl-3 border-gray-500">
+                        <div className="text-sm py-3 font-semibold flex items-center">
+                          <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
+                            <Gem className="w-4 h-4" />
+                          </div>
+                          Price
+                        </div>
+                        <RadioGroup
+                          value={selected.price}
+                          onValueChange={(e) =>
+                            setSelected((prev) => ({ ...prev, price: e }))
+                          }
+                          className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
+                        >
+                          {headers.map((item) => (
+                            <Label
+                              key={item + "price"}
+                              htmlFor={item + "price"}
+                              className={cn(
+                                "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
+                                selected.price === item &&
+                                  "bg-sky-100 hover:bg-sky-200"
+                              )}
+                            >
+                              <RadioGroupItem
+                                value={item}
+                                id={item + "price"}
+                              />
+                              <p>{item}</p>
+                            </Label>
+                          ))}
+                        </RadioGroup>
                       </div>
                     </div>
                   </div>
-                  <div className="w-full flex">
-                    <div className="w-full flex justify-center mt-2 flex-col items-start">
-                      <div className="text-sm py-3 font-semibold flex items-center">
-                        <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
-                          <Barcode className="w-4 h-4" />
-                        </div>
-                        Barcode
-                      </div>
-                      <RadioGroup
-                        value={selected.barcode}
-                        onValueChange={(e) =>
-                          setSelected((prev) => ({ ...prev, barcode: e }))
-                        }
-                        className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
-                      >
-                        {headers.map((item) => (
-                          <Label
-                            key={item + "barcode"}
-                            htmlFor={item + "barcode"}
-                            className={cn(
-                              "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
-                              selected.barcode === item &&
-                                "bg-sky-100 hover:bg-sky-200"
-                            )}
-                          >
-                            <RadioGroupItem
-                              value={item}
-                              id={item + "barcode"}
-                            />
-                            <p>{item}</p>
-                          </Label>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    <div className="w-full flex justify-center mt-2 flex-col items-start border-l ml-3 pl-3 border-gray-500">
-                      <div className="text-sm py-3 font-semibold flex items-center">
-                        <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
-                          <FolderEdit className="w-4 h-4" />
-                        </div>
-                        Product Name
-                      </div>
-                      <RadioGroup
-                        value={selected.name}
-                        onValueChange={(e) =>
-                          setSelected((prev) => ({ ...prev, name: e }))
-                        }
-                        className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
-                      >
-                        {headers.map((item) => (
-                          <Label
-                            key={item + "name"}
-                            htmlFor={item + "name"}
-                            className={cn(
-                              "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
-                              selected.name === item &&
-                                "bg-sky-100 hover:bg-sky-200"
-                            )}
-                          >
-                            <RadioGroupItem value={item} id={item + "name"} />
-                            <p>{item}</p>
-                          </Label>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    <div className="w-full flex justify-center mt-2 flex-col items-start border-l ml-3 pl-3 border-gray-500">
-                      <div className="text-sm py-3 font-semibold flex items-center">
-                        <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
-                          <Disc className="w-4 h-4" />
-                        </div>
-                        Qty
-                      </div>
-                      <RadioGroup
-                        value={selected.qty}
-                        onValueChange={(e) =>
-                          setSelected((prev) => ({ ...prev, qty: e }))
-                        }
-                        className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
-                      >
-                        {headers.map((item) => (
-                          <Label
-                            key={item + "qty"}
-                            htmlFor={item + "qty"}
-                            className={cn(
-                              "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
-                              selected.qty === item &&
-                                "bg-sky-100 hover:bg-sky-200"
-                            )}
-                          >
-                            <RadioGroupItem value={item} id={item + "qty"} />
-                            <p>{item}</p>
-                          </Label>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    <div className="w-full flex justify-center mt-2 flex-col items-start border-l ml-3 pl-3 border-gray-500">
-                      <div className="text-sm py-3 font-semibold flex items-center">
-                        <div className="w-8 h-8 rounded-full border flex justify-center items-center mr-2 border-black">
-                          <Gem className="w-4 h-4" />
-                        </div>
-                        Price
-                      </div>
-                      <RadioGroup
-                        value={selected.price}
-                        onValueChange={(e) =>
-                          setSelected((prev) => ({ ...prev, price: e }))
-                        }
-                        className="flex w-full flex-col p-1 border border-gray-500 rounded-md border-dashed"
-                      >
-                        {headers.map((item) => (
-                          <Label
-                            key={item + "price"}
-                            htmlFor={item + "price"}
-                            className={cn(
-                              "flex w-full px-5 py-2 gap-2 items-center rounded hover:bg-sky-100",
-                              selected.price === item &&
-                                "bg-sky-100 hover:bg-sky-200"
-                            )}
-                          >
-                            <RadioGroupItem value={item} id={item + "price"} />
-                            <p>{item}</p>
-                          </Label>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </motion.div>

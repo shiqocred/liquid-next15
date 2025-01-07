@@ -16,6 +16,7 @@ import {
   Copy,
   FileSpreadsheet,
   RefreshCw,
+  ScanLine,
   Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -46,6 +47,12 @@ import { Label } from "@/components/ui/label";
 import { useCreateEditBarcodeMI } from "../_api/use-create-edit-barcode-mi";
 import { useDeleteBarcodeMI } from "../_api/use-delete-barcode-mi";
 import Loading from "../../../../../../../../loading";
+import { useGetScanManifestInbound } from "../_api/use-get-scan-manifest-inbound";
+import dynamic from "next/dynamic";
+
+const DialogDetail = dynamic(() => import("../_components/dialog-detail"), {
+  ssr: false,
+});
 
 export const Client = () => {
   const { miId, miMonth, miYear } = useParams();
@@ -53,6 +60,11 @@ export const Client = () => {
 
   const [input, setInput] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
+
+  const [openDetail, setOpenDetail] = useQueryState(
+    "dialog",
+    parseAsBoolean.withDefault(false)
+  );
 
   const [cEBarcode, setCEBarcode] = useQueryState(
     "create-edit-barcode",
@@ -101,6 +113,16 @@ export const Client = () => {
     q: searchValue,
   });
 
+  const {
+    data: dataScan,
+    error: errorScan,
+    refetch: refetchScan,
+    isError: isErrorScan,
+    isRefetching: isRefetchingScan,
+  } = useGetScanManifestInbound({
+    code: codeDocument,
+  });
+
   const loading = isPending || isRefetching || isLoading;
 
   const dataMetaDetailMI = useMemo(() => {
@@ -110,6 +132,14 @@ export const Client = () => {
   const dataDetailMI = useMemo(() => {
     return data?.data.data.resource.data.data;
   }, [data]);
+
+  const dataScanMI: any = useMemo(() => {
+    return dataScan?.data.data.resource.summary;
+  }, [dataScan]);
+
+  const dataUserScanMI: any[] = useMemo(() => {
+    return dataScan?.data.data.resource.data;
+  }, [dataScan]);
 
   useEffect(() => {
     setPaginate({
@@ -129,6 +159,15 @@ export const Client = () => {
       method: "GET",
     });
   }, [isError, error]);
+  useEffect(() => {
+    alertError({
+      isError: isErrorScan,
+      error: errorScan as AxiosError,
+      data: "Data Scan",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorScan, errorScan]);
 
   useEffect(() => {
     if (isSuccess && data && cEBarcode) {
@@ -234,7 +273,7 @@ export const Client = () => {
       accessorKey: "old_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="break-all max-w-[500px]">
+        <div className="hyphens-auto max-w-[500px]">
           {row.original.old_name_product}
         </div>
       ),
@@ -279,6 +318,32 @@ export const Client = () => {
       ),
     },
   ];
+  const columnUserScan: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(1 + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "username",
+      header: "User Name",
+    },
+    {
+      accessorKey: "total_scans",
+      header: () => <div className="text-center">Total Scan</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.total_scans}</div>
+      ),
+    },
+    {
+      accessorKey: "scan_date",
+      header: "Date",
+    },
+  ];
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -305,6 +370,19 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
       <DeleteBarcodeDialog />
+      <DialogDetail
+        open={openDetail} // open modal
+        onCloseModal={() => {
+          if (openDetail) {
+            setOpenDetail(false);
+          }
+        }} // handle close modal
+        data={dataScanMI}
+        refetch={refetchScan}
+        isRefetching={isRefetchingScan}
+        columns={columnUserScan}
+        dataTable={dataUserScanMI ?? []}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -351,7 +429,7 @@ export const Client = () => {
           <div className="w-2/3">
             <p>Data Name</p>
             <TooltipProviderPage value={dataMetaDetailMI?.document_name}>
-              <h3 className="text-black font-semibold text-xl line-clamp-1">
+              <h3 className="text-black font-semibold text-xl">
                 {dataMetaDetailMI?.document_name}
               </h3>
             </TooltipProviderPage>
@@ -360,7 +438,7 @@ export const Client = () => {
         <div className="flex w-full">
           <div className="flex flex-col items-end w-1/5 border-r border-gray-500 pr-5 mr-5">
             <p className="text-sm font-medium">Status</p>
-            <h3 className="text-gray-700 font-light capitalize">
+            <h3 className="text-gray-700 font-light capitalize whitespace-nowrap">
               {dataMetaDetailMI?.status}
             </h3>
           </div>
@@ -376,12 +454,19 @@ export const Client = () => {
               {dataMetaDetailMI?.total_columns.toLocaleString()}
             </h3>
           </div>
-          <div className="flex flex-col items-end w-1/5">
+          <div className="flex flex-col items-end w-auto">
             <Dialog open={cEBarcode} onOpenChange={setCEBarcode}>
               <DialogTrigger asChild>
-                <button className="text-sm font-medium flex items-center hover:bg-sky-100 rounded-md px-3 underline text-sky-700 focus-visible:outline-none focus-visible:ring-0">
-                  Barcode
-                  <ArrowLeftRight className="w-3 h-3 ml-1" />
+                <button className="text-sm gap-3 font-medium flex items-center hover:bg-sky-100 rounded pr-2 pl-3  text-sky-700 focus-visible:outline-none focus-visible:ring-0 group border border-sky-400">
+                  <div className="flex flex-col">
+                    <p className="underline">Barcode</p>
+                    <h3 className="text-gray-700 font-light text-end">
+                      {dataMetaDetailMI?.custom_barcode ?? "-"}
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-center size-6 bg-sky-100 group-hover:bg-sky-200 hover:bg-sky-200 rounded-full border border-sky-700">
+                    <ArrowLeftRight className="w-3 h-3" />
+                  </div>
                 </button>
               </DialogTrigger>
               <DialogContent>
@@ -452,9 +537,6 @@ export const Client = () => {
                 </form>
               </DialogContent>
             </Dialog>
-            <h3 className="text-gray-700 font-light pr-3">
-              {dataMetaDetailMI?.custom_barcode ?? "-"}
-            </h3>
           </div>
         </div>
       </div>
@@ -480,7 +562,19 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
-              <div className="flex items-center justify-end w-full">
+              <div className="flex items-center justify-end w-full gap-3">
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setOpenDetail(true);
+                  }}
+                  className="hover:bg-sky-100 border-sky-400 hover:border-sky-500 text-black"
+                  variant={"outline"}
+                >
+                  <ScanLine className="w-4 h-4 mr-1" />
+                  Detail Scan
+                </Button>
                 <Button
                   asChild
                   type="button"

@@ -3,22 +3,21 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: string;
-  body: any;
 };
 
 type Error = AxiosError;
 
-export const useUpdateTransportationPalet = () => {
-  const accessToken = useCookies().get("accessToken");
+export const useRemovePDF = () => {
+  const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/vehicle-types/${id}`, body, {
+    mutationFn: async ({ id }) => {
+      const res = await axios.delete(`${baseUrl}/palet_pdf/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -26,17 +25,17 @@ export const useUpdateTransportationPalet = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Transportation successfully updated");
+      toast.success("PDF File successfully removed");
       queryClient.invalidateQueries({
-        queryKey: ["list-transportation-palet"],
+        queryKey: ["list-product-detail-palet"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Transportation failed to update`);
-        console.log("ERROR_UPDATE_TRANSPORTATION:", err);
+        toast.error(`ERROR ${err?.status}: PDF File failed to remove`);
+        console.log("ERROR_REMOVE_PDF:", err);
       }
     },
   });

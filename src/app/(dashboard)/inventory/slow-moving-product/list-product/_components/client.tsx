@@ -189,7 +189,7 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[400px] break-all">
+        <div className="max-w-[400px] hyphens-auto">
           {row.original.new_name_product}
         </div>
       ),
@@ -206,6 +206,15 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(row.original.new_price_product)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "days_since_created",
+      header: () => <div className="text-center">Days</div>,
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          {row.original.days_since_created}
         </div>
       ),
     },

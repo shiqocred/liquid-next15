@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { Client } from "./_components/client";
 import { protect } from "@/lib/protect";
 import { redirect } from "next/navigation";
+import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Bundle",
@@ -15,6 +16,7 @@ const BundlePage = async () => {
   return (
     <div className="w-full h-full">
       <Client />
+      <Footer />
     </div>
   );
 };
