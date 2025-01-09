@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
@@ -386,11 +387,34 @@ const DialogExportProduct = ({
                         -{formatRupiah(data?.buyer?.voucher) ?? "Rp 0"}
                       </p>
                     </div>
+                    <div className="flex border-t border-black pt-1 mt-1 pl-10 border-dashed">
+                      <p className="px-3">DPP</p>
+                      <p className="w-12 flex-none" />
+                      <p className="w-32 flex-none pr-3 text-end tabular-nums">
+                        {formatRupiah(data?.buyer?.grand_total) ?? "Rp 0"}
+                      </p>
+                    </div>
+                    <div className="flex border-b border-black pb-1 mb-1 pl-10 border-dashed">
+                      <p className="px-3">PPN</p>
+                      <p className="w-12 flex-none text-center">
+                        {Math.round(data?.buyer?.tax)}%
+                      </p>
+                      <p
+                        className={cn(
+                          "w-32 flex-none pr-3 text-end tabular-nums",
+                          !data?.buyer?.is_tax && "line-through"
+                        )}
+                      >
+                        {formatRupiah(
+                          (data?.buyer?.grand_total / 100) * data?.buyer?.tax
+                        ) ?? "Rp 0"}
+                      </p>
+                    </div>
                     <div className="flex">
                       <p className="px-3">Total</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">
-                        {formatRupiah(data?.buyer?.grand_total) ?? "Rp 0"}
+                        {formatRupiah(data?.buyer?.price_after_tax) ?? "Rp 0"}
                       </p>
                     </div>
                   </div>
