@@ -270,7 +270,6 @@ export const Client = () => {
   } = useGetListPPN();
   const {
     data: dataDetailPPN,
-    isLoading: isLoadingDetailPPN,
     error: errorDetailPPN,
     isError: isErrorDetailPPN,
   } = useGetDetailPPN({ id: inputPPN.id });
@@ -608,6 +607,16 @@ export const Client = () => {
       method: "GET",
     });
   }, [isErrorPPN, errorPPN]);
+  // handle error detail ppn
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetailPPN,
+      error: errorDetailPPN as AxiosError,
+      data: "Detail PPN",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetailPPN, errorDetailPPN]);
 
   const columnSales: ColumnDef<any>[] = [
     {
@@ -852,6 +861,7 @@ export const Client = () => {
                 isRefetchingPPN ||
                 isPendingUpdatePPN ||
                 isPendingCreatePPN ||
+                isPendingDeletePPN ||
                 row.original.is_tax_default === 1
               }
               className="disabled:opacity-100 disabled:cursor-default"
@@ -1128,7 +1138,11 @@ export const Client = () => {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      direction === 1 ? handleCreatePPN() : handleUpdatePPN();
+                      if (direction === 1) {
+                        handleCreatePPN();
+                      } else {
+                        handleUpdatePPN();
+                      }
                     }}
                     className="w-full p-3 border border-sky-400/80 rounded-md flex flex-col gap-3"
                   >
