@@ -13,14 +13,11 @@ import {
 } from "./ui/command";
 import { ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { Button } from "./ui/button";
-import { useCookies } from "next-client-cookies";
 
 const Pagination = ({
   setPagination,
   pagination,
-  cookie,
 }: {
-  cookie?: string;
   pagination: {
     current: number;
     last: number;
@@ -31,7 +28,6 @@ const Pagination = ({
   setPagination: any;
 }) => {
   // cookies
-  const cookies = useCookies();
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="flex items-center justify-between">
@@ -67,9 +63,6 @@ const Pagination = ({
                       onSelect={() => {
                         setPagination(i + 1);
                         setIsOpen(false);
-                        if (cookie) {
-                          cookies.set(cookie, "change");
-                        }
                       }}
                     >
                       {(i + 1).toLocaleString()}
@@ -85,9 +78,6 @@ const Pagination = ({
             className="p-0 h-9 w-9 bg-sky-400/80 hover:bg-sky-400 text-black"
             onClick={() => {
               setPagination((prev: number) => prev - 1);
-              if (cookie) {
-                cookies.set(cookie, "add");
-              }
             }}
             disabled={pagination.current === 1}
           >
@@ -97,9 +87,6 @@ const Pagination = ({
             className="p-0 h-9 w-9 bg-sky-400/80 hover:bg-sky-400 text-black"
             onClick={() => {
               setPagination((prev: number) => prev + 1);
-              if (cookie) {
-                cookies.set(cookie, "add");
-              }
             }}
             disabled={pagination.current === pagination.last}
           >

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  AlertCircle,
   Loader2,
   PlusCircle,
   Recycle,
@@ -32,8 +31,36 @@ import { useGetListLPR } from "../_api/use-get-list-lpr";
 import { useQCDLPR } from "../_api/use-qcd-lpr";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { useGetDetailLPR } from "../_api/use-get-detail-lpr";
+import { useGetListCategories } from "../_api/use-get-list-categories";
+import { useToDisplay } from "../_api/use-to-display";
+import { useQueryClient } from "@tanstack/react-query";
+
+const DialogDetail = dynamic(() => import("../_components/dialog-detail"), {
+  ssr: false,
+});
 
 export const Client = () => {
+  const queryClient = useQueryClient();
+  const [openDisplay, setOpenDisplay] = useState(false);
+  const [documentDetail, setDocumentDetail] = useState({
+    documentCode: "",
+    barcode: "",
+  });
+
+  const [input, setInput] = useState({
+    barcode: "",
+    oldBarcode: "",
+    name: "",
+    oldName: "",
+    price: "0",
+    oldPrice: "0",
+    qty: "1",
+    oldQty: "1",
+    category: "",
+  });
+
   // data search, page
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
@@ -54,6 +81,8 @@ export const Client = () => {
 
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } = useQCDLPR();
+  const { mutate: mutateToDisplay, isPending: isPendingToDisplay } =
+    useToDisplay();
 
   // get data utama
   const {
@@ -67,10 +96,61 @@ export const Client = () => {
     isSuccess,
   } = useGetListLPR({ p: page, q: searchValue });
 
+  // get data detail
+  const {
+    data: dataDetail,
+    isLoading: isLoadingDetail,
+    error: errorDetail,
+    isError: isErrorDetail,
+    isSuccess: isSuccessDetail,
+  } = useGetDetailLPR({
+    document: documentDetail.documentCode,
+    barcode: documentDetail.barcode,
+  });
+
+  // get data category
+  const {
+    data: dataCategory,
+    error: errorCategory,
+    isError: isErrorCategory,
+  } = useGetListCategories();
+
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
+
+  // memo data detail
+  const dataResDetail: any = useMemo(() => {
+    return dataDetail?.data.data.resource.product;
+  }, [dataDetail]);
+
+  // memo data detail
+  const dataResColorDetail: any = useMemo(() => {
+    return dataDetail?.data.data.resource.color_tags?.[0];
+  }, [dataDetail]);
+
+  // memo data category
+  const dataCategories: any[] = useMemo(() => {
+    return dataCategory?.data.data.resource ?? [];
+  }, [dataCategory]);
+
+  useEffect(() => {
+    if (isSuccessDetail && dataDetail) {
+      const dataResponse = dataDetail?.data.data.resource.product;
+      setInput({
+        barcode: dataResponse?.new_barcode_product ?? "",
+        name: dataResponse?.new_name_product ?? "",
+        price: dataResponse?.new_price_product ?? "0",
+        qty: dataResponse?.new_quantity_product ?? "1",
+        oldBarcode: dataResponse?.old_barcode_product ?? "",
+        oldName: dataResponse?.new_name_product ?? "",
+        oldPrice: dataResponse?.old_price_product ?? "0",
+        oldQty: dataResponse?.new_quantity_product ?? "1",
+        category: dataResponse?.new_category_product ?? "",
+      });
+    }
+  }, [dataDetail]);
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -95,6 +175,26 @@ export const Client = () => {
     });
   }, [isError, error]);
 
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetail, errorDetail]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorCategory,
+      error: errorCategory as AxiosError,
+      data: "Category Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorCategory, errorCategory]);
+
   // handle delete
   const handleDelete = async (id: any) => {
     const ok = await confirmDelete();
@@ -102,6 +202,33 @@ export const Client = () => {
     if (!ok) return;
 
     mutateDelete({ id });
+  };
+
+  const handleToDisplay = () => {
+    const body = {
+      old_barcode_product: input.oldBarcode,
+      old_price_product: input.oldPrice,
+      new_status_product: dataResDetail?.new_status_product,
+      new_barcode_product: input.barcode,
+      new_name_product: input.name,
+      new_price_product: input.price,
+      new_quantity_product: input.qty,
+      new_category_product: input.category ?? null,
+    };
+    mutateToDisplay(
+      { id: dataResDetail?.id, body },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({
+            queryKey: [
+              "detail-lpr",
+              data?.data.resource.product?.code_document,
+              data?.data.resource.product?.old_barcode_product,
+            ],
+          });
+        },
+      }
+    );
   };
 
   // fn find not null quality
@@ -118,6 +245,16 @@ export const Client = () => {
     };
   };
 
+  // default numeric
+  useEffect(() => {
+    if (isNaN(parseFloat(input.price))) {
+      setInput((prev) => ({ ...prev, price: "0" }));
+    }
+    if (isNaN(parseFloat(input.qty))) {
+      setInput((prev) => ({ ...prev, qty: "0" }));
+    }
+  }, [input]);
+
   // column data
   const columnWarehousePalet: ColumnDef<any>[] = [
     {
@@ -131,9 +268,9 @@ export const Client = () => {
     },
     {
       accessorKey: "old_barcode_product||new_barcode_product",
-      header: "Name",
+      header: "Barcode",
       cell: ({ row }) =>
-        row.original.old_barcode_product ?? row.original.new_barcode_product,
+        row.original.new_barcode_product || row.original.old_barcode_product,
     },
     {
       accessorKey: "new_name_product",
@@ -169,8 +306,14 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
+              disabled={isPendingToDisplay || isPendingDelete}
               onClick={(e) => {
                 e.preventDefault();
+                setOpenDisplay(true);
+                setDocumentDetail({
+                  documentCode: row.original.code_document,
+                  barcode: row.original.old_barcode_product,
+                });
               }}
             >
               <ShoppingBag className="w-4 h-4" />
@@ -180,7 +323,7 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingDelete}
+              disabled={isPendingToDisplay || isPendingDelete}
               onClick={(e) => {
                 e.preventDefault();
                 handleDelete(row.original.id);
@@ -220,6 +363,33 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <DialogDetail
+        open={openDisplay}
+        handleClose={() => {
+          if (openDisplay) {
+            setOpenDisplay(false);
+            setInput({
+              barcode: "",
+              oldBarcode: "",
+              name: "",
+              oldName: "",
+              price: "0",
+              oldPrice: "0",
+              qty: "1",
+              oldQty: "1",
+              category: "",
+            });
+          }
+        }}
+        isLoading={isLoadingDetail}
+        data={dataResDetail}
+        dataColor={dataResColorDetail}
+        isSubmit={isPendingToDisplay}
+        input={input}
+        setInput={setInput}
+        categories={dataCategories}
+        handleSubmit={handleToDisplay}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -231,10 +401,6 @@ export const Client = () => {
           <BreadcrumbItem>List Product Repair</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="w-full px-5 py-2 rounded bg-red-300 flex items-center gap-2 text-sm">
-        <AlertCircle className="size-4" />
-        To Display belom
-      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Product Repair</h2>
         <div className="flex flex-col w-full gap-4">

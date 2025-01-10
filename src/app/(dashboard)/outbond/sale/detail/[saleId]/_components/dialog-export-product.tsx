@@ -309,7 +309,7 @@ const DialogExportProduct = ({
                       <div className="w-36 flex-none border-r border-black px-3 py-0.5">
                         Barcode
                       </div>
-                      <div className="w-[450px] flex-none border-r border-black px-3 py-0.5">
+                      <div className="w-full border-r border-black px-3 py-0.5">
                         Nama Barang
                       </div>
                       <div className="w-12 flex-none border-r border-black text-center py-0.5">
@@ -334,7 +334,7 @@ const DialogExportProduct = ({
                           <div className="w-36 flex-none border-r border-black px-3 py-0.5 uppercase">
                             {item.product_barcode_sale}
                           </div>
-                          <div className="w-[450px] border-r break-all border-black px-3 py-0.5 capitalize whitespace-pre-wrap flex-none">
+                          <div className="w-full border-r break-all border-black px-3 py-0.5 capitalize whitespace-pre-wrap">
                             {item.product_name_sale}
                           </div>
                           <div className="w-12 flex-none border-r border-black text-center  py-0.5">
@@ -386,11 +386,34 @@ const DialogExportProduct = ({
                         -{formatRupiah(data?.buyer?.voucher) ?? "Rp 0"}
                       </p>
                     </div>
+                    <div className="flex border-t border-black pt-1 mt-1 pl-10 border-dashed">
+                      <p className="px-3">DPP</p>
+                      <p className="w-12 flex-none" />
+                      <p className="w-32 flex-none pr-3 text-end tabular-nums">
+                        {formatRupiah(data?.buyer?.grand_total) ?? "Rp 0"}
+                      </p>
+                    </div>
+                    <div className="flex border-b border-black pb-1 mb-1 pl-10 border-dashed">
+                      <p className="px-3">PPN</p>
+                      <p className="w-12 flex-none text-center">
+                        {Math.round(data?.buyer?.tax)}%
+                      </p>
+                      <p
+                        className={cn(
+                          "w-32 flex-none pr-3 text-end tabular-nums",
+                          !data?.buyer?.is_tax && "line-through decoration-2"
+                        )}
+                      >
+                        {formatRupiah(
+                          (data?.buyer?.grand_total / 100) * data?.buyer?.tax
+                        ) ?? "Rp 0"}
+                      </p>
+                    </div>
                     <div className="flex">
                       <p className="px-3">Total</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">
-                        {formatRupiah(data?.buyer?.grand_total) ?? "Rp 0"}
+                        {formatRupiah(data?.buyer?.price_after_tax) ?? "Rp 0"}
                       </p>
                     </div>
                   </div>

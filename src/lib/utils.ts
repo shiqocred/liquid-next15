@@ -76,3 +76,42 @@ export const alertError = ({
     );
   }
 };
+
+export const promiseToast = <T>({
+  promise,
+  loading,
+  success,
+  error,
+}: {
+  promise: Promise<T>;
+  loading: string;
+  success: ((data: T) => string) | string;
+  error: ((err: AxiosError) => string) | string;
+}) => {
+  return toast.promise(promise, {
+    loading,
+    success: (data) =>
+      typeof success === "function" ? success(data) : success,
+    error: (err: AxiosError) => {
+      if (err.status === 403) {
+        return "Error 403: Restricted Access";
+      } else {
+        return `ERROR ${err?.status}: ${
+          typeof error === "function" ? error(err) : error
+        }`;
+      }
+    },
+  });
+};
+
+export const base64ToBlob = (base64: string, mimeType: string): Blob => {
+  const byteString = atob(base64.split(",")[1]); // Decode Base64
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([ab], { type: mimeType });
+};

@@ -5,6 +5,7 @@ import {
   ArrowLeftRight,
   CircleDollarSign,
   FileDown,
+  Landmark,
   Loader2,
   Package,
   PercentCircle,
@@ -727,13 +728,44 @@ export const Client = () => {
             </div>
           </div>
         </div>
+        <div className="flex w-full items-center justify-between bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+          <div className="flex items-center gap-4 w-full">
+            <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
+              <Landmark className="size-4" />
+            </div>
+            <h5 className="font-bold text-xl">Tax</h5>
+          </div>
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-none items-center border rounded border-gray-500 px-5 py-2">
+              <div className="h-full pr-4 mr-4 border-r border-black flex items-center whitespace-nowrap">
+                <p className="font-semibold">DPP</p>
+              </div>
+              <p className="font-semibold pr-5 pl-5">
+                {formatRupiah(dataRes?.grand_total)}
+              </p>
+            </div>
+            <div className="flex flex-none items-center border rounded border-gray-500 px-5 py-2">
+              <div className="h-full pr-4 mr-4 border-r border-black flex items-center whitespace-nowrap">
+                <p className="font-semibold">PPN {Math.round(dataRes?.tax)}%</p>
+              </div>
+              <p
+                className={cn(
+                  "font-semibold pr-5 pl-5",
+                  !dataRes?.is_tax && "line-through decoration-2"
+                )}
+              >
+                {formatRupiah((dataRes?.grand_total / 100) * dataRes?.tax)}
+              </p>
+            </div>
+          </div>
+        </div>
         <div className="flex items-center justify-between w-full bg-sky-400/80 rounded-md overflow-hidden shadow p-5">
           <div className="flex items-center gap-4 text-lg">
             <div className="h-full pr-4 border-r border-black flex items-center whitespace-nowrap">
               <p className="font-semibold">Grand Total</p>
             </div>
             <p className="font-semibold w-full text-center">
-              {formatRupiah(dataRes?.grand_total)}
+              {formatRupiah(dataRes?.price_after_tax)}
             </p>
           </div>
           <div className="flex items-center gap-4">

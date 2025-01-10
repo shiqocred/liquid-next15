@@ -11,9 +11,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
+  FileDown,
   LayoutGrid,
   LayoutList,
   Loader,
+  Loader2,
   RefreshCcw,
   Search,
   X,
@@ -38,6 +40,8 @@ import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
 import { useGetCountStaging } from "../_api/use-get-count-staging";
+import { useExportStorageReport } from "../_api/use-export-storage-report";
+import { Button } from "@/components/ui/button";
 
 interface ChartData {
   category_product: string;
@@ -125,6 +129,9 @@ export const Client = () => {
   const [layout, setLayout] = useQueryState("layout", {
     defaultValue: "list",
   });
+
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportStorageReport();
   const { data, refetch, isPending, isRefetching, isLoading, isError, error } =
     useGetStorageReport();
   const {
@@ -150,6 +157,18 @@ export const Client = () => {
   const clearSearch = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setDataSearch("");
+  };
+
+  const handleExport = async () => {
+    mutateExport("", {
+      onSuccess: (res) => {
+        const link = document.createElement("a");
+        link.href = res.data.data.resource;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
+    });
   };
 
   useEffect(() => {
@@ -421,6 +440,22 @@ export const Client = () => {
                 </button>
               </div>
             </div>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                handleExport();
+              }}
+              className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingExport}
+              variant={"outline"}
+            >
+              {isPendingExport ? (
+                <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+              ) : (
+                <FileDown className={"w-4 h-4 mr-1"} />
+              )}
+              Export Data
+            </Button>
           </div>
         </div>
         {layout === "grid" ? (
