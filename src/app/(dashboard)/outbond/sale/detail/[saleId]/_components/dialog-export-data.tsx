@@ -408,7 +408,7 @@ const DialogExportData = ({
                       </p>
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">
                         {formatRupiah(
-                          Math.ceil(data?.buyer?.total_display_document_sale)
+                          data?.buyer?.total_display_document_sale
                         ) ?? "Rp 0"}
                       </p>
                     </div>
@@ -433,12 +433,34 @@ const DialogExportData = ({
                         -{formatRupiah(data?.buyer?.voucher) ?? "Rp 0"}
                       </p>
                     </div>
+                    <div className="flex border-t border-black pt-1 mt-1 pl-10 border-dashed">
+                      <p className="px-3">DPP</p>
+                      <p className="w-12 flex-none" />
+                      <p className="w-32 flex-none pr-3 text-end tabular-nums">
+                        {formatRupiah(data?.buyer?.grand_total) ?? "Rp 0"}
+                      </p>
+                    </div>
+                    <div className="flex border-b border-black pb-1 mb-1 pl-10 border-dashed">
+                      <p className="px-3">PPN</p>
+                      <p className="w-12 flex-none text-center">
+                        {Math.round(data?.buyer?.tax)}%
+                      </p>
+                      <p
+                        className={cn(
+                          "w-32 flex-none pr-3 text-end tabular-nums",
+                          !data?.buyer?.is_tax && "line-through decoration-2"
+                        )}
+                      >
+                        {formatRupiah(
+                          (data?.buyer?.grand_total / 100) * data?.buyer?.tax
+                        ) ?? "Rp 0"}
+                      </p>
+                    </div>
                     <div className="flex">
                       <p className="px-3">Total</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">
-                        {formatRupiah(Math.ceil(data?.buyer?.grand_total)) ??
-                          "Rp 0"}
+                        {formatRupiah(data?.buyer?.price_after_tax) ?? "Rp 0"}
                       </p>
                     </div>
                   </div>
@@ -452,12 +474,12 @@ const DialogExportData = ({
                   </p>
                   <div className="flex flex-col items-center my-3">
                     <p className="text-lg font-bold">
-                      {formatRupiah(Math.ceil(data?.buyer?.grand_total)) ??
+                      {formatRupiah(Math.ceil(data?.buyer?.price_after_tax)) ??
                         "Rp 0"}
                     </p>
                     <p className="font-bold uppercase">
                       {`(${numberToText(
-                        Math.ceil(data?.buyer?.grand_total) ?? 0
+                        Math.ceil(data?.buyer?.price_after_tax) ?? 0
                       )})`}
                     </p>
                   </div>

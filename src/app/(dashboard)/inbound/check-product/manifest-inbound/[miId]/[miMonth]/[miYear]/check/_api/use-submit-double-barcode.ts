@@ -1,9 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   [key: string]: string;
@@ -12,7 +12,8 @@ type RequestType = {
 type Error = AxiosError;
 
 export const useSubmitDoubleBarcode = () => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async (value) => {
@@ -23,8 +24,15 @@ export const useSubmitDoubleBarcode = () => {
       });
       return res;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Product Successfully Submited");
+      queryClient.invalidateQueries({
+        queryKey: [
+          "check-barcode-manifest-inbound",
+          data?.data?.data?.resource?.code_document,
+          data?.data?.data?.resource?.old_barcode_product,
+        ],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {

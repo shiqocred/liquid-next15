@@ -3,7 +3,7 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: any;
@@ -11,7 +11,7 @@ type RequestType = {
 type Error = AxiosError;
 
 export const useToQCD = () => {
-  const accessToken = useCookies().get("accessToken");
+  const accessToken = getCookie("accessToken");
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {

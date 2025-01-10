@@ -57,7 +57,7 @@ const DialogDetail = ({
       >
         <DialogHeader>
           <DialogTitle className="justify-between flex items-center">
-            Detail B2B
+            Detail Notification
             <TooltipProviderPage value="close" side="left">
               <button
                 onClick={() => onCloseModal()}
