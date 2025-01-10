@@ -414,7 +414,7 @@ type RichInputProps = {
 
 export const RichInput = forwardRef<Editor, RichInputProps>(
   (
-    { content, isEdit = false, onChange, className, editorClassName, ...props },
+    { content, isEdit = true, onChange, className, editorClassName, ...props },
     _ref // eslint-disable-line @typescript-eslint/no-unused-vars
   ) => {
     const editor = useEditor({
