@@ -133,7 +133,7 @@ export const columnsStorage: ColumnDef<any>[] = [
     accessorKey: "buyer_name_document_sale",
     header: "Buyer Name",
     cell: ({ row }) => (
-      <div className="hyphens-auto max-w-[500px]">
+      <div className="break-all max-w-[500px]">
         {row.original.buyer_name_document_sale}
       </div>
     ),

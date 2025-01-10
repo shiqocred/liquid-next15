@@ -636,7 +636,7 @@ export const Client = () => {
       accessorKey: "product_name_sale",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] hyphens-auto">
+        <div className="max-w-[500px] break-all">
           {row.original.product_name_sale}
         </div>
       ),
@@ -793,7 +793,7 @@ export const Client = () => {
       accessorKey: "name",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] hyphens-auto">{row.original.name}</div>
+        <div className="max-w-[500px] break-all">{row.original.name}</div>
       ),
     },
     {
@@ -1397,6 +1397,12 @@ export const Client = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {!input.ppnActive && (
+              <div className="px-5 py-1 text-sm border border-red-400 rounded bg-red-50 text-red-500 flex items-center gap-2">
+                <AlertCircle className="size-4" />
+                <p>Set Percentence PPN</p>
+              </div>
+            )}
             <Popover onOpenChange={setIsOpenSelectPPN} open={isOpenSelectPPN}>
               <PopoverTrigger asChild>
                 <Button
@@ -1464,7 +1470,9 @@ export const Client = () => {
               e.preventDefault();
               handleSubmit();
             }}
-            disabled={dataList?.length === 0 || isPendingSubmit}
+            disabled={
+              dataList?.length === 0 || isPendingSubmit || !input.ppnActive
+            }
             className="bg-white/80 hover:bg-white text-black"
           >
             <Send className="size-4 mr-1" />

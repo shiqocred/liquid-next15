@@ -49,7 +49,7 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
                 />
               )}
               <div className="border w-[80] py-1 px-2 text-center border-black">
-                <p className="font-bold text-[10px] leading-3 hyphens-auto">
+                <p className="font-bold text-[10px] leading-3 break-all">
                   {category}
                 </p>
               </div>

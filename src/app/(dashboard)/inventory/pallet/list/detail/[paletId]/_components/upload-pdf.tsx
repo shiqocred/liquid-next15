@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { RichInput } from "@/components/ui/rich-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowDown,
@@ -117,7 +118,7 @@ const UploadPDF = ({
       </div>
       <div className="flex w-full gap-4">
         {!isEdit ? (
-          <div className="flex flex-col w-full gap-1.5">
+          <div className="flex flex-col w-1/3 gap-1.5">
             <Label>Upload File</Label>
             {input.pdf ? (
               <div className="w-full p-3 flex bg-sky-50 rounded-md border-sky-400/80 border gap-3">
@@ -164,7 +165,7 @@ const UploadPDF = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col w-full gap-1.5">
+          <div className="flex flex-col w-1/3 gap-1.5">
             <Label>Upload File</Label>
             {files.length === 0 ? (
               <div
@@ -215,19 +216,17 @@ const UploadPDF = ({
             )}
           </div>
         )}
-        <div className="flex flex-col w-full gap-1.5">
+        <div className="flex flex-col w-2/3 gap-1.5">
           <Label>Description</Label>
-          <Textarea
-            rows={6}
-            disabled={!isEdit}
-            className="resize-none border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 disabled:opacity-100 disabled:cursor-default"
-            value={input.description}
+          <RichInput
+            content={input.description}
             onChange={(e) =>
               setInput((prev: any) => ({
                 ...prev,
-                description: e.target.value,
+                description: e,
               }))
             }
+            isEdit={isEdit}
           />
         </div>
       </div>

@@ -232,7 +232,7 @@ export const Client = () => {
       accessorKey: "name_product_bulky_sale",
       header: () => <div className="text-center">Product Name</div>,
       cell: ({ row }) => (
-        <div className="max-w-[400px] hyphens-auto">
+        <div className="max-w-[400px] break-all">
           {row.original.name_product_bulky_sale}
         </div>
       ),

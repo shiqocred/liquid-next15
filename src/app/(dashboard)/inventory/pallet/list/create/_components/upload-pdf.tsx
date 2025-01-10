@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichInput } from "@/components/ui/rich-input";
 import { ArrowDown, FileText, Trash2 } from "lucide-react";
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
-const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_KB = 100;
 const TOAST_DELAY_MS = 500;
 
 const UploadPDF = ({
@@ -35,10 +35,10 @@ const UploadPDF = ({
       // Cek batas ukuran file dan hanya tambahkan file yang valid
       const validFiles: File[] = [];
       acceptedFiles.forEach((file) => {
-        const fileSizeMB = file.size / (1024 * 1024); // Mengonversi byte ke MB
-        if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        const fileSizeMB = file.size / 1024; // Mengonversi byte ke MB
+        if (fileSizeMB > MAX_FILE_SIZE_KB) {
           newErrors.push(
-            `File ${file.name} is larger than ${MAX_FILE_SIZE_MB} MB.`
+            `File ${file.name} is larger than ${MAX_FILE_SIZE_KB} KB.`
           );
         } else {
           validFiles.push(file);
@@ -70,7 +70,7 @@ const UploadPDF = ({
         setTimeout(() => {
           if (error.code === "file-too-large") {
             toast.error(
-              `File ${file.name} is larger than ${MAX_FILE_SIZE_MB} MB.`
+              `File ${file.name} is larger than ${MAX_FILE_SIZE_KB} KB.`
             );
           }
         }, (index + errorIndex) * TOAST_DELAY_MS); // Delay berdasarkan urutan error
@@ -81,11 +81,6 @@ const UploadPDF = ({
     }
   }, []);
 
-  // Menghapus file berdasarkan index
-  //   const handleRemoveFile = (index: number) => {
-  //     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-  //   };
-
   // Menggunakan react-dropzone untuk menangani drag-and-drop
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
@@ -94,7 +89,7 @@ const UploadPDF = ({
     noClick: true, // Tidak memicu file picker saat halaman diklik, kecuali tombol kecil
     noKeyboard: true, // Mencegah file picker terbuka dengan keyboard
     maxFiles: 1,
-    maxSize: MAX_FILE_SIZE_MB * 1024 * 1024, // Konversi dari MB ke byte
+    maxSize: MAX_FILE_SIZE_KB * 1024, // Konversi dari MB ke byte
   });
   return (
     <div className="flex flex-col w-full gap-4 bg-white p-5 rounded-md shadow">
@@ -143,9 +138,7 @@ const UploadPDF = ({
                 <p className="line-clamp-1 font-semibold text-sm">
                   {files[0].name}
                 </p>
-                <p className="text-xs">
-                  {(files[0].size / 1024 / 1024).toFixed(2)} MB
-                </p>
+                <p className="text-xs">{(files[0].size / 1024).toFixed()} KB</p>
               </div>
               <Button
                 className="rounded-full ml-auto flex-none bg-transparent hover:bg-red-50 text-red-500 shadow-none [&_svg]:size-5"
@@ -157,16 +150,14 @@ const UploadPDF = ({
             </div>
           )}
         </div>
-        <div className="flex flex-col w-full gap-1.5">
+        <div className="flex flex-col w-2/3 flex-none gap-1.5">
           <Label>Description</Label>
-          <Textarea
-            rows={6}
-            className="resize-none border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0"
-            value={input.description}
+          <RichInput
+            content={input.description}
             onChange={(e) =>
               setInput((prev: any) => ({
                 ...prev,
-                description: e.target.value,
+                description: e,
               }))
             }
           />

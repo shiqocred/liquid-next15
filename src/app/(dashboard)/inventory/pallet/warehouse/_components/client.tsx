@@ -311,7 +311,7 @@ export const Client = () => {
       accessorKey: "nama",
       header: "Name",
       cell: ({ row }) => (
-        <div className="max-w-[250px] hyphens-auto">{row.original.nama}</div>
+        <div className="max-w-[250px] break-all">{row.original.nama}</div>
       ),
     },
     {

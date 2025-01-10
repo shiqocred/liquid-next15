@@ -309,7 +309,7 @@ const DialogExportProduct = ({
                       <div className="w-36 flex-none border-r border-black px-3 py-0.5">
                         Barcode
                       </div>
-                      <div className="w-[450px] flex-none border-r border-black px-3 py-0.5">
+                      <div className="w-full border-r border-black px-3 py-0.5">
                         Nama Barang
                       </div>
                       <div className="w-12 flex-none border-r border-black text-center py-0.5">
@@ -334,7 +334,7 @@ const DialogExportProduct = ({
                           <div className="w-36 flex-none border-r border-black px-3 py-0.5 uppercase">
                             {item.product_barcode_sale}
                           </div>
-                          <div className="w-[450px] border-r hyphens-auto border-black px-3 py-0.5 capitalize whitespace-pre-wrap flex-none">
+                          <div className="w-full border-r break-all border-black px-3 py-0.5 capitalize whitespace-pre-wrap">
                             {item.product_name_sale}
                           </div>
                           <div className="w-12 flex-none border-r border-black text-center  py-0.5">
@@ -401,7 +401,7 @@ const DialogExportProduct = ({
                       <p
                         className={cn(
                           "w-32 flex-none pr-3 text-end tabular-nums",
-                          !data?.buyer?.is_tax && "line-through"
+                          !data?.buyer?.is_tax && "line-through decoration-2"
                         )}
                       >
                         {formatRupiah(

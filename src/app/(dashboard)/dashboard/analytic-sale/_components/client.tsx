@@ -155,7 +155,7 @@ export const columnsAnalytic: ColumnDef<any>[] = [
     accessorKey: "product_category_sale",
     header: "Category Name",
     cell: ({ row }) => (
-      <div className="hyphens-auto max-w-[500px]">
+      <div className="break-all max-w-[500px]">
         {row.original.product_category_sale}
       </div>
     ),

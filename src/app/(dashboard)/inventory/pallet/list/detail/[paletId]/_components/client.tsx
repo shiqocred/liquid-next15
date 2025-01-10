@@ -7,6 +7,7 @@ import {
   Edit3,
   FileDown,
   Loader2,
+  Percent,
   Plus,
   Printer,
   RefreshCw,
@@ -124,6 +125,8 @@ export const Client = () => {
     total: "0",
     totalNew: "0",
     pdf: "",
+    discount: "0",
+    totalNewPrice: "0",
   });
   const [barcodeOpen, setBarcodeOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -219,6 +222,13 @@ export const Client = () => {
     return data?.data.data.resource.palet_products;
   }, [data]);
 
+  const newPriceTotal = useMemo(() => {
+    return data?.data.data.resource.palet_products.reduce(
+      (acc: any, item: any) => acc + item.total_new_price,
+      0
+    );
+  }, [data]);
+
   const dataListCategories: any[] = useMemo(() => {
     return dataSelect?.data.data.resource.categories ?? [];
   }, [dataSelect]);
@@ -279,7 +289,15 @@ export const Client = () => {
       description: dataResource?.description ?? "",
       total: Math.round(dataResource?.total_harga_lama).toString() ?? "0",
       totalNew: Math.round(dataResource?.total_price_palet).toString() ?? "0",
-      pdf: dataResource?.file_pdf,
+      pdf: dataResource?.file_pdf ?? "",
+      discount: Math.round(dataResource?.discount).toString() ?? "0",
+      totalNewPrice:
+        Math.round(
+          dataResource?.palet_products.reduce(
+            (acc: any, item: any) => acc + item.total_new_price,
+            0
+          )
+        ).toString() ?? "0",
     });
   }, [data]);
 
@@ -391,7 +409,26 @@ export const Client = () => {
     const body = new FormData();
     body.append("palet_barcode", data?.data.data.resource.palet_barcode);
     body.append("name_palet", input.name);
-    body.append("total_price_palet", input.total);
+    body.append(
+      "total_price_palet",
+      (parseFloat(data?.data.data.resource.discount) === 0 &&
+        parseFloat(input.discount) === 0) ||
+        (parseFloat(input.discount) > 0 &&
+          parseFloat(input.discount) ===
+            parseFloat(data?.data.data.resource.discount))
+        ? input.totalNew
+        : parseFloat(input.discount) > 0 &&
+          parseFloat(input.discount) !==
+            parseFloat(data?.data.data.resource.discount)
+        ? (
+            parseFloat(input.total) -
+            (parseFloat(input.total) / 100) * parseFloat(input.discount)
+          ).toString()
+        : parseFloat(data?.data.data.resource.discount) > 0 &&
+          parseFloat(input.discount) === 0
+        ? input.totalNewPrice
+        : "0"
+    );
     body.append("total_product_palet", dataList?.length.toString());
     body.append("category_id", input.category.id);
     body.append("category_palet", input.category.name);
@@ -400,6 +437,7 @@ export const Client = () => {
     body.append("warehouse_id", input.warehouse.id);
     body.append("product_condition_id", input.condition.id);
     body.append("product_status_id", input.status.id);
+    body.append("discount", input.discount);
     body.append("is_sale", "0");
     body.append(
       "product_brand_ids",
@@ -492,6 +530,12 @@ export const Client = () => {
     });
   }, [isErrorSelect, errorSelect]);
 
+  useEffect(() => {
+    if (isNaN(parseFloat(input.discount))) {
+      setInput((prev) => ({ ...prev, discount: "0" }));
+    }
+  }, [input]);
+
   const columnPalet: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
@@ -516,7 +560,7 @@ export const Client = () => {
       accessorKey: "new_name_product",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] hyphens-auto">
+        <div className="max-w-[500px] break-all">
           {row.original.new_name_product}
         </div>
       ),
@@ -772,8 +816,8 @@ export const Client = () => {
                 }
               />
             </div>
-            <div className="z-10 w-full flex gap-4">
-              <div className="w-2/3 flex flex-col gap-1">
+            <div className="z-10 w-full flex gap-4 border-y py-5 my-1 border-gray-500">
+              <div className="w-full flex flex-col gap-1">
                 <Label>Total Old Price</Label>
                 <Input
                   className="border-0 shadow-none focus-visible:ring-transparent focus-visible:outline-none rounded-none focus-visible:border-b focus-visible:border-sky-500 hover:underline hover:underline-offset-2 focus-visible:no-underline disabled:opacity-100 disabled:cursor-default"
@@ -781,19 +825,51 @@ export const Client = () => {
                   disabled
                 />
               </div>
-              <div className="w-2/3 flex flex-col gap-1">
-                <Label>Total New Price</Label>
-                <Input
-                  className="border-0 shadow-none focus-visible:ring-transparent focus-visible:outline-none rounded-none focus-visible:border-b focus-visible:border-sky-500 hover:underline hover:underline-offset-2 focus-visible:no-underline disabled:opacity-100 disabled:cursor-default"
-                  value={formatRupiah(parseFloat(input.totalNew))}
-                  disabled
-                />
+              <div className="w-full flex flex-col gap-1 group">
+                <Label>Discount</Label>
+                <div className="relative w-24 flex items-center">
+                  <Input
+                    className="border-0 pr-10 shadow-none focus-visible:ring-transparent focus-visible:outline-none rounded-none focus-visible:border-b focus-visible:border-sky-500 group-hover:underline group-hover:underline-offset-2 focus-visible:no-underline disabled:opacity-100 disabled:cursor-default"
+                    value={input.discount}
+                    disabled={!isEdit}
+                    onChange={(e) =>
+                      setInput((prev) => ({
+                        ...prev,
+                        discount: e.target.value.startsWith("0")
+                          ? e.target.value.replace(/^0+/, "")
+                          : e.target.value,
+                      }))
+                    }
+                  />
+                  <Percent className="size-4 right-3 absolute" />
+                </div>
               </div>
-              <div className="w-1/3 flex flex-col gap-1">
-                <Label>Total Product</Label>
+              <div className="w-full flex flex-col gap-1">
+                <Label>
+                  {parseFloat(input.discount)
+                    ? "Total Price After Discount"
+                    : "Total New Price"}
+                </Label>
                 <Input
                   className="border-0 shadow-none focus-visible:ring-transparent focus-visible:outline-none rounded-none focus-visible:border-b focus-visible:border-sky-500 hover:underline hover:underline-offset-2 focus-visible:no-underline disabled:opacity-100 disabled:cursor-default"
-                  value={dataList?.length.toLocaleString() + " Products"}
+                  value={formatRupiah(
+                    (parseFloat(data?.data.data.resource.discount) === 0 &&
+                      parseFloat(input.discount) === 0) ||
+                      (parseFloat(input.discount) > 0 &&
+                        parseFloat(input.discount) ===
+                          parseFloat(data?.data.data.resource.discount))
+                      ? parseFloat(input.totalNew)
+                      : parseFloat(input.discount) > 0 &&
+                        parseFloat(input.discount) !==
+                          parseFloat(data?.data.data.resource.discount)
+                      ? parseFloat(input.total) -
+                        (parseFloat(input.total) / 100) *
+                          parseFloat(input.discount)
+                      : parseFloat(data?.data.data.resource.discount) > 0 &&
+                        parseFloat(input.discount) === 0
+                      ? parseFloat(input.totalNewPrice)
+                      : 0
+                  )}
                   disabled
                 />
               </div>

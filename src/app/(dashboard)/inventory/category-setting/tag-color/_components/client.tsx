@@ -376,9 +376,7 @@ export const Client = () => {
       accessorKey: "name_color",
       header: "Color Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] hyphens-auto">
-          {row.original.name_color}
-        </div>
+        <div className="max-w-[500px] break-all">{row.original.name_color}</div>
       ),
     },
     {

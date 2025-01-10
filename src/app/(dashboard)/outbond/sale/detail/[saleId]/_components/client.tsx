@@ -354,7 +354,7 @@ export const Client = () => {
       accessorKey: "product_name_sale",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] hyphens-auto">
+        <div className="max-w-[500px] break-all">
           {row.original.product_name_sale}
         </div>
       ),
@@ -452,7 +452,7 @@ export const Client = () => {
       accessorKey: "name",
       header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[500px] hyphens-auto">{row.original.name}</div>
+        <div className="max-w-[500px] break-all">{row.original.name}</div>
       ),
     },
     {
@@ -751,7 +751,7 @@ export const Client = () => {
               <p
                 className={cn(
                   "font-semibold pr-5 pl-5",
-                  !dataRes?.is_tax && "line-through"
+                  !dataRes?.is_tax && "line-through decoration-2"
                 )}
               >
                 {formatRupiah((dataRes?.grand_total / 100) * dataRes?.tax)}

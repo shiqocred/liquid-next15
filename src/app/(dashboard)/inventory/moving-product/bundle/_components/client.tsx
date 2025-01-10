@@ -122,7 +122,7 @@ export const Client = () => {
       accessorKey: "name_bundle",
       header: "Bundle Name",
       cell: ({ row }) => (
-        <div className="hyphens-auto max-w-[500px]">
+        <div className="break-all max-w-[500px]">
           {row.original.name_bundle}
         </div>
       ),

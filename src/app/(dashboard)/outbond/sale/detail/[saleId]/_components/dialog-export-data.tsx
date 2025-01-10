@@ -448,7 +448,7 @@ const DialogExportData = ({
                       <p
                         className={cn(
                           "w-32 flex-none pr-3 text-end tabular-nums",
-                          !data?.buyer?.is_tax && "line-through"
+                          !data?.buyer?.is_tax && "line-through decoration-2"
                         )}
                       >
                         {formatRupiah(
