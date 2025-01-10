@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RichInput } from "@/components/ui/rich-input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowDown,
   ArrowUpRightFromSquare,

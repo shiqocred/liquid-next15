@@ -222,13 +222,6 @@ export const Client = () => {
     return data?.data.data.resource.palet_products;
   }, [data]);
 
-  const newPriceTotal = useMemo(() => {
-    return data?.data.data.resource.palet_products.reduce(
-      (acc: any, item: any) => acc + item.total_new_price,
-      0
-    );
-  }, [data]);
-
   const dataListCategories: any[] = useMemo(() => {
     return dataSelect?.data.data.resource.categories ?? [];
   }, [dataSelect]);

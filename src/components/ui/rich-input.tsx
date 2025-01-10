@@ -413,10 +413,14 @@ type RichInputProps = {
 >;
 
 export const RichInput = forwardRef<Editor, RichInputProps>(
-  (
-    { content, isEdit = false, onChange, className, editorClassName, ...props },
-    _ref
-  ) => {
+  ({
+    content,
+    isEdit = false,
+    onChange,
+    className,
+    editorClassName,
+    ...props
+  }) => {
     const editor = useEditor({
       extensions: [
         StarterKit,
