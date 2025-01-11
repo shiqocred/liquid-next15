@@ -217,16 +217,24 @@ const UploadPDF = ({
         )}
         <div className="flex flex-col w-2/3 gap-1.5">
           <Label>Description</Label>
-          <RichInput
-            content={input.description}
-            onChange={(e) =>
-              setInput((prev: any) => ({
-                ...prev,
-                description: e,
-              }))
-            }
-            isEdit={isEdit}
-          />
+          {isEdit ? (
+            <RichInput
+              content={input.description}
+              onChange={(e) =>
+                setInput((prev: any) => ({
+                  ...prev,
+                  description: e,
+                }))
+              }
+            />
+          ) : (
+            <div className="w-full px-3 py-2 h-[334px] overflow-y-scroll border border-sky-400/80 rounded-md">
+              <div
+                className="prose prose-sm w-full"
+                dangerouslySetInnerHTML={{ __html: input.description }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
