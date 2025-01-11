@@ -3,21 +3,21 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
 type RequestType = {
+  id: any;
   body: any;
 };
-
 type Error = AxiosError;
 
-export const useCreateTransportationPalet = () => {
-  const accessToken = useCookies().get("accessToken");
+export const useToDisplay = () => {
+  const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/vehicle-types`, body, {
+    mutationFn: async ({ body, id }) => {
+      const res = await axios.post(`${baseUrl}/repair/update/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,17 +25,17 @@ export const useCreateTransportationPalet = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Transportation successfully created");
+      toast.success("Product successfully moved");
       queryClient.invalidateQueries({
-        queryKey: ["list-transportation-palet"],
+        queryKey: ["list-lpr"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Transportation failed to create`);
-        console.log("ERROR_CREATE_TRANSPORTATION:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to move`);
+        console.log("ERROR_MOVED_PRODUCT:", err);
       }
     },
   });

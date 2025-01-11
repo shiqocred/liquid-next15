@@ -2,9 +2,11 @@
 
 import { cookies } from "next/headers";
 import { baseUrl } from "./baseUrl";
+import { deleteCookie, hasCookie } from "cookies-next/server";
 
 export const protect = async () => {
-  const token = (await cookies()).get("accessToken")?.value;
+  const cookie = await cookies();
+  const token = cookie.get("accessToken")?.value;
   try {
     const res = await fetch(`${baseUrl}/checkLogin`, {
       method: "GET",
@@ -12,9 +14,14 @@ export const protect = async () => {
     });
 
     if (!res.ok) {
-      (await cookies()).delete("profile");
-      (await cookies()).delete("accessToken");
-      throw new Error("Unauthenticated");
+      if (
+        (await hasCookie("profile", { cookies })) ||
+        (await hasCookie("accessToken", { cookies }))
+      ) {
+        await deleteCookie("profile", { cookies });
+        await deleteCookie("accessToken", { cookies });
+      }
+      return false;
     }
 
     return true;

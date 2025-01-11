@@ -210,6 +210,15 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "days_since_created",
+      header: () => <div className="text-center">Days</div>,
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          {row.original.days_since_created}
+        </div>
+      ),
+    },
+    {
       accessorKey: "new_status_product",
       header: () => <div className="text-center">Status</div>,
       cell: () => (

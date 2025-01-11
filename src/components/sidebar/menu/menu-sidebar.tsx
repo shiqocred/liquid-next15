@@ -92,10 +92,6 @@ const sidebarMenu = [
             title: "Product Approve",
             href: "/inbound/check-product/product-approve",
           },
-          // {
-          //   title: "Approvement Document",
-          //   href: "/inbound/check-product/approvement-document",
-          // },
           {
             title: "Manual Inbound",
             href: "/inbound/check-product/manual-inbound",
@@ -232,10 +228,6 @@ const sidebarMenu = [
             title: "Brand",
             href: "/inventory/pallet/brand",
           },
-          {
-            title: "Transportation",
-            href: "/inventory/pallet/transportation",
-          },
         ],
       },
     ],
@@ -346,7 +338,7 @@ const MenuInbound = ({ pathname, setOpen }: MenuInboundProps) => {
           <div className="flex flex-col gap-1 w-full px-3">
             {item.menu.map((item, i) => (
               <ButtonSidebar
-                key={i}
+                key={item.title + i}
                 label={item.title}
                 icon={item.icon}
                 href={item.href}

@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
-import { useCookies } from "next-client-cookies";
+import { getCookie } from "cookies-next/client";
 
-export const useGetListTransportationPalet = ({ p, q }: any) => {
-  const accessToken = useCookies().get("accessToken");
+export const useGetScanManifestInbound = ({ code, p, q }: any) => {
+  const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-transportation-palet", { p, q }],
+    queryKey: ["scan-manifest-inbound", code, { p, q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/vehicle-types?page=${p}&q=${q}`, {
+      const res = await axios.get(`${baseUrl}/user_scan_webs/${code}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

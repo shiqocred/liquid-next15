@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle,
   CheckCircle2,
@@ -10,7 +9,7 @@ import {
   Save,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, promiseToast } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
 import {
   Dialog,
@@ -27,7 +26,6 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { parseAsBoolean, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useUploadBulking } from "../_api/use-upload-bulking";
@@ -66,18 +64,33 @@ export const Client = () => {
     if (selectedFile?.file) {
       body.append("file", selectedFile.file);
     }
-    mutate(
-      { value: body, type: typeBulk },
-      {
-        onSuccess: () => {
-          setSelectedFile(null);
-        },
-        onError: (err) => {
-          setErrorMsg((err?.response?.data as any)?.data?.resource);
-          setIsErrorOpen(true);
-        },
-      }
-    );
+
+    const promise = new Promise((resolve, reject) => {
+      mutate(
+        { value: body, type: typeBulk },
+        {
+          onSuccess: (data) => {
+            resolve(data);
+            setSelectedFile(null);
+            setTypeBulk("");
+          },
+          onError: (error) => {
+            reject(error);
+            setErrorMsg((error?.response?.data as any)?.data?.resource);
+            setIsErrorOpen(true);
+            setTypeBulk("");
+          },
+        }
+      );
+    });
+
+    promiseToast({
+      promise,
+      loading: "Uploading...",
+      success: "File Successfully uploaded",
+      error: (err) =>
+        (err?.response?.data as any)?.data?.message || "File failed to upload",
+    });
   };
 
   const onDrop = (acceptedFiles: File[]) => {
@@ -103,12 +116,6 @@ export const Client = () => {
   });
 
   useEffect(() => {
-    if (!typeBulk && !isDialogOpen) {
-      setIsDialogOpen(true);
-    }
-  }, [isDialogOpen]);
-
-  useEffect(() => {
     setIsMounted(true);
   }, []);
 
@@ -125,9 +132,9 @@ export const Client = () => {
             <DialogDescription>Check please some error</DialogDescription>
           </DialogHeader>
           <ul className="w-full max-h-[50vh] overflow-y-auto">
-            {errorMsg.map((item, i) => (
+            {errorMsg?.map((item, i) => (
               <li
-                key={i}
+                key={item + i}
                 className="py-2 px-4 border-b last:border-0 border-gray-400"
               >
                 {item}
@@ -155,19 +162,46 @@ export const Client = () => {
             <>
               <div className="w-full flex items-center justify-between mb-4">
                 <div className="flex gap-3 items-center">
-                  <h2 className="text-xl font-bold">Bulking</h2>
+                  <h2 className="text-xl font-bold">Bulking Product</h2>
+                </div>
+              </div>
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded h-52 flex items-center justify-center text-center cursor-default ${
+                  isDragActive ? "border-blue-500" : "border-gray-300"
+                }`}
+              >
+                <input {...getInputProps()} />
+                {isDragActive ? (
+                  <p className="text-blue-500">Drop the files here ...</p>
+                ) : (
+                  <div className="flex justify-center flex-col items-center gap-2">
+                    <p>Drag & drop some files here, or click to select files</p>
+                    <p className="text-sky-500 text-sm font-semibold">
+                      (.xlsx, .xls)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold">Bulking Product</h2>
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
-                      <button type="button" className="flex gap-2 items-center">
-                        <Badge className="bg-black hover:bg-black text-white rounded-full capitalize">
-                          <p>{typeBulk}</p>
-                          <Separator
-                            orientation="vertical"
-                            className="h-3 bg-white ml-3 mr-2"
-                          />
-                          <ChevronDown className="h-4 w-4 stroke-2" />
-                        </Badge>
-                      </button>
+                      <Button
+                        type="button"
+                        variant={"ghost"}
+                        className={cn(
+                          "text-xl px-0 hover:bg-transparent font-bold underline-offset-2 hover:underline capitalize",
+                          !typeBulk && "underline"
+                        )}
+                      >
+                        <p>{typeBulk || "Select Type"}</p>
+                        <ChevronDown className="h-4 w-4 stroke-2" />
+                      </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-xs">
                       <DialogHeader>
@@ -216,33 +250,7 @@ export const Client = () => {
                       </div>
                     </DialogContent>
                   </Dialog>
-                </div>
-              </div>
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded h-52 flex items-center justify-center text-center cursor-default ${
-                  isDragActive ? "border-blue-500" : "border-gray-300"
-                }`}
-              >
-                <input {...getInputProps()} />
-                {isDragActive ? (
-                  <p className="text-blue-500">Drop the files here ...</p>
-                ) : (
-                  <div className="flex justify-center flex-col items-center gap-2">
-                    <p>Drag & drop some files here, or click to select files</p>
-                    <p className="text-sky-500 text-sm font-semibold">
-                      (.xlsx, .xls)
-                    </p>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-xl font-bold">Selected File</h2>
-                  {errorMsg.length > 0 && (
+                  {errorMsg?.length > 0 && (
                     <Button
                       type="button"
                       onClick={() => setIsErrorOpen(true)}
@@ -252,7 +260,7 @@ export const Client = () => {
                     </Button>
                   )}
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <button
                     className="flex text-sm items-center text-gray-500 hover:underline"
                     type="button"
@@ -264,10 +272,11 @@ export const Client = () => {
                     <RefreshCcw className="w-4 h-4 mr-2" />
                     Change File
                   </button>
-                  {errorMsg.length === 0 && (
+                  {errorMsg?.length === 0 && (
                     <Button
                       onClick={handleComplete}
                       className="bg-sky-300/80 hover:bg-sky-300 text-black"
+                      disabled={!typeBulk}
                     >
                       <Save className="w-4 h-4 mr-1" />
                       Save
