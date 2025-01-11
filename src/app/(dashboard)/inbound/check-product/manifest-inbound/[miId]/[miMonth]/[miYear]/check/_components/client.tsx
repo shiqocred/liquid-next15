@@ -365,7 +365,7 @@ export const Client = () => {
               placeholder="Search..."
               ref={searchRef}
               autoFocus
-              disabled={loadingBarcode || isPendingSubmit || isPendingDouble}
+              disabled={isPendingSubmit || isPendingDouble}
             />
             {dataSearch.length > 0 && (
               <button
