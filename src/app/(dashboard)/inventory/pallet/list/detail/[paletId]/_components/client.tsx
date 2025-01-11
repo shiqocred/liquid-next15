@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  ChevronDown,
   ChevronDownCircle,
   Circle,
   Edit3,
@@ -77,6 +78,12 @@ import { useUpdateImage } from "../_api/use-update-image";
 import { useExportPalet } from "../_api/use-export-palet";
 import PopoverWithTrigger from "./popover-with-trigger";
 import { useRemovePDF } from "../_api/use-remove-pdf";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useExportPaletExcel } from "../_api/use-export-palet-excel";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -130,6 +137,8 @@ export const Client = () => {
   });
   const [barcodeOpen, setBarcodeOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [fileType, setFileType] = useState("Select file type");
 
   // search, debounce, paginate strat ----------------------------------------------------------------
 
@@ -190,6 +199,8 @@ export const Client = () => {
   } = useUpdateImage();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdate();
   const { mutate: mutateExport, isPending: isPendingExport } = useExportPalet();
+  const { mutate: mutateExportExcel, isPending: isPendingExportExcel } =
+    useExportPaletExcel();
 
   // mutate end ----------------------------------------------------------------
 
@@ -474,6 +485,35 @@ export const Client = () => {
     );
   };
 
+  // Handler for exporting Excel
+  const handleExportPaletExcel = async () => {
+    if (fileType !== "excel" && fileType !== "pdf") {
+      alert("Please select excel or pdf as the file type.");
+      return;
+    }
+
+    mutateExportExcel(
+      { id: paletId, body: { type: fileType } },
+      {
+        onSuccess: (res) => {
+          if (fileType === "pdf") {
+            window.open(res.data.data.resource, "_blank");
+          } else {
+            const link = document.createElement("a");
+            link.href = res.data.data.resource;
+            link.download = `${paletId}_exported.${fileType.toLowerCase()}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        },
+        onError: (error) => {
+          alert("Failed to export Excel: " + error.message);
+        },
+      }
+    );
+  };
+
   // handling action end ----------------------------------------------------------------
 
   // handling close strat ----------------------------------------------------------------
@@ -733,6 +773,51 @@ export const Client = () => {
             </div>
             {!isEdit ? (
               <div className="flex gap-4">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-full flex items-center justify-start px-3 border border-sky-400/80 rounded h-9"
+                    onClick={handleExportPaletExcel}
+                  >
+                    <FileDown className={cn("w-4 h-4")} />
+                    {fileType.toUpperCase()}
+                  </div>
+                  <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        className="flex-none border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 rounded"
+                        variant={"outline"}
+                        size={"icon"}
+                        disabled={isPendingExportExcel}
+                      >
+                        <ChevronDown className="size-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-fit" align="end">
+                      <Command>
+                        <CommandList>
+                          <CommandGroup>
+                            <CommandItem
+                              onSelect={() => {
+                                setFileType("excel");
+                                setIsOpen(false);
+                              }}
+                            >
+                              Excel
+                            </CommandItem>
+                            <CommandItem
+                              onSelect={() => {
+                                setFileType("pdf");
+                                setIsOpen(false);
+                              }}
+                            >
+                              PDF
+                            </CommandItem>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 <Button
                   type="button"
                   onClick={(e) => {
@@ -1228,7 +1313,7 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
-              <TooltipProviderPage value={"Reload Data"}>
+              <TooltipProviderPage value={"Unduh Data"}>
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
