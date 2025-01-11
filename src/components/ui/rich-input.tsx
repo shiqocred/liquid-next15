@@ -35,14 +35,14 @@ import {
   useEditor,
 } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
-import { forwardRef, useCallback, useEffect } from "react";
+import { forwardRef, useCallback } from "react";
 
 import { Button } from "./button";
 import { Skeleton } from "./skeleton";
 import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
-const Toolbar = ({ editor, isEdit }: { editor: Editor; isEdit: boolean }) => {
+const Toolbar = ({ editor }: { editor: Editor }) => {
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);
@@ -66,8 +66,7 @@ const Toolbar = ({ editor, isEdit }: { editor: Editor; isEdit: boolean }) => {
   return (
     <div
       className={cn(
-        "flex-wrap gap-0.5 border rounded-t-md p-1 border-sky-400/80",
-        isEdit ? "flex" : "hidden"
+        "flex-wrap gap-0.5 border rounded-t-md p-1 border-sky-400/80"
       )}
     >
       <TooltipProviderPage value="Bold">
@@ -403,7 +402,6 @@ const Toolbar = ({ editor, isEdit }: { editor: Editor; isEdit: boolean }) => {
 
 type RichInputProps = {
   content?: string;
-  isEdit?: boolean;
   onChange?: (value: string) => void;
   className?: string;
   editorClassName?: string;
@@ -414,7 +412,7 @@ type RichInputProps = {
 
 export const RichInput = forwardRef<Editor, RichInputProps>(
   (
-    { content, isEdit = true, onChange, className, editorClassName, ...props },
+    { content, onChange, className, editorClassName, ...props },
     _ref // eslint-disable-line @typescript-eslint/no-unused-vars
   ) => {
     const editor = useEditor({
@@ -466,12 +464,6 @@ export const RichInput = forwardRef<Editor, RichInputProps>(
       }
     }, [editor]);
 
-    useEffect(() => {
-      if (editor) {
-        editor.setEditable(isEdit);
-      }
-    }, [isEdit]);
-
     if (!editor) {
       return (
         <div className="space-y-2">
@@ -483,7 +475,7 @@ export const RichInput = forwardRef<Editor, RichInputProps>(
 
     return (
       <div>
-        <Toolbar editor={editor} isEdit={isEdit} />
+        <Toolbar editor={editor} />
         {editor && (
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
             <div className="flex bg-white py-1 px-1.5 rounded-lg border shadow">
@@ -585,9 +577,8 @@ export const RichInput = forwardRef<Editor, RichInputProps>(
         <EditorContent
           editor={editor}
           className={cn(
-            "grid min-h-[250px] w-full  border bg-transparent px-3 py-2 text-sm placeholder:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 antialiased border-sky-400/80",
-            className,
-            isEdit ? "border-t-0 rounded-b-md" : "rounded-md"
+            "grid min-h-[250px] w-full  border bg-transparent px-3 py-2 text-sm placeholder:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 antialiased border-sky-400/80 border-t-0 rounded-b-md",
+            className
           )}
           {...props}
         />
