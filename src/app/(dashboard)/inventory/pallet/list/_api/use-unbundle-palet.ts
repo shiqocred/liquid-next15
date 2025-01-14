@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useUnbundleBundle = () => {
+export const useUnbundlePalet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/bundle/${id}`, {
+      const res = await axios.delete(`${baseUrl}/palet/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,15 +25,15 @@ export const useUnbundleBundle = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Bundle successfully unbundled");
-      queryClient.invalidateQueries({ queryKey: ["list-bundle"] });
+      toast.success("Palet successfully unbundled");
+      queryClient.invalidateQueries({ queryKey: ["list-palet"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Bundle failed to unbundle`);
-        console.log("ERROR_UNBUNDLE_BUNDLE:", err);
+        toast.error(`ERROR ${err?.status}: Palet failed to unbundle`);
+        console.log("ERROR_UNBUNDLE_PALET:", err);
       }
     },
   });

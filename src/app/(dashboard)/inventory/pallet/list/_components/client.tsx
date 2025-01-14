@@ -6,6 +6,7 @@ import {
   PlusCircle,
   ReceiptText,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
@@ -29,8 +30,9 @@ import { DataTable } from "@/components/data-table";
 import { useGetListPalet } from "../_api/use-get-list-palet";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
-import { useUnbundleBundle } from "../_api/use-unbundle-bundle";
+import { useUnbundlePalet } from "../_api/use-unbundle-palet";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useDeletePalet } from "../_api/use-delete-palet";
 
 export const Client = () => {
   // data search, page
@@ -45,13 +47,19 @@ export const Client = () => {
   });
 
   const [UnbundleDialog, confirmUnbundle] = useConfirm(
-    "Unbundle Bundle",
+    "Unbundle Palet",
+    "This action cannot be undone",
+    "destructive"
+  );
+  const [DeleteDialog, confirmDelete] = useConfirm(
+    "Delete Palet",
     "This action cannot be undone",
     "destructive"
   );
 
   const { mutate: mutateUnbundle, isPending: isPendingUnbundle } =
-    useUnbundleBundle();
+    useUnbundlePalet();
+  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeletePalet();
 
   // get data utama
   const {
@@ -100,6 +108,14 @@ export const Client = () => {
     if (!ok) return;
 
     mutateUnbundle({ id });
+  };
+
+  const handleDelete = async (id: any) => {
+    const ok = await confirmDelete();
+
+    if (!ok) return;
+
+    mutateDelete({ id });
   };
 
   // column data
@@ -163,16 +179,34 @@ export const Client = () => {
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
               type="button"
-              disabled={isPendingUnbundle}
+              disabled={isPendingUnbundle || isPendingDelete}
               onClick={(e) => {
                 e.preventDefault();
                 handleUnbundle(row.original.id);
               }}
             >
-              {isPendingUnbundle ? (
+              {isPendingUnbundle || isPendingDelete ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <PackageOpen className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              type="button"
+              disabled={isPendingUnbundle || isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.original.id);
+              }}
+            >
+              {isPendingUnbundle || isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
               )}
             </Button>
           </TooltipProviderPage>
@@ -203,6 +237,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <UnbundleDialog />
+      <DeleteDialog />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
