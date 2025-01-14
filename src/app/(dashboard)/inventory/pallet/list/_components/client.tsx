@@ -29,7 +29,7 @@ import { DataTable } from "@/components/data-table";
 import { useGetListPalet } from "../_api/use-get-list-palet";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
-import { useUnbundleBundle } from "../_api/use-unbundle-bundle";
+import { useUnbundlePalet } from "../_api/use-unbundle-palet";
 import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
@@ -51,7 +51,7 @@ export const Client = () => {
   );
 
   const { mutate: mutateUnbundle, isPending: isPendingUnbundle } =
-    useUnbundleBundle();
+    useUnbundlePalet();
 
   // get data utama
   const {
