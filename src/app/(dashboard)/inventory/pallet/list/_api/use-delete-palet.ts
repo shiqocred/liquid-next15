@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useUnbundlePalet = () => {
+export const useDeletePalet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/palet/${id}`, {
+      const res = await axios.delete(`${baseUrl}/palet-delete/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,15 +25,15 @@ export const useUnbundlePalet = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Palet successfully unbundled");
+      toast.success("Palet successfully deleted");
       queryClient.invalidateQueries({ queryKey: ["list-palet"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Palet failed to unbundle`);
-        console.log("ERROR_UNBUNDLE_PALET:", err);
+        toast.error(`ERROR ${err?.status}: Palet failed to delete`);
+        console.log("ERROR_DELETE_PALET:", err);
       }
     },
   });
