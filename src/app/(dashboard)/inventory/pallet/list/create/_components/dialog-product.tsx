@@ -87,7 +87,7 @@ const DialogProduct = ({
               variant={"outline"}
               onClick={(e) => {
                 e.preventDefault();
-                handleAdd(row.original.id);
+                handleAdd(row.original.new_barcode_product);
               }}
               type="button"
             >
