@@ -58,7 +58,7 @@ export const Client = () => {
     damaged: "",
     name: "",
     discount: 0,
-    qty: "0",
+    qty: "1",
   });
 
   const [barcodeOpen, setBarcodeOpen] = useQueryState(
@@ -155,8 +155,8 @@ export const Client = () => {
   };
 
   useEffect(() => {
-    if (isNaN(parseFloat(metaData.qty))) {
-      setMetaData((prev) => ({ ...prev, qty: "0" }));
+    if (isNaN(parseFloat(metaData.qty)) || parseFloat(metaData.qty) < 1) {
+      setMetaData((prev) => ({ ...prev, qty: "1" }));
     }
   }, [metaData]);
   useEffect(() => {
@@ -313,7 +313,7 @@ export const Client = () => {
                         qty: (parseFloat(prev.qty) - 1).toString(),
                       }))
                     }
-                    disabled={parseFloat(metaData.qty) === 0}
+                    disabled={parseFloat(metaData.qty) === 1}
                     className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200 disabled:hover:bg-sky-100 disabled:opacity-50"
                   >
                     <Minus className="w-3 h-3" />
