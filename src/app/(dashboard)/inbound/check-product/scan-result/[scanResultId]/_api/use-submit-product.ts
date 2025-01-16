@@ -17,7 +17,7 @@ export const useSubmitProduct = () => {
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async (value) => {
-      const res = await axios.post(`${baseUrl}/move_to_staging`, value, {
+      const res = await axios.post(`${baseUrl}/to_product_input`, value, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
