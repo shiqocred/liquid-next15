@@ -775,7 +775,7 @@ export const Client = () => {
               <div className="flex gap-4">
                 <div className="flex items-center gap-4">
                   <div
-                    className="w-full flex items-center justify-start px-3 border border-sky-400/80 rounded h-9 bg-sky-500 hover:bg-sky-500 " 
+                    className="w-full flex items-center justify-start px-3 border border-sky-400/80 rounded h-9 bg-sky-500 hover:bg-sky-500 cursor-pointer"
                     onClick={handleExportPaletExcel}
                   >
                     <FileDown className="size-4 mr-1" />
@@ -784,7 +784,7 @@ export const Client = () => {
                   <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
                     <PopoverTrigger asChild>
                       <Button
-                        className="flex-none border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 rounded text-blue-500" 
+                        className="flex-none border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 rounded text-blue-500"
                         variant={"outline"}
                         size={"icon"}
                         disabled={isPendingExportExcel}
@@ -807,7 +807,7 @@ export const Client = () => {
                             <CommandItem
                               onSelect={() => {
                                 setFileType("pdf");
-                                setIsOpen(false); 
+                                setIsOpen(false);
                               }}
                             >
                               PDF
