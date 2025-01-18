@@ -5,6 +5,7 @@ import {
   ArrowLeftRight,
   CircleDollarSign,
   FileDown,
+  FileSpreadsheet,
   Landmark,
   Loader2,
   Package,
@@ -45,6 +46,7 @@ import { useGaborProduct } from "../_api/use-gabor-product";
 import { useUpdatePriceProduct } from "../_api/use-update-price-product";
 import { useParams } from "next/navigation";
 import { useExport } from "../_api/use-export";
+import { useExportExcel } from "../_api/use-export-excel";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -126,6 +128,8 @@ export const Client = () => {
     useUpdatePriceProduct();
 
   const { mutate: mutateExport, isPending: isPendingExport } = useExport();
+  const { mutate: mutateExportExcel, isPending: isPendingExportExcel } =
+    useExportExcel();
 
   // mutate end ----------------------------------------------------------------
 
@@ -254,6 +258,21 @@ export const Client = () => {
             setIsExportProduct(true);
           }
           setDataExport(res.data);
+        },
+      }
+    );
+  };
+
+  const handleExportExcel = async () => {
+    mutateExportExcel(
+      { id: saleId?.toString() ?? "" },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         },
       }
     );
@@ -769,6 +788,15 @@ export const Client = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <Button
+              type="button"
+              onClick={handleExportExcel}
+              disabled={isPendingExportExcel}
+              className="bg-white text-black hover:bg-sky-50"
+            >
+              <FileSpreadsheet className="size-4 ml-1" />
+              Export Excel
+            </Button>
             <Button
               type="button"
               onClick={() => handleExport("product")}
