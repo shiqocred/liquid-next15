@@ -15,7 +15,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
-const MAX_FILES = 8;
+const MAX_FILES = 10;
 const MAX_FILE_SIZE_MB = 2;
 const TOAST_DELAY_MS = 500;
 
