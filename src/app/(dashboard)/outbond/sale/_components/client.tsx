@@ -106,9 +106,9 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "total_price_document_sale",
+      accessorKey: "price_after_tax",
       header: "Price",
-      cell: ({ row }) => formatRupiah(row.original.total_price_document_sale),
+      cell: ({ row }) => formatRupiah(row.original.price_after_tax),
     },
     {
       accessorKey: "approved",
