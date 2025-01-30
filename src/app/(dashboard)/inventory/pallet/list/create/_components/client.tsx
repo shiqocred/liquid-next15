@@ -274,7 +274,7 @@ export const Client = () => {
         : input.totalNew
     );
     body.append("discount", input.discount);
-    body.append("total_product_palet", dataList?.length.toString());
+    body.append("total_product_palet", metaPage.total.toString());
     body.append("category_id", input.category.id);
     body.append("category_palet", input.category.name);
     body.append("description", input.description);
