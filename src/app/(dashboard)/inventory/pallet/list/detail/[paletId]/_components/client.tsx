@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  ArrowUpRightFromSquare,
   ChevronDown,
   ChevronDownCircle,
   Circle,
@@ -84,6 +85,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useExportPaletExcel } from "../_api/use-export-palet-excel";
+import { RichInput } from "@/components/ui/rich-input";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -95,9 +97,6 @@ const UploadImage = dynamic(() => import("./upload-image"), {
   ssr: false,
 });
 const DialogUpload = dynamic(() => import("./dialog-upload"), {
-  ssr: false,
-});
-const UploadPDF = dynamic(() => import("./upload-pdf"), {
   ssr: false,
 });
 const DialogPDF = dynamic(() => import("./dialog-pdf"), {
@@ -119,7 +118,6 @@ export const Client = () => {
   const [isOpenUpload, setIsOpenUpload] = useState(false);
   const [isOpenPDF, setIsOpenPDF] = useState(false);
 
-  const [uploadPDF, setUploadPDF] = useState<File[]>([]);
   const [urlDialog, setUrlDialog] = useState("/images/liquid8_og_800x800.png");
   const [input, setInput] = useState({
     name: "",
@@ -451,11 +449,6 @@ export const Client = () => {
           : ""
       }`
     );
-    if (uploadPDF.length > 0) {
-      for (const element of uploadPDF) {
-        body.append("file_pdf", element);
-      }
-    }
     body.append("_method", "PUT");
     mutateUpdate(
       { id: paletId, body },
@@ -952,136 +945,176 @@ export const Client = () => {
                 />
               </div>
             </div>
-            <div className="flex w-full gap-4">
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Category</Label>
-                <PopoverWithTrigger
-                  open={isOpenCategory}
-                  setIsOpen={setIsOpenCategory}
-                  data={dataListCategories}
-                  dataId={input.category.id}
-                  isEdit={isEdit}
-                  trigger={
-                    input.category.name
-                      ? input.category.name
-                      : "Select Category..."
-                  }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      category: {
-                        id: item.id,
-                        name: item.name_category,
-                      },
-                    }));
-                    setIsOpenCategory(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full font-medium">
-                      {item.name_category}
-                    </div>
-                  )}
-                />
-              </div>
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Warehouse</Label>
-                <PopoverWithTrigger
-                  open={isOpenWarehouse}
-                  setIsOpen={setIsOpenWarehouse}
-                  data={dataListWarehouses}
-                  dataId={input.warehouse.id}
-                  isEdit={isEdit}
-                  trigger={
-                    input.warehouse.name
-                      ? input.warehouse.name
-                      : "Select Warehouse..."
-                  }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      warehouse: {
-                        id: item.id,
-                        name: item.nama,
-                      },
-                    }));
-                    setIsOpenWarehouse(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full flex flex-col gap-1">
-                      <div className="w-full font-medium capitalize">
-                        {item.nama}
+            <div className="grid grid-cols-3 w-full gap-4">
+              <div className="flex flex-col w-full gap-4 col-span-1">
+                <div className="z-10 w-full flex flex-col gap-1">
+                  <Label>Category</Label>
+                  <PopoverWithTrigger
+                    open={isOpenCategory}
+                    setIsOpen={setIsOpenCategory}
+                    data={dataListCategories}
+                    dataId={input.category.id}
+                    isEdit={isEdit}
+                    trigger={
+                      input.category.name
+                        ? input.category.name
+                        : "Select Category..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        category: {
+                          id: item.id,
+                          name: item.name_category,
+                        },
+                      }));
+                      setIsOpenCategory(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full font-medium">
+                        {item.name_category}
                       </div>
-                      <Separator className="bg-gray-500" />
-                      <p className="text-xs text-start w-full text-gray-500">
-                        Lat. {item.latitude} | Long. {item.longitude}
-                      </p>
-                      <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                        {item.alamat}
-                      </p>
-                      <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                        {item.kecamatan}, {item.kabupaten}, {item.provinsi}
-                      </p>
-                    </div>
-                  )}
-                />
+                    )}
+                  />
+                </div>
+                <div className="z-10 w-full flex flex-col gap-1">
+                  <Label>Warehouse</Label>
+                  <PopoverWithTrigger
+                    open={isOpenWarehouse}
+                    setIsOpen={setIsOpenWarehouse}
+                    data={dataListWarehouses}
+                    dataId={input.warehouse.id}
+                    isEdit={isEdit}
+                    trigger={
+                      input.warehouse.name
+                        ? input.warehouse.name
+                        : "Select Warehouse..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        warehouse: {
+                          id: item.id,
+                          name: item.nama,
+                        },
+                      }));
+                      setIsOpenWarehouse(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full flex flex-col gap-1">
+                        <div className="w-full font-medium capitalize">
+                          {item.nama}
+                        </div>
+                        <Separator className="bg-gray-500" />
+                        <p className="text-xs text-start w-full text-gray-500">
+                          Lat. {item.latitude} | Long. {item.longitude}
+                        </p>
+                        <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                          {item.alamat}
+                        </p>
+                        <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                          {item.kecamatan}, {item.kabupaten}, {item.provinsi}
+                        </p>
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="z-10 w-full flex flex-col gap-1">
+                  <Label>Condition</Label>
+                  <PopoverWithTrigger
+                    open={isOpenCondition}
+                    setIsOpen={setIsOpenCondition}
+                    data={dataListProductConditions}
+                    dataId={input.condition.id}
+                    isEdit={isEdit}
+                    trigger={
+                      input.condition.name
+                        ? input.condition.name
+                        : "Select Condition..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        condition: {
+                          id: item.id,
+                          name: item.condition_name,
+                        },
+                      }));
+                      setIsOpenCondition(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full font-medium">
+                        {item.condition_name}
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="z-10 w-full flex flex-col gap-1">
+                  <Label>Status</Label>
+                  <PopoverWithTrigger
+                    open={isOpenStatus}
+                    setIsOpen={setIsOpenStatus}
+                    data={dataListProductStatus}
+                    dataId={input.status.id}
+                    isEdit={isEdit}
+                    trigger={
+                      input.status.name ? input.status.name : "Select Status..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        status: {
+                          id: item.id,
+                          name: item.status_name,
+                        },
+                      }));
+                      setIsOpenStatus(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full font-medium">
+                        {item.status_name}
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="z-10 w-full flex flex-col gap-1">
+                  <Label>File PDF</Label>
+                  <Button
+                    type="button"
+                    onClick={() => setIsOpenPDF(true)}
+                    disabled={isPendingRemovePDF}
+                    className="flex pl-4 items-center justify-start [&_svg]:size-3 w-full hover:bg-transparent hover:underline hover:underline-offset-2 disabled:opacity-100 disabled:pointer-events-auto border border-sky-400/80 hover:border-sky-400"
+                    variant={"ghost"}
+                  >
+                    <p className="line-clamp-1 font-semibold text-sm">
+                      Uploaded file
+                    </p>
+                    <ArrowUpRightFromSquare />
+                  </Button>
+                </div>
               </div>
-            </div>
-            <div className="flex w-full gap-4">
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Condition</Label>
-                <PopoverWithTrigger
-                  open={isOpenCondition}
-                  setIsOpen={setIsOpenCondition}
-                  data={dataListProductConditions}
-                  dataId={input.condition.id}
-                  isEdit={isEdit}
-                  trigger={
-                    input.condition.name
-                      ? input.condition.name
-                      : "Select Condition..."
-                  }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      condition: {
-                        id: item.id,
-                        name: item.condition_name,
-                      },
-                    }));
-                    setIsOpenCondition(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full font-medium">
-                      {item.condition_name}
-                    </div>
-                  )}
-                />
-              </div>
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Status</Label>
-                <PopoverWithTrigger
-                  open={isOpenStatus}
-                  setIsOpen={setIsOpenStatus}
-                  data={dataListProductStatus}
-                  dataId={input.status.id}
-                  isEdit={isEdit}
-                  trigger={
-                    input.status.name ? input.status.name : "Select Status..."
-                  }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      status: {
-                        id: item.id,
-                        name: item.status_name,
-                      },
-                    }));
-                    setIsOpenStatus(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full font-medium">{item.status_name}</div>
-                  )}
-                />
+              <div className="flex flex-col w-full col-span-2 gap-1.5">
+                <Label>Description</Label>
+                {isEdit ? (
+                  <RichInput
+                    content={input.description}
+                    className="min-h-[268.5px]"
+                    editorClassName={"max-h-[250px]"}
+                    onChange={(e) =>
+                      setInput((prev: any) => ({
+                        ...prev,
+                        description: e,
+                      }))
+                    }
+                  />
+                ) : (
+                  <div className="w-full px-3 py-2 h-[314px] overflow-y-scroll border border-sky-400/80 rounded-md">
+                    <div
+                      className="prose prose-sm w-full"
+                      dangerouslySetInnerHTML={{ __html: input.description }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1275,16 +1308,6 @@ export const Client = () => {
             </div>
           </div>
         </div>
-        <UploadPDF
-          files={uploadPDF}
-          setFiles={setUploadPDF}
-          input={input}
-          setInput={setInput}
-          isEdit={isEdit}
-          setOpenPDF={setIsOpenPDF}
-          handleRemove={handleDeletePDF}
-          isPendingDelete={isPendingRemovePDF}
-        />
         <UploadImage
           setIsOpenUpload={setIsOpenUpload}
           images={dataListImages}

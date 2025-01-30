@@ -37,7 +37,7 @@ const PopoverWithTrigger = ({
   return (
     <Popover open={open} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2">
+        <Button className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2 border border-sky-400/80 hover:border-sky-400">
           {trigger}
           <div className="size-8 rounded-full flex items-center justify-center group-hover:bg-sky-50">
             <ChevronDown className="size-4" />

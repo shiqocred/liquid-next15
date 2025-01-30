@@ -41,7 +41,7 @@ const PopoverWithTrigger = ({
       <PopoverTrigger asChild>
         <Button
           disabled={!isEdit}
-          className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2 group disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-default"
+          className="justify-between bg-transparent shadow-none hover:bg-transparent text-black group hover:underline hover:underline-offset-2 group disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-default border border-sky-400/80 hover:border-sky-400"
         >
           {trigger}
           <div className="size-8 rounded-full flex items-center justify-center group-hover:bg-sky-50 group-disabled:hidden">
