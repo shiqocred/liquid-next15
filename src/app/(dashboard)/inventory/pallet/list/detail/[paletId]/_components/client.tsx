@@ -78,7 +78,6 @@ import { useDeleteImage } from "../_api/use-delete-image";
 import { useUpdateImage } from "../_api/use-update-image";
 import { useExportPalet } from "../_api/use-export-palet";
 import PopoverWithTrigger from "./popover-with-trigger";
-import { useRemovePDF } from "../_api/use-remove-pdf";
 import {
   Popover,
   PopoverContent,
@@ -166,12 +165,6 @@ export const Client = () => {
     "destructive"
   );
 
-  const [DeletePDFDialog, confirmDeletePDF] = useConfirm(
-    "Delete PDF File",
-    "This action cannot be undone",
-    "destructive"
-  );
-
   // confirm end ----------------------------------------------------------------
 
   // mutate strat ----------------------------------------------------------------
@@ -181,9 +174,6 @@ export const Client = () => {
 
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
-
-  const { mutate: mutateRemovePDF, isPending: isPendingRemovePDF } =
-    useRemovePDF();
 
   const {
     mutate: mutateDeleteImage,
@@ -380,23 +370,6 @@ export const Client = () => {
 
     mutateDeleteImage(
       { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["list-detail-palet", paletId],
-          });
-        },
-      }
-    );
-  };
-
-  const handleDeletePDF = async () => {
-    const ok = await confirmDeletePDF();
-
-    if (!ok) return;
-
-    mutateRemovePDF(
-      { id: paletId ? paletId.toString() : "" },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
@@ -681,7 +654,6 @@ export const Client = () => {
       />
       <DeleteImageDialog />
       <DeleteProductDialog />
-      <DeletePDFDialog />
       <DialogProduct
         open={isProduct}
         onCloseModal={() => {
@@ -1082,12 +1054,11 @@ export const Client = () => {
                   <Button
                     type="button"
                     onClick={() => setIsOpenPDF(true)}
-                    disabled={isPendingRemovePDF}
                     className="flex pl-4 items-center justify-start [&_svg]:size-3 w-full hover:bg-transparent hover:underline hover:underline-offset-2 disabled:opacity-100 disabled:pointer-events-auto border border-sky-400/80 hover:border-sky-400"
                     variant={"ghost"}
                   >
                     <p className="line-clamp-1 font-semibold text-sm">
-                      Uploaded file
+                      Show file
                     </p>
                     <ArrowUpRightFromSquare />
                   </Button>
