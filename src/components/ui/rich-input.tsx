@@ -227,64 +227,48 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
         </Button>
       </TooltipProviderPage>
 
-      <TooltipProviderPage value="Align Left">
+      <TooltipProviderPage
+        value={
+          editor.isActive({ textAlign: "right" })
+            ? "Align Right"
+            : editor.isActive({ textAlign: "center" })
+            ? "Align Center"
+            : editor.isActive({ textAlign: "justify" })
+            ? "Align Justify"
+            : "Align Left"
+        }
+      >
         <Button
           size="icon"
           variant={"ghost"}
-          className={cn(
-            "hover:bg-sky-100",
-            editor.isActive({ textAlign: "left" }) &&
-              "bg-sky-200 hover:bg-sky-200"
-          )}
-          disabled={!editor.can().chain().focus().setTextAlign("left").run()}
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          className={cn("hover:bg-sky-100")}
+          disabled={
+            !editor.can().chain().focus().setTextAlign("left").run() ||
+            !editor.can().chain().focus().setTextAlign("right").run() ||
+            !editor.can().chain().focus().setTextAlign("center").run() ||
+            !editor.can().chain().focus().setTextAlign("justify").run()
+          }
+          onClick={() => {
+            if (editor.isActive({ textAlign: "justify" })) {
+              editor.chain().focus().setTextAlign("left").run();
+            } else if (editor.isActive({ textAlign: "center" })) {
+              editor.chain().focus().setTextAlign("right").run();
+            } else if (editor.isActive({ textAlign: "right" })) {
+              editor.chain().focus().setTextAlign("justify").run();
+            } else {
+              editor.chain().focus().setTextAlign("center").run();
+            }
+          }}
         >
-          <TextAlignLeft />
-        </Button>
-      </TooltipProviderPage>
-
-      <TooltipProviderPage value="Align Center">
-        <Button
-          size="icon"
-          variant={"ghost"}
-          className={cn(
-            editor.isActive({ textAlign: "center" }) &&
-              "bg-sky-200 hover:bg-sky-200"
+          {editor.isActive({ textAlign: "right" }) ? (
+            <TextAlignRight />
+          ) : editor.isActive({ textAlign: "center" }) ? (
+            <TextAlignCenter />
+          ) : editor.isActive({ textAlign: "justify" }) ? (
+            <TextAlignJustify />
+          ) : (
+            <TextAlignLeft />
           )}
-          disabled={!editor.can().chain().focus().setTextAlign("center").run()}
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-        >
-          <TextAlignCenter />
-        </Button>
-      </TooltipProviderPage>
-
-      <TooltipProviderPage value="Align Right">
-        <Button
-          size="icon"
-          variant={"ghost"}
-          className={cn(
-            editor.isActive({ textAlign: "right" }) &&
-              "bg-sky-200 hover:bg-sky-200"
-          )}
-          disabled={!editor.can().chain().focus().setTextAlign("right").run()}
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-        >
-          <TextAlignRight />
-        </Button>
-      </TooltipProviderPage>
-
-      <TooltipProviderPage value="Align Justify">
-        <Button
-          size="icon"
-          variant={"ghost"}
-          className={cn(
-            editor.isActive({ textAlign: "justify" }) &&
-              "bg-sky-200 hover:bg-sky-200"
-          )}
-          disabled={!editor.can().chain().focus().setTextAlign("justify").run()}
-          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-        >
-          <TextAlignJustify />
         </Button>
       </TooltipProviderPage>
 

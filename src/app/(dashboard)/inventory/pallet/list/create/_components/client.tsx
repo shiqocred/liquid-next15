@@ -70,6 +70,7 @@ import {
 } from "@/components/ui/dialog";
 import { useProceeedImage } from "../_api/use-proceed-image";
 import PopoverWithTrigger from "./popover-with-trigger";
+import { RichInput } from "@/components/ui/rich-input";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -78,9 +79,6 @@ const DialogUpload = dynamic(() => import("./dialog-upload"), {
   ssr: false,
 });
 const UploadImage = dynamic(() => import("./upload-image"), {
-  ssr: false,
-});
-const UploadPDF = dynamic(() => import("./upload-pdf"), {
   ssr: false,
 });
 
@@ -94,7 +92,6 @@ export const Client = () => {
   const [isOpenImage, setIsOpenImage] = useState(false);
   const [isOpenUpload, setIsOpenUpload] = useState(false);
 
-  const [uploadPDF, setUploadPDF] = useState<File[]>([]);
   const [resProceedImage, setResProceedImage] = useState<string[]>([]);
   const [urlDialog, setUrlDialog] = useState("/images/liquid8_og_800x800.png");
   const [input, setInput] = useState({
@@ -292,11 +289,6 @@ export const Client = () => {
         const mimeType = "image/jpeg"; // Sesuaikan dengan tipe MIME
         const blob = base64ToBlob(element, mimeType);
         body.append("images[]", blob);
-      }
-    }
-    if (uploadPDF.length > 0) {
-      for (const element of uploadPDF) {
-        body.append("file_pdf", element);
       }
     }
 
@@ -603,131 +595,147 @@ export const Client = () => {
                 />
               </div>
             </div>
-            <div className="flex w-full gap-4">
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Category</Label>
-                <PopoverWithTrigger
-                  open={isOpenCategory}
-                  setIsOpen={setIsOpenCategory}
-                  data={dataListCategories}
-                  dataId={input.category.id}
-                  trigger={
-                    input.category.name
-                      ? input.category.name
-                      : "Select Category..."
-                  }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      category: {
-                        id: item.id,
-                        name: item.name_category,
-                      },
-                    }));
-                    setIsOpenCategory(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full font-medium">
-                      {item.name_category}
-                    </div>
-                  )}
-                />
-              </div>
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Warehouse</Label>
-                <PopoverWithTrigger
-                  open={isOpenWarehouse}
-                  setIsOpen={setIsOpenWarehouse}
-                  data={dataListWarehouses}
-                  dataId={input.warehouse.id}
-                  trigger={
-                    input.warehouse.name
-                      ? input.warehouse.name
-                      : "Select Warehouse..."
-                  }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      warehouse: {
-                        id: item.id,
-                        name: item.nama,
-                      },
-                    }));
-                    setIsOpenWarehouse(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full flex flex-col gap-1">
-                      <div className="w-full font-medium capitalize">
-                        {item.nama}
+            <div className="grid grid-cols-3 w-full gap-4">
+              <div className="flex flex-col w-full gap-[30.75px] col-span-1">
+                <div className="z-10 w-full flex flex-col gap-1.5">
+                  <Label>Category</Label>
+                  <PopoverWithTrigger
+                    open={isOpenCategory}
+                    setIsOpen={setIsOpenCategory}
+                    data={dataListCategories}
+                    dataId={input.category.id}
+                    trigger={
+                      input.category.name
+                        ? input.category.name
+                        : "Select Category..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        category: {
+                          id: item.id,
+                          name: item.name_category,
+                        },
+                      }));
+                      setIsOpenCategory(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full font-medium">
+                        {item.name_category}
                       </div>
-                      <Separator className="bg-gray-500" />
-                      <p className="text-xs text-start w-full text-gray-500">
-                        Lat. {item.latitude} | Long. {item.longitude}
-                      </p>
-                      <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                        {item.alamat}
-                      </p>
-                      <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                        {item.kecamatan}, {item.kabupaten}, {item.provinsi}
-                      </p>
-                    </div>
-                  )}
-                />
+                    )}
+                  />
+                </div>
+                <div className="z-10 w-full flex flex-col gap-1.5">
+                  <Label>Warehouse</Label>
+                  <PopoverWithTrigger
+                    open={isOpenWarehouse}
+                    setIsOpen={setIsOpenWarehouse}
+                    data={dataListWarehouses}
+                    dataId={input.warehouse.id}
+                    trigger={
+                      input.warehouse.name
+                        ? input.warehouse.name
+                        : "Select Warehouse..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        warehouse: {
+                          id: item.id,
+                          name: item.nama,
+                        },
+                      }));
+                      setIsOpenWarehouse(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full flex flex-col gap-1">
+                        <div className="w-full font-medium capitalize">
+                          {item.nama}
+                        </div>
+                        <Separator className="bg-gray-500" />
+                        <p className="text-xs text-start w-full text-gray-500">
+                          Lat. {item.latitude} | Long. {item.longitude}
+                        </p>
+                        <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                          {item.alamat}
+                        </p>
+                        <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                          {item.kecamatan}, {item.kabupaten}, {item.provinsi}
+                        </p>
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="z-10 w-full flex flex-col gap-1.5">
+                  <Label>Condition</Label>
+                  <PopoverWithTrigger
+                    open={isOpenCondition}
+                    setIsOpen={setIsOpenCondition}
+                    data={dataListProductConditions}
+                    dataId={input.condition.id}
+                    trigger={
+                      input.condition.name
+                        ? input.condition.name
+                        : "Select Condition..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        condition: {
+                          id: item.id,
+                          name: item.condition_name,
+                        },
+                      }));
+                      setIsOpenCondition(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full font-medium">
+                        {item.condition_name}
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="z-10 w-full flex flex-col gap-1.5">
+                  <Label>Status</Label>
+                  <PopoverWithTrigger
+                    open={isOpenStatus}
+                    setIsOpen={setIsOpenStatus}
+                    data={dataListProductStatus}
+                    dataId={input.status.id}
+                    trigger={
+                      input.status.name ? input.status.name : "Select Status..."
+                    }
+                    onSelect={(item: any) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        status: {
+                          id: item.id,
+                          name: item.status_name,
+                        },
+                      }));
+                      setIsOpenStatus(false);
+                    }}
+                    itemSelect={(item: any) => (
+                      <div className="w-full font-medium">
+                        {item.status_name}
+                      </div>
+                    )}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="flex w-full gap-4">
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Condition</Label>
-                <PopoverWithTrigger
-                  open={isOpenCondition}
-                  setIsOpen={setIsOpenCondition}
-                  data={dataListProductConditions}
-                  dataId={input.condition.id}
-                  trigger={
-                    input.condition.name
-                      ? input.condition.name
-                      : "Select Condition..."
-                  }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
+              <div className="flex flex-col w-full col-span-2 gap-1.5">
+                <Label>Description</Label>
+                <RichInput
+                  content={input.description}
+                  className="min-h-[250px]"
+                  editorClassName={"max-h-[235px]"}
+                  onChange={(e) =>
+                    setInput((prev: any) => ({
                       ...prev,
-                      condition: {
-                        id: item.id,
-                        name: item.condition_name,
-                      },
-                    }));
-                    setIsOpenCondition(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full font-medium">
-                      {item.condition_name}
-                    </div>
-                  )}
-                />
-              </div>
-              <div className="z-10 w-full flex flex-col gap-1">
-                <Label>Status</Label>
-                <PopoverWithTrigger
-                  open={isOpenStatus}
-                  setIsOpen={setIsOpenStatus}
-                  data={dataListProductStatus}
-                  dataId={input.status.id}
-                  trigger={
-                    input.status.name ? input.status.name : "Select Status..."
+                      description: e,
+                    }))
                   }
-                  onSelect={(item: any) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      status: {
-                        id: item.id,
-                        name: item.status_name,
-                      },
-                    }));
-                    setIsOpenStatus(false);
-                  }}
-                  itemSelect={(item: any) => (
-                    <div className="w-full font-medium">{item.status_name}</div>
-                  )}
                 />
               </div>
             </div>
@@ -917,12 +925,6 @@ export const Client = () => {
             </div>
           </div>
         </div>
-        <UploadPDF
-          files={uploadPDF}
-          setFiles={setUploadPDF}
-          input={input}
-          setInput={setInput}
-        />
         <UploadImage
           setIsOpenUpload={setIsOpenUpload}
           resProceedImage={resProceedImage}
