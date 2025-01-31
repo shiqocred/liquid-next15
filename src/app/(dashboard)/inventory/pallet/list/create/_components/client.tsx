@@ -396,6 +396,15 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "old_price_product",
+      header: "Price",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {formatRupiah(row.original.old_price_product)}
+        </div>
+      ),
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
