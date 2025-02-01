@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
 import { Loader2, PlusCircle, RefreshCw, X } from "lucide-react";
@@ -75,6 +75,24 @@ const DialogProduct = ({
         row.original.new_category_product ??
         row.original.new_tag_product ??
         "-",
+    },
+    {
+      accessorKey: "old_price_product",
+      header: "Old Price",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {formatRupiah(row.original.old_price_product)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_price_product",
+      header: "New Price",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {formatRupiah(row.original.new_price_product)}
+        </div>
+      ),
     },
     {
       accessorKey: "action",
