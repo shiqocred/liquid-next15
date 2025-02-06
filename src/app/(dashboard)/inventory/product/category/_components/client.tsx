@@ -1,19 +1,11 @@
 "use client";
 
 import {
-  AlertCircle,
-  ChevronDown,
-  Circle,
   FileDown,
-  Loader,
   Loader2,
-  Minus,
-  Palette,
-  Plus,
   ReceiptText,
   RefreshCw,
   Trash2,
-  X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
@@ -45,27 +37,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateProductCategory } from "../_api/use-update-product-category";
 import { useGetProductCategoryDetail } from "../_api/use-get-product-category-detail";
 import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import BarcodePrinted from "@/components/barcode";
-import {
-  PopoverPortal,
-  PopoverPortalContent,
-  PopoverPortalTrigger,
-} from "@/components/ui/popover-portal";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { DialogDetail } from "./dialog-detail";
 
 interface QualityData {
   lolos: string | null;
@@ -232,18 +204,6 @@ export const Client = () => {
     return dataPrice?.data.data.resource.category ?? [];
   }, [dataPrice]);
 
-  const findNotNull = (v: any) => {
-    if (v) {
-      const qualityObject = JSON.parse(v);
-
-      const filteredEntries = Object.entries(qualityObject).find(
-        ([, value]) => value !== null
-      );
-
-      return filteredEntries?.[0] ?? "";
-    }
-  };
-
   const handleUpdate = () => {
     const body = {
       code_document: dataDetailProduct?.code_document,
@@ -301,6 +261,9 @@ export const Client = () => {
     }
     if (isNaN(parseFloat(input.price))) {
       setInput((prev) => ({ ...prev, price: "0" }));
+    }
+    if (isNaN(parseFloat(input.oldPrice))) {
+      setInput((prev) => ({ ...prev, oldPrice: "0" }));
     }
   }, [input]);
 
@@ -450,6 +413,19 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <DialogDetail
+        isOpen={isOpenDetailProduct}
+        handleClose={handleClose}
+        isLoadingProduct={isLoadingDetailProduct}
+        isLoadingUpdate={isPendingUpdate}
+        handleUpdate={handleUpdate}
+        input={input}
+        setInput={setInput}
+        data={dataDetailProduct}
+        isOpenCategory={isOpenCategory}
+        setIsOpenCategory={setIsOpenCategory}
+        categories={categories}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -511,412 +487,6 @@ export const Client = () => {
           />
         </div>
       </div>
-      <Dialog open={isOpenDetailProduct} onOpenChange={handleClose}>
-        <DialogContent
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          className="max-w-6xl"
-          onClose={false}
-        >
-          <DialogHeader>
-            <DialogTitle className="justify-between flex items-center">
-              Detail Product
-              <TooltipProviderPage value="close" side="left">
-                <button
-                  onClick={() => handleClose()}
-                  className="w-6 h-6 flex items-center justify-center border border-black hover:bg-gray-100 rounded-full"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </TooltipProviderPage>
-            </DialogTitle>
-          </DialogHeader>
-          {isLoadingDetailProduct || isPendingUpdate ? (
-            <div className="w-full h-[408px] flex items-center justify-center flex-col gap-3">
-              <Loader className="size-6 animate-spin" />
-              <p className="text-sm ml-1">
-                {isLoadingDetailProduct ? "Getting Data..." : "Updating..."}
-              </p>
-            </div>
-          ) : (
-            <div className="flex gap-3 w-full">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleUpdate();
-                }}
-                className="flex flex-col gap-3 w-full"
-              >
-                <div className="flex gap-3">
-                  <div className="w-full h-full p-3 gap-3 rounded-md border border-sky-400 flex flex-col">
-                    <div className="items-center flex justify-center h-9 rounded w-full bg-sky-100 font-semibold">
-                      Old Data
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-col  w-full  gap-1">
-                        <Label
-                          htmlFor="barcodeOld"
-                          className="text-xs font-semibold"
-                        >
-                          Barcode
-                        </Label>
-                        <Input
-                          id="barcodeOld"
-                          className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent disabled:opacity-100 disabled:cursor-default"
-                          value={input.oldBarcode}
-                          disabled
-                          placeholder="Custom Barcode..."
-                        />
-                      </div>
-                      <div className="flex flex-col  w-full  gap-1">
-                        <Label
-                          htmlFor="nameOld"
-                          className="text-xs font-semibold"
-                        >
-                          Name Product
-                        </Label>
-                        <Input
-                          id="nameOld"
-                          className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent disabled:opacity-100 disabled:cursor-default"
-                          value={input.oldName}
-                          disabled
-                          placeholder="Custom Barcode..."
-                        />
-                      </div>
-                      <div className="flex flex-col w-full gap-1">
-                        <Label className="text-xs font-semibold">Qty</Label>
-                        <div className="relative flex items-center">
-                          <Input
-                            value={input.oldQty}
-                            disabled
-                            className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent  disabled:opacity-100 disabled:cursor-default"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col w-full  gap-1">
-                        <Label
-                          htmlFor="priceOld"
-                          className="text-xs font-semibold"
-                        >
-                          Price
-                        </Label>
-                        <div className="w-full relative flex items-center">
-                          <Input
-                            id="priceOld"
-                            className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent "
-                            value={Math.round(parseFloat(input.oldPrice))}
-                            onChange={(e) =>
-                              setInput((prev) => ({
-                                ...prev,
-                                oldPrice: e.target.value.startsWith("0")
-                                  ? e.target.value.replace(/^0+/, "")
-                                  : e.target.value,
-                              }))
-                            }
-                            placeholder="Custom Barcode..."
-                          />
-                          <p className="absolute right-3 text-xs text-gray-500">
-                            {formatRupiah(parseFloat(input.oldPrice))}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full h-full p-3 gap-3 rounded-md border border-sky-400 flex flex-col">
-                    <div className="items-center flex justify-center h-9 rounded w-full bg-sky-100 font-semibold">
-                      New Data
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-col  w-full  gap-1">
-                        <Label
-                          htmlFor="barcodeOld"
-                          className="text-xs font-semibold"
-                        >
-                          Barcode
-                        </Label>
-                        <Input
-                          id="barcodeOld"
-                          className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent disabled:opacity-100 disabled:cursor-default"
-                          value={input.barcode}
-                          disabled
-                          placeholder="Custom Barcode..."
-                        />
-                      </div>
-                      <div className="flex flex-col  w-full  gap-1">
-                        <Label
-                          htmlFor="nameNew"
-                          className="text-xs font-semibold"
-                        >
-                          Name Product
-                        </Label>
-                        <Input
-                          id="nameNew"
-                          className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent "
-                          value={input.name}
-                          onChange={(e) =>
-                            setInput((prev) => ({
-                              ...prev,
-                              name: e.target.value,
-                            }))
-                          }
-                          placeholder="Custom Barcode..."
-                        />
-                      </div>
-                      <div className="w-full flex-none  flex gap-2 ">
-                        <div className="flex flex-col w-full  gap-1">
-                          <Label
-                            htmlFor="priceNew"
-                            className="text-xs font-semibold"
-                          >
-                            Price
-                          </Label>
-                          <Input
-                            id="priceNew"
-                            className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent "
-                            value={Math.round(parseFloat(input.price))}
-                            onChange={(e) =>
-                              setInput((prev) => ({
-                                ...prev,
-                                price: e.target.value.startsWith("0")
-                                  ? e.target.value.replace(/^0+/, "")
-                                  : e.target.value,
-                              }))
-                            }
-                            placeholder="Custom Barcode..."
-                          />
-                        </div>
-                        <div className="flex flex-col w-full gap-1">
-                          <Label className="text-xs font-semibold">Qty</Label>
-                          <div className="relative flex items-center">
-                            <Input
-                              value={input.qty}
-                              onChange={(e) =>
-                                setInput((prev) => ({
-                                  ...prev,
-                                  qty: e.target.value.startsWith("0")
-                                    ? e.target.value.replace(/^0+/, "")
-                                    : e.target.value,
-                                }))
-                              }
-                              className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent  disabled:opacity-100 disabled:cursor-default"
-                            />
-                            <div className="flex absolute right-2 gap-1">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setInput((prev) => ({
-                                    ...prev,
-                                    qty: (parseFloat(prev.qty) - 1).toString(),
-                                  }))
-                                }
-                                disabled={parseFloat(input.qty) === 0}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200 disabled:hover:bg-sky-100 disabled:opacity-50"
-                              >
-                                <Minus className="w-3 h-3" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setInput((prev) => ({
-                                    ...prev,
-                                    qty: (parseFloat(prev.qty) + 1).toString(),
-                                  }))
-                                }
-                                className="w-6 h-6 flex items-center justify-center rounded bg-sky-100 hover:bg-sky-200"
-                              >
-                                <Plus className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {!dataDetailProduct?.new_tag_product && (
-                        <div className="flex flex-col gap-1 ">
-                          <Label className="text-xs font-semibold">
-                            Category
-                          </Label>
-                          <PopoverPortal
-                            open={isOpenCategory}
-                            onOpenChange={setIsOpenCategory}
-                          >
-                            <PopoverPortalTrigger asChild>
-                              <Button
-                                type="button"
-                                className="border-0 border-b  rounded-none justify-between border-sky-400/80 focus:border-sky-400 focus-visible:ring-transparent focus:ring-1 hover:bg-sky-50 focus:bg-sky-50 shadow-none"
-                                variant={"outline"}
-                              >
-                                <p>
-                                  {input.category ??
-                                    dataDetailProduct?.new_category_product ?? (
-                                      <span className="italic underline">
-                                        No Category yet.
-                                      </span>
-                                    )}
-                                </p>
-                                <ChevronDown />
-                              </Button>
-                            </PopoverPortalTrigger>
-                            <PopoverPortalContent
-                              className="p-0"
-                              style={{
-                                width: "var(--radix-popover-trigger-width)",
-                              }}
-                            >
-                              <Command>
-                                <CommandInput />
-                                <CommandList className="p-1">
-                                  <CommandGroup>
-                                    <CommandEmpty>No Data Found.</CommandEmpty>
-                                    {categories.map((item) => (
-                                      <CommandItem
-                                        key={item.id}
-                                        className={cn(
-                                          "my-2 first:mt-0 last:mb-0 flex gap-2 items-center border",
-                                          input.category === item.name_category
-                                            ? "border-gray-500"
-                                            : "border-gray-300"
-                                        )}
-                                        onSelect={() => {
-                                          setInput((prev) => ({
-                                            ...prev,
-                                            category: item?.name_category ?? "",
-                                            price: (
-                                              dataDetailProduct?.old_price_product -
-                                              (dataDetailProduct?.old_price_product /
-                                                100) *
-                                                parseFloat(
-                                                  item?.discount_category ?? "0"
-                                                )
-                                            ).toString(),
-                                          }));
-                                          setIsOpenCategory(false);
-                                        }}
-                                      >
-                                        <div className="size-4 rounded-full border border-gray-500 flex-none flex items-center justify-center">
-                                          {input.category ===
-                                            item.name_category && (
-                                            <Circle className="fill-black !size-2.5" />
-                                          )}
-                                        </div>
-                                        <div className="flex flex-col gap-1.5">
-                                          <p
-                                            className={cn(
-                                              "font-bold border-b pb-1.5 whitespace-nowrap text-ellipsis overflow-hidden w-full",
-                                              input.category ===
-                                                item.name_category
-                                                ? "border-gray-500"
-                                                : "border-gray-300"
-                                            )}
-                                          >
-                                            {item.name_category}
-                                          </p>
-                                          <p className="text-xs font-light flex items-center gap-1">
-                                            <span>
-                                              {item.discount_category}%
-                                            </span>
-                                            <span>-</span>
-                                            <span>
-                                              Max.{" "}
-                                              {formatRupiah(
-                                                parseFloat(
-                                                  item.max_price_category
-                                                )
-                                              )}
-                                            </span>
-                                          </p>
-                                        </div>
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverPortalContent>
-                          </PopoverPortal>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full flex-none  flex gap-2 border border-sky-400 p-3 rounded-md">
-                  <div className="flex flex-col w-full  gap-1">
-                    <Label htmlFor="priceNew" className="text-xs font-semibold">
-                      Discount
-                    </Label>
-                    <Input
-                      id="priceNew"
-                      className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent "
-                      value={Math.round(parseFloat(input.discount))}
-                      onChange={(e) =>
-                        setInput((prev) => ({
-                          ...prev,
-                          discount: e.target.value.startsWith("0")
-                            ? e.target.value.replace(/^0+/, "")
-                            : e.target.value,
-                        }))
-                      }
-                      placeholder="Custom Barcode..."
-                    />
-                  </div>
-                  <div className="flex flex-col w-full  gap-1">
-                    <Label htmlFor="priceNew" className="text-xs font-semibold">
-                      Display Price
-                    </Label>
-                    <Input
-                      id="priceNew"
-                      className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent  disabled:opacity-100"
-                      value={formatRupiah(parseFloat(input.displayPrice))}
-                      disabled
-                    />
-                  </div>
-                </div>
-                <Button
-                  disabled={
-                    !input.name ||
-                    parseFloat(input.qty) === 0 ||
-                    (dataDetailProduct?.old_price_product >= 100000 &&
-                      !input.category &&
-                      findNotNull(dataDetailProduct?.new_quality) === "lolos")
-                  }
-                  className="bg-sky-400/80 hover:bg-sky-400 text-black"
-                  type="submit"
-                >
-                  Update
-                </Button>
-              </form>
-              <div className="w-fit flex flex-none flex-col gap-4">
-                {dataDetailProduct?.new_category_product ? (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center p-2 rounded border bg-gray-100 gap-2 text-sm">
-                      <AlertCircle className="size-4" />
-                      <div className="flex flex-col">
-                        <p>Update Data terlebih dahulu</p>
-                        <p>untuk Barcode terbaru!</p>
-                      </div>
-                    </div>
-                    <BarcodePrinted
-                      barcode={dataDetailProduct?.new_barcode_product}
-                      newPrice={dataDetailProduct?.new_price_product}
-                      oldPrice={dataDetailProduct?.old_price_product}
-                      category={dataDetailProduct?.new_category_product}
-                    />
-                  </div>
-                ) : (
-                  <div className="w-auto">
-                    <div className="w-[282px] p-3 flex flex-col gap-3 border border-gray-300 rounded text-sm">
-                      <div className="flex items-center text-sm font-semibold border-b border-gray-300 pb-2">
-                        <Palette className="w-4 h-4 mr-2" />
-                        <p>Color</p>
-                      </div>
-                      <p className="pl-6">
-                        {dataDetailProduct?.new_tag_product}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
