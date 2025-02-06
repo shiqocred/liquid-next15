@@ -1,19 +1,11 @@
 "use client";
 
 import {
-  AlertCircle,
-  ChevronDown,
-  Circle,
   FileDown,
-  Loader,
   Loader2,
-  Minus,
-  Palette,
-  Plus,
   ReceiptText,
   RefreshCw,
   Trash2,
-  X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
@@ -45,27 +37,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateProductCategory } from "../_api/use-update-product-category";
 import { useGetProductCategoryDetail } from "../_api/use-get-product-category-detail";
 import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import BarcodePrinted from "@/components/barcode";
-import {
-  PopoverPortal,
-  PopoverPortalContent,
-  PopoverPortalTrigger,
-} from "@/components/ui/popover-portal";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { DialogDetail } from "./dialog-detail";
 
 interface QualityData {
