@@ -60,8 +60,8 @@ const DialogDetail = ({
                     </Badge>
                   </div>
                 </div>
-                <div className="w-full flex">
-                  <div className="flex gap-3 flex-col pl-6 w-2/3">
+                <div className="w-full grid grid-cols-3">
+                  <div className="flex gap-3 flex-col pl-6 col-span-2">
                     <div className="flex flex-col w-full overflow-hidden gap-1">
                       <p className="text-sm font-semibold">Name Product</p>
                       <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
@@ -85,7 +85,7 @@ const DialogDetail = ({
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col w-1/3 gap-3">
+                  <div className="flex flex-col col-span-1 gap-3">
                     <div className="flex flex-col w-full overflow-hidden gap-1">
                       <p className="text-sm font-semibold">Color</p>
                       <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
