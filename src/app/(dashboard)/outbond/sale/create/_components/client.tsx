@@ -152,6 +152,7 @@ export const Client = () => {
     cartonUnit: "0",
     voucher: "0",
     ppnActive: 0,
+    discountFor: "",
   });
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -324,6 +325,7 @@ export const Client = () => {
       discount: Math.round(
         data?.data.data.resource.data?.[0]?.new_discount_sale ?? "0"
       ).toString(),
+      discountFor: data?.data.data.resource.data?.[0]?.type_discount ?? "",
       price: Math.round(data?.data.data.resource.total_sale ?? "0").toString(),
     }));
   }, [data]);
@@ -374,8 +376,8 @@ export const Client = () => {
     const body = {
       buyer_id: input.buyerId,
       new_discount_sale: input.discount,
+      type_discount: input.discountFor,
       sale_barcode: barcode,
-      voucher: "",
     };
     mutateAddProduct(
       { body },
@@ -542,7 +544,13 @@ export const Client = () => {
 
   useEffect(() => {
     if (isNaN(parseFloat(input.discount))) {
-      setInput((prev) => ({ ...prev, discount: "0" }));
+      setInput((prev: any) => ({ ...prev, discount: "0", discountFor: "" }));
+    }
+    if (parseFloat(input.discount) === 0 && input.discountFor) {
+      setInput((prev: any) => ({ ...prev, discountFor: "" }));
+    }
+    if (parseFloat(input.discount) > 0 && !input.discountFor) {
+      setInput((prev: any) => ({ ...prev, discountFor: "old" }));
     }
     if (isNaN(input.ppnActive)) {
       setInput((prev) => ({ ...prev, ppnActive: 0 }));
@@ -988,8 +996,8 @@ export const Client = () => {
             setIsOpenDiscount(false);
           }
         }}
-        discount={input.discount}
-        setDiscount={setInput}
+        input={input}
+        setInput={setInput}
       />
       <DialogVoucher
         open={isOpenVoucher}
@@ -1315,9 +1323,19 @@ export const Client = () => {
                   {metaPage.total.toLocaleString()}
                 </p>
               </div>
-              <div className="flex flex-col">
-                <p className="text-sm">Total Diskon</p>
-                <p className="font-semibold">{input.discount}%</p>
+              <div className="flex items-center">
+                <div className="flex flex-col w-full">
+                  <p className="text-sm">Total Diskon</p>
+                  <p className="font-semibold">{input.discount}%</p>
+                </div>
+                {input.discountFor && (
+                  <div className="flex flex-col w-full">
+                    <p className="text-sm">Diskon for</p>
+                    <p className="font-semibold">
+                      {input.discountFor === "old" ? "Old Price" : "New Price"}
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col">
                 <p className="text-sm">Total Voucher</p>

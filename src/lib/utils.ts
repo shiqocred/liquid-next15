@@ -115,3 +115,7 @@ export const base64ToBlob = (base64: string, mimeType: string): Blob => {
 
   return new Blob([ab], { type: mimeType });
 };
+
+export const numericString = (e: string) => {
+  return e.startsWith("0") ? e.replace(/^0+/, "") : e;
+};
