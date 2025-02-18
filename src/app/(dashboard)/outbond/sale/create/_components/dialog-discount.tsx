@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, numericString } from "@/lib/utils";
 import { AlertCircle, Check, Percent } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 const DialogDiscount = ({
   open,
