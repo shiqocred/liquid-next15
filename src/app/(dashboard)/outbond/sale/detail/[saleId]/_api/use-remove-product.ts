@@ -16,12 +16,15 @@ export const useRemoveProduct = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/sales/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ idProduct, idDocument }) => {
+      const res = await axios.delete(
+        `${baseUrl}/sale-document/${idDocument}/${idProduct}/delete-product`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
