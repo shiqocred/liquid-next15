@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
+import { PlusCircle, ReceiptText, RefreshCcw, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
@@ -24,8 +24,13 @@ import { useGetListSale } from "../_api/use-get-list-sale";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import DialogSync from "./dialog-sync";
+import { useCreateSync } from "../_api/use-create-sync";
 
 export const Client = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
   // data search, page
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
@@ -76,6 +81,19 @@ export const Client = () => {
       method: "GET",
     });
   }, [isError, error]);
+
+  const handleOpenDialog = () => setIsDialogOpen(true);
+  const handleClose = () => setIsDialogOpen(false);
+
+  const { mutate: mutateCreate } = useCreateSync();
+
+  const handleSync = (dateRange: { start_date: Date; end_date: Date }) => {
+    const body = {
+      start_date: dateRange.start_date.toISOString().split("T")[0],
+      end_date: dateRange.end_date.toISOString().split("T")[0],
+    };
+    mutateCreate({ body }, { onSuccess: handleClose });
+  };
 
   // column data
   const columnListSale: ColumnDef<any>[] = [
@@ -211,6 +229,24 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
               <div className="flex gap-4 items-center ml-auto">
+                <Button
+                  asChild
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  variant={"outline"}
+                  onClick={handleOpenDialog} // Call to open the dialog
+                >
+                  <div>
+                    <RefreshCcw className={"w-4 h-4 mr-1"} />
+                    Sync
+                  </div>
+                </Button>
+                <DialogSync
+                  open={isDialogOpen}
+                  onCloseModal={handleClose}
+                  isDirty={isDirty}
+                  setIsDirty={setIsDirty}
+                  handleSync={handleSync}
+                />
                 <Button
                   asChild
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
