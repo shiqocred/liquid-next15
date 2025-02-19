@@ -27,7 +27,6 @@ import { DateRange } from "react-day-picker";
 const DialogSync = ({
   open,
   onCloseModal,
-  isDirty,
   setIsDirty,
   handleSync,
 }: {
@@ -55,7 +54,6 @@ const DialogSync = ({
 
   const handleDateSelection = () => {
     if (date?.from && date?.to) {
-      // Use the selected date range
       const selectedStartDate = date.from;
       const selectedEndDate = date.to;
 
