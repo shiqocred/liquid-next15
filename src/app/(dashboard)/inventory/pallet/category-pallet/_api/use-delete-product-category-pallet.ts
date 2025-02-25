@@ -6,41 +6,37 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  idProduct: string;
-  idDocument: string;
+  id: string;
 };
 
 type Error = AxiosError;
 
-export const useRemoveProduct = () => {
+export const useDeleteProductCategoryPallet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ idProduct, idDocument }) => {
-      const res = await axios.delete(
-        `${baseUrl}/sale-document/${idDocument}/${idProduct}/delete-product`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+    mutationFn: async ({ id }) => {
+      const res = await axios.delete(`${baseUrl}/category_palets/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
-    onSuccess: () => {
-      toast.success("Product successfully removed");
-      queryClient.invalidateQueries({ queryKey: ["list-product-cashier"] });
+    onSuccess: (data) => {
+      toast.success("Category successfully Deleted");
+      queryClient.invalidateQueries({ queryKey: ["list-categories-pallet"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-detail-cashier"],
+        queryKey: ["category-detail-pallet", data.data.data.resource.id],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to remove`);
-        console.log("ERROR_REMOVE_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Category failed to delete`);
+        console.log("ERROR_DELETE_CATEGORY:", err);
       }
     },
   });
