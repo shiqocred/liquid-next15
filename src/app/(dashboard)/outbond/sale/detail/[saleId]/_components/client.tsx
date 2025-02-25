@@ -200,12 +200,12 @@ export const Client = () => {
     mutateAddProduct({ body });
   };
 
-  const handleRemoveProduct = async (id: any) => {
+  const handleRemoveProduct = async (idProduct: any) => {
     const ok = await confirmDeleteProduct();
 
     if (!ok) return;
 
-    mutateRemoveProduct({ id });
+    mutateRemoveProduct({ idProduct, idDocument: dataRes.id });
   };
 
   const handleGabor = async (price: any) => {
