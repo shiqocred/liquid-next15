@@ -2,7 +2,6 @@
 
 import {
   Edit3,
-  FileDown,
   Loader2,
   Percent,
   PlusCircle,
@@ -29,7 +28,6 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useExportCategories } from "../_api/use-export-categories";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -71,8 +69,8 @@ export const Client = () => {
 
   const { mutate: mutateDelete, isPending: isPendingDelete } =
     useDeleteProductCategoryPallet();
-  const { mutate: mutateExport, isPending: isPendingExport } =
-    useExportCategories();
+  // const { mutate: mutateExport, isPending: isPendingExport } =
+  //   useExportCategories();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } =
     useUpdateCategoryPallet();
   const { mutate: mutateCreate, isPending: isPendingCreate } =
@@ -122,17 +120,17 @@ export const Client = () => {
     mutateDelete({ id });
   };
 
-  const handleExport = async () => {
-    mutateExport("", {
-      onSuccess: (res) => {
-        const link = document.createElement("a");
-        link.href = res.data.data.resource;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      },
-    });
-  };
+  // const handleExport = async () => {
+  //   mutateExport("", {
+  //     onSuccess: (res) => {
+  //       const link = document.createElement("a");
+  //       link.href = res.data.data.resource;
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+  //     },
+  //   });
+  // };
 
   const handleClose = () => {
     setOpenCreateEdit(false);
