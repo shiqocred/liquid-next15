@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: string;
+  idProduct: string;
+  idDocument: string;
 };
 
 type Error = AxiosError;
