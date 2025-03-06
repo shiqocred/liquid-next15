@@ -10,6 +10,7 @@ interface BarcodePrint {
   newPrice: string;
   barcode: string;
   category: string;
+  discount: string;
   isBundle?: boolean;
   cancel?: () => void;
 }
@@ -19,6 +20,7 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
   newPrice,
   barcode,
   category,
+  discount,
   isBundle,
   cancel,
 }) => {
@@ -50,7 +52,8 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
               )}
               <div className="border w-[80] py-1 px-2 text-center border-black">
                 <p className="font-bold text-[10px] leading-3 break-all">
-                  {category}
+                  {category}{" "}
+                  <span className="whitespace-nowrap">({discount}%)</span>
                 </p>
               </div>
             </div>

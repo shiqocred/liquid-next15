@@ -24,15 +24,6 @@ export const useSubmitProduct = () => {
       });
       return res;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: [
-          "check-barcode-manifest-inbound",
-          data?.data?.data?.resource?.code_document,
-          data?.data?.data?.resource?.old_barcode_product,
-        ],
-      });
-    },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);

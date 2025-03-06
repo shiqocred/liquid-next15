@@ -26,13 +26,6 @@ export const useSubmitDoubleBarcode = () => {
     },
     onSuccess: (data) => {
       toast.success("Product Successfully Submited");
-      queryClient.invalidateQueries({
-        queryKey: [
-          "check-barcode-manifest-inbound",
-          data?.data?.data?.resource?.code_document,
-          data?.data?.data?.resource?.old_barcode_product,
-        ],
-      });
     },
     onError: (err) => {
       if (err.status === 403) {

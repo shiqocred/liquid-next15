@@ -72,6 +72,7 @@ export const Client = () => {
     newPrice: "",
     oldPrice: "",
     category: "",
+    discount: "",
   });
 
   const [SubmitDoubleDialog, confirmSubmit] = useConfirm(
@@ -178,6 +179,7 @@ export const Client = () => {
             newPrice: data.data.data.resource.new_price_product,
             oldPrice: data.data.data.resource.old_price_product,
             category: data.data.data.resource.new_category_product,
+            discount: data.data.data.resource.discount_category,
           });
         }
       },
@@ -238,6 +240,7 @@ export const Client = () => {
               newPrice: data.data.data.resource.new_price_product,
               oldPrice: data.data.data.resource.old_price_product,
               category: data.data.data.resource.new_category_product,
+              discount: data.data.data.resource.discount_category,
             });
           }
         } else if (!data.data.data.needConfirmation) {
@@ -746,6 +749,7 @@ export const Client = () => {
               category: "",
               newPrice: "",
               oldPrice: "",
+              discount: "",
             });
           } else {
             setBarcodeOpen(true);
@@ -761,6 +765,7 @@ export const Client = () => {
             barcode={metaBarcode.barcode ?? ""}
             category={metaBarcode.category ?? ""}
             newPrice={metaBarcode.newPrice ?? "0"}
+            discount={metaBarcode.discount ?? "0"}
             cancel={() => {
               setBarcodeOpen(false);
               setMetaBarcode({
@@ -768,6 +773,7 @@ export const Client = () => {
                 category: "",
                 newPrice: "",
                 oldPrice: "",
+                discount: "",
               });
             }}
           />
