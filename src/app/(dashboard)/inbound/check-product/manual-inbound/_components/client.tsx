@@ -42,13 +42,14 @@ export const Client = () => {
     "dialog",
     parseAsBoolean.withDefault(false)
   );
-  const [{ barcode, newPrice, oldPrice, category }, setMetaBarcode] =
+  const [{ barcode, newPrice, oldPrice, category, discount }, setMetaBarcode] =
     useQueryStates(
       {
         barcode: parseAsString.withDefault(""),
         newPrice: parseAsString.withDefault(""),
         oldPrice: parseAsString.withDefault(""),
         category: parseAsString.withDefault(""),
+        discount: parseAsString.withDefault(""),
       },
       {
         urlKeys: {
@@ -138,6 +139,7 @@ export const Client = () => {
             newPrice: data.data.data.resource.new_price_product,
             oldPrice: data.data.data.resource.old_price_product,
             category: data.data.data.resource.new_category_product,
+            discount: data.data.data.resource.discount_category,
           });
         }
       },
@@ -486,6 +488,7 @@ export const Client = () => {
               category: "",
               newPrice: "",
               oldPrice: "",
+              discount: "",
             });
             if (nameRef.current) {
               nameRef.current.focus();
@@ -504,6 +507,7 @@ export const Client = () => {
             barcode={barcode ?? ""}
             category={category ?? ""}
             newPrice={newPrice ?? "0"}
+            discount={discount ?? "0"}
             cancel={() => {
               setBarcodeOpen(false);
               setMetaBarcode({
