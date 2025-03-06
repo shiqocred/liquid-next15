@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
@@ -13,7 +13,6 @@ type Error = AxiosError;
 
 export const useSubmitDoubleBarcode = () => {
   const accessToken = getCookie("accessToken");
-  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async (value) => {
@@ -24,7 +23,7 @@ export const useSubmitDoubleBarcode = () => {
       });
       return res;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Product Successfully Submited");
     },
     onError: (err) => {
