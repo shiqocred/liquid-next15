@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle,
   ArrowRightCircle,
+  FileDown,
   Loader,
   Loader2,
   Minus,
@@ -17,7 +18,7 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { MouseEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Dialog,
@@ -66,6 +67,7 @@ import { useDoneCheckProductInput } from "../_api/use-done-check-product-input";
 import { useUpdateProductPII } from "../_api/use-update-product-pi-i";
 import { useGetProductDetailPII } from "../_api/use-get-product-detail-pi-i";
 import { useGetPriceProductPII } from "../_api/use-get-price-product-pi-i";
+import { useExportProductInput } from "../_api/use-export-product-input";
 
 const categoryVariant = {
   isClose: { width: "0px", padding: "0px", marginLeft: "0px" },
@@ -160,6 +162,8 @@ export const Client = () => {
     useDoneCheckProductInput();
   const { mutate: updateProduct, isSuccess: isSuccessUpdate } =
     useUpdateProductPII();
+  const { mutate: mutateExportPI, isPending: isPendingExportPI } =
+    useExportProductInput();
 
   // get data, data filtered, data detail
   const {
@@ -302,6 +306,19 @@ export const Client = () => {
     if (!ok) return;
 
     mutateDoneCheckAll({});
+  };
+
+  const handleExport = async (e: MouseEvent) => {
+    e.preventDefault();
+    mutateExportPI("", {
+      onSuccess: (res) => {
+        const link = document.createElement("a");
+        link.href = res.data.data.resource;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
+    });
   };
 
   // ---------------- Start Detail Fn -------------------- //
@@ -603,6 +620,18 @@ export const Client = () => {
               </div>
             </div>
             <div className="flex gap-3">
+              <Button
+                onClick={handleExport}
+                disabled={isPendingExportPI}
+                size={"icon"}
+                variant={"liquid"}
+              >
+                {isPendingExportPI ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <FileDown />
+                )}
+              </Button>
               <Sheet open={isOpenFiltered} onOpenChange={setIsOpenFiltered}>
                 <SheetTrigger asChild>
                   <Button className="bg-sky-400 hover:bg-sky-400/80 text-black">
