@@ -455,6 +455,7 @@ export const DialogDetail = ({
                     newPrice={data?.new_price_product}
                     oldPrice={data?.old_price_product}
                     category={data?.new_category_product}
+                    discount={data?.discount_category ?? "0"}
                   />
                 </div>
               ) : (
