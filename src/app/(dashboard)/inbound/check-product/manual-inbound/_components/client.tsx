@@ -515,6 +515,7 @@ export const Client = () => {
                 category: "",
                 newPrice: "",
                 oldPrice: "",
+                discount: "",
               });
               if (nameRef.current) {
                 nameRef.current.focus();
