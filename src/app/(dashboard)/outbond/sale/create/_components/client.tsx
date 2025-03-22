@@ -1402,7 +1402,11 @@ export const Client = () => {
         <div className="flex justify-between items-center w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
           <div className="flex items-center">
             <Label className="flex items-center gap-2 text-sm">
-              <Checkbox onCheckedChange={setIsTax} className="size-4" />
+              <Checkbox
+                onCheckedChange={setIsTax}
+                className="size-4"
+                disabled={parseFloat(dataRes?.total_sale) < 1000000} // Disable if grand total < 1 million
+              />
               With PPN
             </Label>
             <div
