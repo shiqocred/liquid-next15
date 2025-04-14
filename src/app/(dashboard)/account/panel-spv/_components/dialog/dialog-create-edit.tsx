@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,37 +8,95 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { Loader } from "lucide-react";
-import React from "react";
+import { Button } from "@/components/ui/button";
 
-const DialogCreateEdit = ({
+import { cn } from "@/lib/utils";
+
+import { Loader } from "lucide-react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
+
+import { useUpdateFormatBarcode } from "../../_api/use-update-format-barcode";
+import { useCreateFormatBarcode } from "../../_api/use-create-format-barcode";
+
+export const DialogCreateEdit = ({
   open,
   onCloseModal,
-  formatId,
-  input,
-  setInput,
-  isLoading,
-  handleClose,
-  handleCreate,
-  handleUpdate,
+  dataFormat,
 }: {
   open: boolean;
   onCloseModal: () => void;
-  formatId: any;
-  input: any;
-  setInput: any;
-  isLoading: boolean;
-  handleClose: () => void;
-  handleCreate: any;
-  handleUpdate: any;
+  dataFormat: any;
 }) => {
+  // data form create edit
+  const [input, setInput] = useState({
+    format: "",
+    totalScan: "",
+    totalUser: "",
+  });
+
+  const dataDetail: any = useMemo(() => {
+    return dataFormat.data?.data.data.resource;
+  }, [dataFormat]);
+
+  const { mutate: mutateUpdate, isPending: isPendingUpdate } =
+    useUpdateFormatBarcode();
+  const { mutate: mutateCreate, isPending: isPendingCreate } =
+    useCreateFormatBarcode();
+
+  const isLoading = isPendingUpdate || isPendingCreate;
+
+  // handle create
+  const handleCreate = (e: FormEvent) => {
+    e.preventDefault();
+
+    const body = {
+      format: input.format,
+    };
+
+    mutateCreate(
+      { body },
+      {
+        onSuccess: () => {
+          onCloseModal();
+        },
+      }
+    );
+  };
+
+  // handle update
+  const handleUpdate = (e: FormEvent) => {
+    e.preventDefault();
+
+    const body = {
+      format: input.format,
+      total_scan: dataDetail.totalScan,
+      total_user: dataDetail.totalUser,
+    };
+
+    mutateUpdate(
+      { id: dataDetail.id, body },
+      {
+        onSuccess: () => {
+          onCloseModal();
+        },
+      }
+    );
+  };
+
+  useEffect(() => {
+    if (open) {
+      setInput((prev) => ({ ...prev, format: dataDetail?.format ?? "" }));
+    } else {
+      setInput((prev) => ({ ...prev, format: "" }));
+    }
+  }, [open, dataFormat]);
+
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {formatId ? "Edit Barcode" : "Create Barcode"}
+            {dataDetail ? "Edit Barcode" : "Create Barcode"}
           </DialogTitle>
         </DialogHeader>
         {isLoading ? (
@@ -48,7 +105,7 @@ const DialogCreateEdit = ({
           </div>
         ) : (
           <form
-            onSubmit={!formatId ? handleCreate : handleUpdate}
+            onSubmit={!dataDetail ? handleCreate : handleUpdate}
             className="w-full flex flex-col gap-4"
           >
             <div className="border p-4 rounded border-sky-500 gap-4 flex flex-col">
@@ -58,7 +115,7 @@ const DialogCreateEdit = ({
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
                   placeholder="Format..."
                   value={input.format}
-                  // disabled={loadingSubmit}
+                  disabled={isLoading}
                   onChange={(e) =>
                     setInput((prev: any) => ({
                       ...prev,
@@ -71,10 +128,7 @@ const DialogCreateEdit = ({
             <div className="flex w-full gap-2">
               <Button
                 className="w-full bg-transparent hover:bg-transparent text-black border-black/50 border hover:border-black"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleClose();
-                }}
+                onClick={onCloseModal}
                 type="button"
               >
                 Cancel
@@ -82,14 +136,14 @@ const DialogCreateEdit = ({
               <Button
                 className={cn(
                   "text-black w-full",
-                  formatId
+                  dataDetail
                     ? "bg-yellow-400 hover:bg-yellow-400/80"
                     : "bg-sky-400 hover:bg-sky-400/80"
                 )}
                 type="submit"
                 disabled={!input.format}
               >
-                {formatId ? "Update" : "Create"}
+                {dataDetail ? "Update" : "Create"}
               </Button>
             </div>
           </form>
@@ -98,5 +152,3 @@ const DialogCreateEdit = ({
     </Dialog>
   );
 };
-
-export default DialogCreateEdit;

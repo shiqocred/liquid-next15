@@ -1,15 +1,9 @@
 "use client";
 
-import {
-  Edit3,
-  Loader,
-  Loader2,
-  PlusCircle,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
+import { Loader, Loader2, PlusCircle, RefreshCw } from "lucide-react";
+import { AxiosError } from "axios";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { alertError, cn, setPaginate } from "@/lib/utils";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,41 +11,41 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
+import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { Button } from "@/components/ui/button";
+
 import Forbidden from "@/components/403";
-import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
-import { ColumnDef } from "@tanstack/react-table";
+
+import Pagination from "@/components/pagination";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
+
 import { useGetListAccount } from "../_api/use-get-list-account";
 import { useDeleteAccount } from "../_api/use-delete-account";
 import { useUpdateAccount } from "../_api/use-update-account";
 import { useGetDetailAccount } from "../_api/use-get-detail-account";
 import { useCreateAccount } from "../_api/use-create-account";
-import Pagination from "@/components/pagination";
-import dynamic from "next/dynamic";
 import { useGetListRole } from "../_api/use-get-list-role";
 
-const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
-  ssr: false,
-});
+import DialogCreateEdit from "./dialog/dialog-create-edit";
+
+import { alertError, cn } from "@/lib/utils";
+import { columnDestinationMC } from "./columns";
+import { useConfirm } from "@/hooks/use-confirm";
+import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
 export const Client = () => {
   // dialog create edit
-  const [openCreateEdit, setOpenCreateEdit] = useQueryState(
+  const [openDialog, setOpenDialog] = useQueryState(
     "dialog",
     parseAsBoolean.withDefault(false)
   );
-
-  // warehouse Id for Edit
-  const [userId, setUserId] = useQueryState("userId", {
-    defaultValue: "",
-  });
+  const [userId, setUserId] = useQueryState(
+    "userId",
+    parseAsString.withDefault("")
+  ); // user Id for Edit
 
   // data form create edit
   const [input, setInput] = useState({
@@ -63,15 +57,9 @@ export const Client = () => {
   });
 
   // data search, page
-  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
-  const searchValue = useDebounce(dataSearch);
-  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage, setMetaPage] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
+  // data search, page
+  const { search, searchValue, setSearch } = useSearchQuery();
+  const { page, metaPage, setPage, setPagination } = usePagination();
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
@@ -126,18 +114,21 @@ export const Client = () => {
   }, [dataRole]);
 
   // load data
-  const loading = isLoading || isRefetching || isPending;
+  const loading =
+    isLoading ||
+    isRefetching ||
+    isPending ||
+    isLoadingUser ||
+    isPendingUpdate ||
+    isPendingCreate ||
+    isPendingDelete;
 
   // get pagetination
   useEffect(() => {
-    setPaginate({
-      isSuccess: isSuccess,
-      data: data,
-      dataPaginate: data?.data.data.resource,
-      setMetaPage: setMetaPage,
-      setPage: setPage,
-    });
-  }, [data]);
+    if (isSuccess && data) {
+      setPagination(data?.data.data.resource);
+    }
+  }, [data, isSuccess]);
 
   // handle delete
   const handleDelete = async (id: any) => {
@@ -150,7 +141,7 @@ export const Client = () => {
 
   // handle close
   const handleClose = () => {
-    setOpenCreateEdit(false);
+    setOpenDialog(false);
     setUserId("");
     setInput({
       name: "",
@@ -192,7 +183,7 @@ export const Client = () => {
       username: input.username,
     };
     mutateUpdate(
-      { id: userId, body },
+      { id: userId ?? "", body },
       {
         onSuccess: () => {
           handleClose();
@@ -222,10 +213,7 @@ export const Client = () => {
       data: "Data",
       method: "GET",
     });
-  }, [isError, error]);
-
-  // isError get Detail
-  useEffect(() => {
+    // isError get Detail
     alertError({
       isError: isErrorUser,
       error: errorUser as AxiosError,
@@ -233,10 +221,7 @@ export const Client = () => {
       data: "User",
       method: "GET",
     });
-  }, [isErrorUser, errorUser]);
-
-  // isError get Role
-  useEffect(() => {
+    // isError get Role
     alertError({
       isError: isErrorRole,
       error: errorRole as AxiosError,
@@ -244,89 +229,7 @@ export const Client = () => {
       data: "Role",
       method: "GET",
     });
-  }, [isErrorRole, errorRole]);
-
-  // column data
-  const columnDestinationMC: ColumnDef<any>[] = [
-    {
-      header: () => <div className="text-center">No</div>,
-      id: "id",
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {(metaPage.from + row.index).toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "name",
-      header: "Name",
-    },
-    {
-      accessorKey: "role.role_name",
-      header: "Role",
-    },
-    {
-      accessorKey: "format_barcode_name",
-      header: () => <div className="text-center">Format</div>,
-      cell: ({ row }) => (
-        <div className="text-center">
-          {row.original.format_barcode_name ?? "-"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "total_scans",
-      header: () => <div className="text-center">Total Scan</div>,
-      cell: ({ row }) => (
-        <div className="text-center">
-          {row.original.total_scans?.toLocaleString() ?? "-"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => (
-        <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>Edit</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={isLoadingUser || isPendingUpdate || isPendingCreate}
-              onClick={(e) => {
-                e.preventDefault();
-                setUserId(row.original.id);
-                setOpenCreateEdit(true);
-              }}
-            >
-              {isLoadingUser || isPendingUpdate || isPendingCreate ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Edit3 className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Delete</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={isPendingDelete}
-              onClick={(e) => {
-                e.preventDefault();
-                handleDelete(row.original.id);
-              }}
-            >
-              {isPendingDelete ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
-        </div>
-      ),
-    },
-  ];
+  }, [isError, error, isErrorUser, errorUser, isErrorRole, errorRole]);
 
   // loading
   const [isMounted, setIsMounted] = useState(false);
@@ -351,9 +254,9 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
       <DialogCreateEdit
-        open={openCreateEdit} // open modal
+        open={openDialog} // open modal
         onCloseModal={() => {
-          if (openCreateEdit) {
+          if (openDialog) {
             handleClose();
           }
         }} // handle close modal
@@ -398,8 +301,8 @@ export const Client = () => {
             <div className="flex items-center gap-3 w-full">
               <Input
                 className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                value={dataSearch}
-                onChange={(e) => setDataSearch(e.target.value)}
+                value={search ?? ""}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
                 autoFocus
               />
@@ -418,13 +321,13 @@ export const Client = () => {
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    setOpenCreateEdit(true);
+                    setOpenDialog(true);
                   }}
-                  disabled={isLoadingUser || isPendingUpdate || isPendingCreate}
+                  disabled={loading}
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingUser || isPendingUpdate || isPendingCreate ? (
+                  {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />
@@ -434,7 +337,16 @@ export const Client = () => {
               </div>
             </div>
           </div>
-          <DataTable columns={columnDestinationMC} data={dataList ?? []} />
+          <DataTable
+            columns={columnDestinationMC({
+              metaPage,
+              isLoading: loading,
+              handleDelete,
+              setOpenDialog,
+              setUserId,
+            })}
+            data={dataList ?? []}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
