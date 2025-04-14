@@ -1,45 +1,44 @@
 "use client";
 
-import { DataTable } from "@/components/data-table";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/data-table";
 import { Separator } from "@/components/ui/separator";
+
 import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+
 import {
-  Barcode,
+  X,
+  Users2,
   Loader,
+  Barcode,
   RefreshCw,
   ScanBarcodeIcon,
-  Users2,
-  X,
 } from "lucide-react";
-import React from "react";
+import React, { useMemo } from "react";
+import { columnListDetail } from "../columns";
 
-const DialogDetail = ({
+export const DialogDetail = ({
   open,
   onCloseModal,
-  data,
-  isLoading,
-  refetch,
-  isRefetching,
-  columns,
-  dataTable,
+  dataFormat,
 }: {
   open: boolean;
   onCloseModal: () => void;
-  data: any;
-  isLoading: boolean;
-  refetch: any;
-  isRefetching: any;
-  columns: any;
-  dataTable: any;
+  dataFormat: any;
 }) => {
+  const { data, refetch, isLoading, isRefetching } = dataFormat;
+
+  const dataDetail: any = useMemo(() => {
+    return data?.data.data.resource;
+  }, [data]);
+
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent
@@ -77,7 +76,7 @@ const DialogDetail = ({
                       <div className="flex flex-col">
                         <p className="text-xs">Format</p>
                         <p className="font-semibold capitalize text-lg">
-                          {data?.format}
+                          {dataDetail?.format}
                         </p>
                       </div>
                     </div>
@@ -92,7 +91,7 @@ const DialogDetail = ({
                       <div className="flex flex-col">
                         <p className="text-xs">Total User</p>
                         <p className="font-semibold capitalize text-lg">
-                          {data?.total_user.toLocaleString()}
+                          {dataDetail?.total_user.toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -107,7 +106,7 @@ const DialogDetail = ({
                       <div className="flex flex-col">
                         <p className="text-xs">Total Scan</p>
                         <p className="font-semibold capitalize text-lg">
-                          {data?.total_scan.toLocaleString()}
+                          {dataDetail?.total_scan.toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -142,8 +141,8 @@ const DialogDetail = ({
               maxHeight="h-[60vh]"
               isSticky
               isLoading={isRefetching}
-              columns={columns}
-              data={dataTable}
+              columns={columnListDetail}
+              data={dataDetail?.users ?? []}
             />
           </div>
         )}
@@ -151,5 +150,3 @@ const DialogDetail = ({
     </Dialog>
   );
 };
-
-export default DialogDetail;

@@ -16,7 +16,7 @@ export function formatRupiah(rupiah: number) {
       currency: "IDR",
       minimumFractionDigits: 0,
     });
-    return formatter.format(rupiah);
+    return formatter.format(Math.ceil(rupiah));
   }
   return "Rp 0";
 }
