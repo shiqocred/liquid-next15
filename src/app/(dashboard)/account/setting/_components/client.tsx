@@ -1,15 +1,9 @@
 "use client";
 
-import {
-  Edit3,
-  Loader,
-  Loader2,
-  PlusCircle,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
+import { Loader, Loader2, PlusCircle, RefreshCw } from "lucide-react";
+import { AxiosError } from "axios";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { alertError, cn, setPaginate } from "@/lib/utils";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,36 +11,30 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import {
-  parseAsBoolean,
-  parseAsInteger,
-  parseAsString,
-  useQueryState,
-} from "nuqs";
+import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { Button } from "@/components/ui/button";
+
 import Forbidden from "@/components/403";
-import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
-import { ColumnDef } from "@tanstack/react-table";
+
+import Pagination from "@/components/pagination";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
+
 import { useGetListAccount } from "../_api/use-get-list-account";
 import { useDeleteAccount } from "../_api/use-delete-account";
 import { useUpdateAccount } from "../_api/use-update-account";
 import { useGetDetailAccount } from "../_api/use-get-detail-account";
 import { useCreateAccount } from "../_api/use-create-account";
-import Pagination from "@/components/pagination";
-import dynamic from "next/dynamic";
 import { useGetListRole } from "../_api/use-get-list-role";
-import { columnDestinationMC } from "./columns";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
 
-const DialogCreateEdit = dynamic(() => import("./dialog/dialog-create-edit"), {
-  ssr: false,
-});
+import DialogCreateEdit from "./dialog/dialog-create-edit";
+
+import { alertError, cn } from "@/lib/utils";
+import { columnDestinationMC } from "./columns";
+import { useConfirm } from "@/hooks/use-confirm";
+import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
 export const Client = () => {
   // dialog create edit
@@ -132,7 +120,8 @@ export const Client = () => {
     isPending ||
     isLoadingUser ||
     isPendingUpdate ||
-    isPendingCreate;
+    isPendingCreate ||
+    isPendingDelete;
 
   // get pagetination
   useEffect(() => {
