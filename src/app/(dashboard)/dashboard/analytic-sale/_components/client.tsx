@@ -461,7 +461,7 @@ export const Client = () => {
           </TabsList>
         </div>
         <TabsContent value="monthly" className="w-full gap-4 flex flex-col">
-          <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 flex-col">
+          <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full justify-between items-center flex mb-5">
               <h2 className="text-xl font-bold">Analytic Sale Monthly</h2>
               <div className="flex gap-2">
@@ -901,7 +901,7 @@ export const Client = () => {
           </div>
         </TabsContent>
         <TabsContent value="annualy" className="w-full gap-4 flex flex-col">
-          <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 flex-col">
+          <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full justify-between items-center flex mb-5">
               <h2 className="text-xl font-bold">Analytic Sale Annualy</h2>
               <div className="flex gap-2">

@@ -13,6 +13,13 @@ interface DataPaginationProps {
   per_page?: number;
 }
 
+export interface MetaPageProps {
+  last: number;
+  from: number;
+  total: number;
+  perPage: number;
+}
+
 /**
  * Custom hook untuk mengelola paginasi berbasis query parameter `?p=` dan metadata pagination.
  *
@@ -38,9 +45,12 @@ interface DataPaginationProps {
  * return <Pagination pagination={{ ...metaPage, current: page }} setPagination={setPage} />;
  */
 
-export const usePagination = () => {
-  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage, setMetaPage] = useState({
+export const usePagination = (indicator: string = "p") => {
+  const [page, setPage] = useQueryState(
+    indicator,
+    parseAsInteger.withDefault(1)
+  );
+  const [metaPage, setMetaPage] = useState<MetaPageProps>({
     last: 1,
     from: 1,
     total: 1,
