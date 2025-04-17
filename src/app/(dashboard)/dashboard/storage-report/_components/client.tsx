@@ -549,12 +549,12 @@ export const Client = () => {
                           {item.total_tag_product.toLocaleString()}
                         </span>
                         <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
-                          <span>{dataStorage?.percentage_tag_product}%</span>
+                          <span>{item?.percentage_tag_product}%</span>
                         </div>
                       </div>
                     </div>
                     <Progress
-                      value={dataStorage?.percentage_tag_product}
+                      value={item?.percentage_tag_product}
                       className="h-1.5 bg-gray-200"
                     />
                   </div>
