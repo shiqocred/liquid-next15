@@ -160,13 +160,13 @@ const Navbar = () => {
     }
   }, [hasCookie("profile")]);
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     handleGetSpeed();
-  //   }, 15000);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleGetSpeed();
+    }, 15000);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);

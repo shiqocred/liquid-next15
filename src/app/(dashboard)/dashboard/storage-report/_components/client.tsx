@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -33,7 +32,6 @@ import {
   YAxis,
 } from "recharts";
 import { cn, formatRupiah } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryState } from "nuqs";
 import { useGetStorageReport } from "../_api/use-get-storage-report";
 import { ColumnDef } from "@tanstack/react-table";
@@ -41,7 +39,6 @@ import { DataTable } from "@/components/data-table";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
-import { useGetCountStaging } from "../_api/use-get-count-staging";
 import { useExportStorageReport } from "../_api/use-export-storage-report";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -138,21 +135,12 @@ export const Client = () => {
     useExportStorageReport();
   const { data, refetch, isPending, isRefetching, isLoading, isError, error } =
     useGetStorageReport();
-  const {
-    data: dataStaging,
-    isError: isErrorStaging,
-    error: errorStaging,
-  } = useGetCountStaging();
 
   const loading = isPending || isRefetching || isLoading;
 
   const dataStorage = useMemo(() => {
     return data?.data.data.resource;
   }, [data]);
-
-  const dataResStaging = useMemo(() => {
-    return dataStaging?.data.data.resource;
-  }, [dataStaging]);
 
   const dataChart: ChartData[] = useMemo(() => {
     return data?.data.data.resource.chart.category;
@@ -187,10 +175,7 @@ export const Client = () => {
     return <Loading />;
   }
 
-  if (
-    (isError && (error as AxiosError).status === 403) ||
-    (isErrorStaging && (errorStaging as AxiosError).status === 403)
-  ) {
+  if (isError && (error as AxiosError).status === 403) {
     return (
       <div className="flex flex-col items-start h-full bg-gray-100 w-full relative p-4 gap-4">
         <Forbidden />
