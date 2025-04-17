@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,11 +10,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
+  DollarSign,
   FileDown,
   LayoutGrid,
   LayoutList,
   Loader,
   Loader2,
+  Package,
   RefreshCcw,
   Search,
   X,
@@ -31,7 +32,6 @@ import {
   YAxis,
 } from "recharts";
 import { cn, formatRupiah } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryState } from "nuqs";
 import { useGetStorageReport } from "../_api/use-get-storage-report";
 import { ColumnDef } from "@tanstack/react-table";
@@ -39,9 +39,10 @@ import { DataTable } from "@/components/data-table";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
-import { useGetCountStaging } from "../_api/use-get-count-staging";
 import { useExportStorageReport } from "../_api/use-export-storage-report";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 interface ChartData {
   category_product: string;
@@ -134,11 +135,6 @@ export const Client = () => {
     useExportStorageReport();
   const { data, refetch, isPending, isRefetching, isLoading, isError, error } =
     useGetStorageReport();
-  const {
-    data: dataStaging,
-    isError: isErrorStaging,
-    error: errorStaging,
-  } = useGetCountStaging();
 
   const loading = isPending || isRefetching || isLoading;
 
@@ -146,12 +142,12 @@ export const Client = () => {
     return data?.data.data.resource;
   }, [data]);
 
-  const dataResStaging = useMemo(() => {
-    return dataStaging?.data.data.resource;
-  }, [dataStaging]);
-
   const dataChart: ChartData[] = useMemo(() => {
     return data?.data.data.resource.chart.category;
+  }, [data]);
+
+  const dataChartStaging: ChartData[] = useMemo(() => {
+    return data?.data.data.resource.chart_staging.category;
   }, [data]);
 
   const clearSearch = (e: MouseEvent<HTMLButtonElement>) => {
@@ -179,10 +175,7 @@ export const Client = () => {
     return <Loading />;
   }
 
-  if (
-    (isError && (error as AxiosError).status === 403) ||
-    (isErrorStaging && (errorStaging as AxiosError).status === 403)
-  ) {
+  if (isError && (error as AxiosError).status === 403) {
     return (
       <div className="flex flex-col items-start h-full bg-gray-100 w-full relative p-4 gap-4">
         <Forbidden />
@@ -286,105 +279,316 @@ export const Client = () => {
             </ResponsiveContainer>
           )}
         </div>
-      </div>
-      <div className="w-full flex items-center gap-4">
-        <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 flex-col gap-2">
-          <p>Total Product</p>
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">
+            Report Product Per-Category (Staging)
+          </h2>
+        </div>
+        <div className="h-[300px] w-full relative">
           {loading ? (
-            <Skeleton className="h-8 w-1/3" />
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
           ) : (
-            <p className="text-2xl font-bold">
-              {dataStorage?.total_all_category.toLocaleString()}
-            </p>
-          )}
-        </div>
-        <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 flex-col gap-2">
-          <p>Total Value</p>
-          {loading ? (
-            <Skeleton className="h-8 w-2/3" />
-          ) : (
-            <p className="text-2xl font-bold">
-              {formatRupiah(dataStorage?.total_all_price_category)}
-            </p>
-          )}
-        </div>
-      </div>
-      <div className="flex flex-col gap-3 bg-white rounded-md overflow-hidden shadow p-3 w-full">
-        <div className="w-full px-5">
-          <div className="w-full border-b border-gray-500 pb-3">
-            <h2 className="text-xl font-bold">Report Count Staging</h2>
-          </div>
-        </div>
-        <div className="w-full flex items-center gap-4">
-          <div className="flex w-full px-5 py-3 flex-col gap-2">
-            <p>Total Product</p>
-            <p className="text-2xl font-bold">
-              {dataResStaging?.total_product.toLocaleString()}
-            </p>
-          </div>
-          <div className="flex w-full px-5 py-3 flex-col gap-2">
-            <p>Total Value</p>
-            <p className="text-2xl font-bold">
-              {formatRupiah(dataResStaging?.total_price)}
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col gap-6 bg-white rounded-md overflow-hidden shadow p-3 w-full">
-        <div className="w-full px-5">
-          <div className="w-full border-b border-gray-500 pb-3">
-            <h2 className="text-xl font-bold">Report Product Per-Color</h2>
-          </div>
-        </div>
-        {loading ? (
-          <div className="w-full flex items-center gap-4">
-            {Array.from({ length: 4 }, (_, i) => (
-              <div
-                key={i}
-                className="flex w-full  flex-col gap-2 py-2 first:border-none first:pl-2 pl-4 border-l border-gray-300 text-sm"
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChartStaging}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
               >
-                <div className="flex flex-col gap-2 px-3">
-                  <div className="flex items-center justify-between">
-                    <p>Total Product</p>
-                    <Skeleton className="w-10 h-5" />
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col w-full gap-4">
+        <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+          <CardHeader>
+            <CardTitle>Total All Product</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-row gap-6">
+            <div className="flex flex-col w-full gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-full bg-sky-100">
+                    <Package className="h-4 w-4 text-gray-700" />
                   </div>
-                  <Skeleton className="w-1/3 h-8" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Quantity
+                  </span>
                 </div>
-                <div className="flex items-center justify-between bg-sky-200 py-1 rounded px-3">
-                  <p>Total Value</p>
-                  <Skeleton className="w-1/3 h-5" />
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold">
+                    {dataStorage?.total_all_product.toLocaleString()}
+                  </span>
+                  <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                    <span>{dataStorage?.total_percentage_product}%</span>
+                  </div>
                 </div>
               </div>
-            ))}
+              <Progress
+                value={dataStorage?.total_percentage_product}
+                className="h-1.5 bg-gray-200"
+              />
+            </div>
+            <div className="flex flex-col w-full gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-full bg-sky-100">
+                    <DollarSign className="h-4 w-4 text-gray-700" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Price
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold">
+                    {formatRupiah(dataStorage?.total_all_price)}
+                  </span>
+                  <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                    <span>{dataStorage?.total_percentage_price}%</span>
+                  </div>
+                </div>
+              </div>
+              <Progress
+                value={dataStorage?.total_percentage_price}
+                className="h-1.5 bg-gray-200"
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <div className="w-full flex gap-4">
+          <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+            <CardHeader>
+              <CardTitle>Product Display</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <Package className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Quantity
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {dataStorage?.total_product_display.toLocaleString()}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>{dataStorage?.percentage_product_display}%</span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_display}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <DollarSign className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Price
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {formatRupiah(dataStorage?.total_product_display_price)}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>
+                        {dataStorage?.percentage_product_display_price}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_display_price}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+            <CardHeader>
+              <CardTitle>Product Staging</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <Package className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Quantity
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {dataStorage?.total_product_staging.toLocaleString()}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>{dataStorage?.percentage_product_staging}%</span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_staging}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <DollarSign className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Price
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {formatRupiah(dataStorage?.total_product_staging_price)}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>
+                        {dataStorage?.percentage_product_staging_price}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_staging_price}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="w-full bg-white rounded-md shadow flex flex-col">
+          <div className="border-b py-2 border-black w-full px-6">
+            <h1 className="font-bold">Product Color</h1>
           </div>
-        ) : (
-          <div className="w-full inset-0 gap-4 flex items-center text-sm">
-            {dataStorage?.chart?.tag_product.map((item: any) => (
-              <div
+          <div className="flex items-center">
+            {dataStorage?.tag_products.map((item: any) => (
+              <Card
                 key={item.tag_product}
-                className="flex w-full  flex-col gap-2 py-2 first:border-none first:pl-2 pl-4 border-l border-gray-300"
+                className="w-full overflow-hidden shadow-none border-none"
               >
-                <div className="flex flex-col gap-2 px-3">
-                  <div className="flex items-center justify-between">
-                    <p>Total Product</p>
-                    <Badge className="border-black border rounded-full text-black bg-transparent hover:bg-transparent shadow-none text-sm">
-                      {item.tag_product}
-                    </Badge>
+                <CardHeader>
+                  <CardTitle>{item.tag_product}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-6">
+                  <div className="flex flex-col w-full gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-full bg-sky-100">
+                          <Package className="h-4 w-4 text-gray-700" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">
+                          Quantity
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-semibold">
+                          {item.total_tag_product.toLocaleString()}
+                        </span>
+                        <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                          <span>{dataStorage?.percentage_tag_product}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Progress
+                      value={dataStorage?.percentage_tag_product}
+                      className="h-1.5 bg-gray-200"
+                    />
                   </div>
-                  <p className="text-2xl font-bold">
-                    {item.total_tag_product.toLocaleString()}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between bg-sky-200 py-1 rounded px-3">
-                  <p>Total Value</p>
-                  <p className="text-xl font-bold">
-                    {formatRupiah(item.total_price_tag_product) ?? "Rp 0"}
-                  </p>
-                </div>
-              </div>
+                  <div className="flex flex-col w-full gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-full bg-sky-100">
+                          <DollarSign className="h-4 w-4 text-gray-700" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">
+                          Price
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-semibold">
+                          {formatRupiah(dataStorage?.total_price_tag_product)}
+                        </span>
+                        <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                          <span>
+                            {dataStorage?.percentage_price_tag_product}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Progress
+                      value={dataStorage?.percentage_price_tag_product}
+                      className="h-1.5 bg-gray-200"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        )}
+        </div>
       </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 items-center flex-col">
         <div className="w-full flex flex-col gap-4">
