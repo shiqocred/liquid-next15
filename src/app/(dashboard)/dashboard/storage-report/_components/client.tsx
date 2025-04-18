@@ -570,17 +570,17 @@ export const Client = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-semibold">
-                          {formatRupiah(dataStorage?.total_price_tag_product)}
+                          {formatRupiah(item.total_price_tag_product)}
                         </span>
                         <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
                           <span>
-                            {dataStorage?.percentage_price_tag_product}%
+                            {item.percentage_price_tag_product}%
                           </span>
                         </div>
                       </div>
                     </div>
                     <Progress
-                      value={dataStorage?.percentage_price_tag_product}
+                      value={item.percentage_price_tag_product}
                       className="h-1.5 bg-gray-200"
                     />
                   </div>
