@@ -24,7 +24,6 @@ export const useSubmit = () => {
     },
     onSuccess: () => {
       toast.success("Sale successfully created");
-      window.location.href = "/outbond/sale";
     },
     onError: (err) => {
       if (err.status === 403) {
