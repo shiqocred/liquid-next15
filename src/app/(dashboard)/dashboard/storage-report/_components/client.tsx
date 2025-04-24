@@ -349,7 +349,7 @@ export const Client = () => {
         </div>
       </div>
       <div className="flex flex-col w-full gap-4">
-        <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+        <Card className="w-full bg-blue-200 rounded-md overflow-hidden shadow border-0">
           <CardHeader>
             <CardTitle>Total All Product</CardTitle>
           </CardHeader>
@@ -358,9 +358,9 @@ export const Client = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-full bg-sky-100">
-                    <Package className="h-4 w-4 text-gray-700" />
+                    <Package className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-lg font-semibold">
                     Quantity
                   </span>
                 </div>
@@ -368,7 +368,7 @@ export const Client = () => {
                   <span className="text-lg font-semibold">
                     {dataStorage?.total_all_product.toLocaleString()}
                   </span>
-                  <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                  <div className="flex items-center text-sky-600 text-sm font-medium border py-0.5 px-2 rounded-full border-sky-600">
                     <span>{dataStorage?.total_percentage_product}%</span>
                   </div>
                 </div>
@@ -382,9 +382,9 @@ export const Client = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-full bg-sky-100">
-                    <DollarSign className="h-4 w-4 text-gray-700" />
+                    <DollarSign className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-lg font-semibold">
                     Price
                   </span>
                 </div>
@@ -392,7 +392,7 @@ export const Client = () => {
                   <span className="text-lg font-semibold">
                     {formatRupiah(dataStorage?.total_all_price)}
                   </span>
-                  <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                  <div className="flex items-center text-sky-600 text-sm font-medium border py-0.5 px-2 rounded-full border-sky-600">
                     <span>{dataStorage?.total_percentage_price}%</span>
                   </div>
                 </div>
