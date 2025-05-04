@@ -172,6 +172,11 @@ export const Client = () => {
         price: Math.round(resData.total_sale ?? "0").toString(),
         barcode: resData?.code_document_sale,
       }));
+      if (!resData.sale_buyer_id) {
+        setOnBoarding(true);
+      } else {
+        setOnBoarding(false);
+      }
     }
   }, [data]);
 
@@ -201,9 +206,6 @@ export const Client = () => {
     }
     if (openDialog === "product" && !input.buyerId) {
       setOpenDialog("");
-    }
-    if (!input.buyerId) {
-      setOnBoarding(true);
     }
   }, [input, openDialog]);
 
