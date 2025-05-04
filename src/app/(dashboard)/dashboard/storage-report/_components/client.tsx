@@ -43,6 +43,16 @@ import { useExportStorageReport } from "../_api/use-export-storage-report";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ChevronDown, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { useExportStorageReportByMonthByYear } from "../_api/use-export-storage-report-by-month-by-year";
 
 interface ChartData {
   category_product: string;
@@ -135,6 +145,11 @@ export const Client = () => {
     useExportStorageReport();
   const { data, refetch, isPending, isRefetching, isLoading, isError, error } =
     useGetStorageReport();
+  const { mutate: exportByMonthYear, isPending: isPendingExportByMonthByYear } =
+    useExportStorageReportByMonthByYear();
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const loading = isPending || isRefetching || isLoading;
 
@@ -165,6 +180,30 @@ export const Client = () => {
         document.body.removeChild(link);
       },
     });
+  };
+
+  const handleExportByMonthByYear = () => {
+    if (selectedMonth && selectedYear) {
+      exportByMonthYear(
+        { month: selectedMonth, year: selectedYear },
+        {
+          onSuccess: (res) => {
+            const link = document.createElement("a");
+            link.href = res.data.url;
+            link.download = res.data.filename || "report.xlsx";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setIsModalOpen(false);
+          },
+          onError: () => {
+            alert("An error occurred while exporting the report.");
+          },
+        }
+      );
+    } else {
+      alert("Please select both month and year.");
+    }
   };
 
   useEffect(() => {
@@ -214,6 +253,72 @@ export const Client = () => {
             >
               <RefreshCcw className="w-4 h-4" />
             </button>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <button
+                  className="flex items-center gap-2 px-4 py-2 bg-sky-400/80 hover:bg-sky-400 text-white rounded"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  Export by Month & Year
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="w-auto max-w-md p-4 border-gray-300">
+                <DialogHeader>
+                  <DialogTitle>Select Month and Year</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                      <CalendarIcon className="w-4 h-4" />
+                      <select
+                        className="outline-none bg-transparent"
+                        value={selectedMonth || ""}
+                        onChange={(e) =>
+                          setSelectedMonth(Number(e.target.value))
+                        }
+                      >
+                        <option value="" disabled>
+                          Select Month
+                        </option>
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {format(new Date(2025, i, 1), "MMMM")}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                      <CalendarIcon className="w-4 h-4" />
+                      <select
+                        className="outline-none bg-transparent"
+                        value={selectedYear || ""}
+                        onChange={(e) =>
+                          setSelectedYear(Number(e.target.value))
+                        }
+                      >
+                        <option value="" disabled>
+                          Select Year
+                        </option>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <option key={i} value={2025 - i}>
+                            {2025 - i}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleExportByMonthByYear}
+                    className="w-full px-4 py-2 bg-sky-400/80 hover:bg-sky-400 text-white rounded"
+                    disabled={isPendingExportByMonthByYear}
+                  >
+                    {isPendingExportByMonthByYear ? "Exporting..." : "Export"}
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            {/* <ExportByMonthYearButton /> */}
           </div>
         </div>
         <div className="h-[300px] w-full relative">
@@ -349,7 +454,7 @@ export const Client = () => {
         </div>
       </div>
       <div className="flex flex-col w-full gap-4">
-        <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+        <Card className="w-full bg-blue-200 rounded-md overflow-hidden shadow border-0">
           <CardHeader>
             <CardTitle>Total All Product</CardTitle>
           </CardHeader>
@@ -358,17 +463,15 @@ export const Client = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-full bg-sky-100">
-                    <Package className="h-4 w-4 text-gray-700" />
+                    <Package className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Quantity
-                  </span>
+                  <span className="text-lg font-semibold">Quantity</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold">
                     {dataStorage?.total_all_product.toLocaleString()}
                   </span>
-                  <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                  <div className="flex items-center text-sky-600 text-sm font-medium border py-0.5 px-2 rounded-full border-sky-600">
                     <span>{dataStorage?.total_percentage_product}%</span>
                   </div>
                 </div>
@@ -382,17 +485,15 @@ export const Client = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-full bg-sky-100">
-                    <DollarSign className="h-4 w-4 text-gray-700" />
+                    <DollarSign className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Price
-                  </span>
+                  <span className="text-lg font-semibold">Price</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold">
                     {formatRupiah(dataStorage?.total_all_price)}
                   </span>
-                  <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                  <div className="flex items-center text-sky-600 text-sm font-medium border py-0.5 px-2 rounded-full border-sky-600">
                     <span>{dataStorage?.total_percentage_price}%</span>
                   </div>
                 </div>
@@ -573,9 +674,7 @@ export const Client = () => {
                           {formatRupiah(item.total_price_tag_product)}
                         </span>
                         <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
-                          <span>
-                            {item.percentage_price_tag_product}%
-                          </span>
+                          <span>{item.percentage_price_tag_product}%</span>
                         </div>
                       </div>
                     </div>
