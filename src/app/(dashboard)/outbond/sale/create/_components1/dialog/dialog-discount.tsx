@@ -13,20 +13,33 @@ import { Button } from "@/components/ui/button";
 
 import { cn, numericString } from "@/lib/utils";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AlertCircle, Check, Percent } from "lucide-react";
 
 const DialogDiscount = ({
   open,
   onCloseModal,
-  input,
-  setInput,
+  data,
+  setData,
 }: {
   open: boolean;
   onCloseModal: () => void;
-  input: any;
-  setInput: any;
+  data: any;
+  setData: any;
 }) => {
+  const [input, setInput] = useState({
+    discount: "",
+    discountFor: "",
+  });
+
+  useEffect(() => {
+    if (open) {
+      setInput(data);
+    } else {
+      setInput({ discount: "", discountFor: "" });
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent onClose={false} className="max-w-md">
@@ -37,6 +50,10 @@ const DialogDiscount = ({
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            setData((prev: any) => ({
+              ...prev,
+              ...input,
+            }));
             onCloseModal();
           }}
           className="w-full flex flex-col gap-4"

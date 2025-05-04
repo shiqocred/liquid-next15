@@ -236,8 +236,8 @@ export const Client = () => {
       <DialogDiscount
         open={openDialog === "discount"}
         onCloseModal={() => setOpenDialog("")}
-        setInput={setInput}
-        input={input}
+        setData={setInput}
+        data={input}
       />
       <DialogVoucher
         open={openDialog === "voucher"}
@@ -468,7 +468,10 @@ export const Client = () => {
                     size={"icon"}
                     variant={"outline"}
                     className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
-                    onClick={() => refetch()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      refetch();
+                    }}
                     disabled={isRefetching || isPendingSubmit}
                   >
                     <RefreshCcw

@@ -36,6 +36,7 @@ import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
 import { useGetListPPN } from "../_api/use-get-list-ppn";
+import { Badge } from "@/components/ui/badge";
 
 export const TopMenu = ({
   input,
@@ -121,8 +122,7 @@ export const TopMenu = ({
           <Button
             variant={"outline"}
             className="border-black disabled:pointer-events-auto disabled:opacity-100"
-            onClick={() => setOpenDialog("buyer")}
-            disabled={dataList?.length > 0}
+            disabled
           >
             <ScanBarcode className="size-4" />
             <Separator orientation="vertical" className="bg-gray-500" />
@@ -183,6 +183,14 @@ export const TopMenu = ({
             <PercentCircle className="size-4" />
             <Separator orientation="vertical" className="bg-gray-500" />
             <p>{input.discount}%</p>
+            {input.discount > 0 && (
+              <>
+                <Separator orientation="vertical" className="bg-gray-500" />
+                <Badge className="bg-sky-400/80 hover:bg-sky-400/80 text-black font-medium">
+                  {input.discountFor === "old" ? "Old Price" : "New Price"}
+                </Badge>
+              </>
+            )}
           </Button>
         </TooltipProviderPage>
         <TooltipProviderPage value={<p>Voucher</p>}>
