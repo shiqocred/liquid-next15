@@ -3,13 +3,13 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailApprove = ({ id, status }: any) => {
+export const useGetPriceProductStaging = ({ price }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["detail-sale-approve", { id, status }],
+    queryKey: ["price-product-product-staging", price],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/get_approve_spv/${status}/${id}`,
+        `${baseUrl}/get-latestPrice?old_price_product=${price}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -18,7 +18,7 @@ export const useGetDetailApprove = ({ id, status }: any) => {
       );
       return res;
     },
-    enabled: !!id && !!status,
+    enabled: !!price,
   });
   return query;
 };
