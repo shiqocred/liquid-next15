@@ -26,15 +26,13 @@ import { useDeleteBuyer } from "../_api/use-delete-buyer";
 import { useUpdateBuyer } from "../_api/use-update-buyer";
 import { useGetDetailBuyer } from "../_api/use-get-detail-buyer";
 import { useCreateBuyer } from "../_api/use-create-buyer";
-import { TopTenBuyers } from "./top-ten";
-import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
 
-export const Client = () => {
+export const TopTenBuyers = () => {
   // dialog create edit
   const [openCreateEdit, setOpenCreateEdit] = useQueryState(
     "dialog",
@@ -84,7 +82,6 @@ export const Client = () => {
   // get data utama
   const {
     data,
-    refetch,
     isLoading,
     isRefetching,
     isPending,
@@ -324,86 +321,11 @@ export const Client = () => {
   }
 
   return (
-    <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <DeleteDialog />
-      <DialogCreateEdit
-        open={openCreateEdit} // open modal
-        onCloseModal={() => {
-          if (openCreateEdit) {
-            handleClose();
-          }
-        }} // handle close modal
-        buyerId={buyerId} // buyerId
-        address={address} // address gmaps
-        setAddress={setAddress} // set address gmaps
-        input={input} // input form
-        setInput={setInput} // setInput Form
-        handleClose={handleClose} // handle close for cancel
-        handleCreate={handleCreate} // handle create warehouse
-        handleUpdate={handleUpdate} // handle update warehouse
-      />
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>Outbond</BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>Buyer</BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <TopTenBuyers />
+    <div className="flex flex-col items-start bg-gray-100 w-full relative">
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Buyers</h2>
+        <h2 className="text-xl font-bold">Top 10 Buyers</h2>
         <div className="flex flex-col w-full gap-4">
-          <div className="flex gap-2 items-center w-full justify-between">
-            <div className="flex items-center gap-3 w-full">
-              <Input
-                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                value={dataSearch}
-                onChange={(e) => setDataSearch(e.target.value)}
-                placeholder="Search..."
-                autoFocus
-              />
-              <TooltipProviderPage value={"Reload Data"}>
-                <Button
-                  onClick={() => refetch()}
-                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
-                  variant={"outline"}
-                >
-                  <RefreshCw
-                    className={cn("w-4 h-4", loading ? "animate-spin" : "")}
-                  />
-                </Button>
-              </TooltipProviderPage>
-              <div className="flex gap-4 items-center ml-auto">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenCreateEdit(true);
-                  }}
-                  disabled={
-                    isLoadingBuyer || isPendingUpdate || isPendingCreate
-                  }
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                >
-                  {isLoadingBuyer || isPendingUpdate || isPendingCreate ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                  ) : (
-                    <PlusCircle className={"w-4 h-4 mr-1"} />
-                  )}
-                  Add Buyer
-                </Button>
-              </div>
-            </div>
-          </div>
           <DataTable columns={columnDestinationMC} data={dataList ?? []} />
-          <Pagination
-            pagination={{ ...metaPage, current: page }}
-            setPagination={setPage}
-          />
         </div>
       </div>
     </div>

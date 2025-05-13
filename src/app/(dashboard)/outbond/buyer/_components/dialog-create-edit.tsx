@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useAddBuyerPoints } from "../_api/use-add-point-buyer";
+import { useReduceBuyerPoints } from "../_api/use-reduce-point-buyer";
 
 const MapPicker = dynamic(
   () => import("../../../../../components/map-picker"),
@@ -41,6 +43,47 @@ const DialogCreateEdit = ({
   handleCreate: any;
   handleUpdate: any;
 }) => {
+  const [point, setPoint] = useState(0); // State for buyer points
+
+  // Fetch initial points when editing
+  useEffect(() => {
+    if (buyerId) {
+      setPoint(input.points || 0); // Assume `input.points` contains the buyer's current points
+    }
+  }, [buyerId, input]);
+
+  const { mutate: addPoints, isPending: isAddingPoints } = useAddBuyerPoints();
+  const { mutate: reducePoints, isPending: isReducingPoints } =
+    useReduceBuyerPoints();
+
+  // Handle Add Points
+  const handleAddPoints = () => {
+    if (!buyerId) return;
+
+    addPoints(
+      { id: buyerId, point_buyer: point },
+      {
+        onSuccess: () => {
+          handleClose();
+        },
+      }
+    );
+  };
+
+  // Handle Reduce Points
+  const handleReducePoints = () => {
+    if (!buyerId) return;
+
+    reducePoints(
+      { id: buyerId, point_buyer: point },
+      {
+        onSuccess: () => {
+          handleClose();
+        },
+      }
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent className="max-w-5xl">
@@ -98,6 +141,33 @@ const DialogCreateEdit = ({
                     }))
                   }
                 />
+              </div>
+              <div className="flex flex-col gap-1 w-full">
+                <Label>Points</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="text-center w-20 border-sky-400/80 focus-visible:ring-0"
+                    type="number"
+                    value={point}
+                    onChange={(e) => setPoint(Number(e.target.value))}
+                  />
+                  <Button
+                    className="bg-green-400 hover:bg-green-500 text-white"
+                    type="button"
+                    onClick={handleAddPoints}
+                    disabled={isAddingPoints}
+                  >
+                    {isAddingPoints ? "Adding..." : "Add Points"}
+                  </Button>
+                  <Button
+                    className="bg-red-400 hover:bg-red-500 text-white"
+                    type="button"
+                    onClick={handleReducePoints}
+                    disabled={isReducingPoints}
+                  >
+                    {isReducingPoints ? "Reducing..." : "Reduce Points"}
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="flex w-full gap-2">
