@@ -6,31 +6,41 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  body: any;
+  id: string;
 };
+
 type Error = AxiosError;
 
-export const useSubmit = () => {
+export const useRejectEditProduct = () => {
   const accessToken = getCookie("accessToken");
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/sale-finish`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ id }) => {
+      const res = await axios.post(
+        `${baseUrl}/reject-edit/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("Sale successfully created");
+      toast.success("Edit product successfully rejected");
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Sale failed to create`);
-        console.log("ERROR_CREATE_SALE:", err);
+        toast.error(
+          `ERROR ${err?.status}: ${
+            (err?.response?.data as any)?.data?.message ??
+            "Edit Product failed to reject"
+          } `
+        );
+        console.log("ERROR_REJECT_EDIT_PRODUCT:", err);
       }
     },
   });
