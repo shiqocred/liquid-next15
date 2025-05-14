@@ -88,7 +88,9 @@ export const columnNotification = ({
             row.original.status.toLowerCase() === "sale" &&
               "bg-indigo-400 hover:bg-indigo-400 text-white",
             row.original.status.toLowerCase() === "inventory" &&
-              "bg-amber-700 hover:bg-amber-700 text-white"
+              "bg-amber-700 hover:bg-amber-700 text-white",
+            row.original.status.toLowerCase() === "staging" &&
+              "bg-rose-300 hover:bg-rose-300"
           )}
         >
           {row.original.status}

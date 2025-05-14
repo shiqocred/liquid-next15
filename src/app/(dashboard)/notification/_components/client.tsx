@@ -130,9 +130,9 @@ export const Client = () => {
         setOpenDialog={setOpenDialog}
       />
       <DialogDetailProduct
-        open={openDialog === "inventory"} // open modal
+        open={openDialog === "inventory" || openDialog === "staging"} // open modal
         onCloseModal={() => {
-          if (openDialog === "inventory") {
+          if (openDialog === "inventory" || openDialog === "staging") {
             setOpenDialog("");
             setSaleId("");
           }

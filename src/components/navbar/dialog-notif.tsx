@@ -23,7 +23,7 @@ const NodeNotif = ({ item }: { item: any }) => {
           item.status === "display" && "border-sky-500",
           item.status === "sale" && "border-indigo-500",
           item.status === "inventory" && "border-amber-700",
-          item.status === "stagging" && "border-rose-400"
+          item.status === "staging" && "border-rose-400"
         )}
       >
         <p className="text-xs capitalize flex gap-1">
@@ -124,7 +124,7 @@ export const DialogNotif = () => {
             <p>Inventory</p>
           </div>
           <div className="flex items-center w-full px-2.5 pt-2 pb-1">
-            <Circle className="size-3 mr-2 fill-rose-400 text-transparent" />
+            <Circle className="size-3 mr-2 fill-rose-300 text-transparent" />
             <p>Staging</p>
           </div>
         </div>
