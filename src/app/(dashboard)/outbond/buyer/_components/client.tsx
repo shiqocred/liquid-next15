@@ -26,7 +26,6 @@ import { useDeleteBuyer } from "../_api/use-delete-buyer";
 import { useUpdateBuyer } from "../_api/use-update-buyer";
 import { useGetDetailBuyer } from "../_api/use-get-detail-buyer";
 import { useCreateBuyer } from "../_api/use-create-buyer";
-import { TopTenBuyers } from "./top-ten";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 
@@ -353,7 +352,6 @@ export const Client = () => {
           <BreadcrumbItem>Buyer</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <TopTenBuyers />
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Buyers</h2>
         <div className="flex flex-col w-full gap-4">
