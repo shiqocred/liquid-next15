@@ -115,6 +115,31 @@ const ContentTooltip = ({
   return null;
 };
 
+export const columnsTopTenBuyer: ColumnDef<any>[] = [
+  {
+    header: () => <div className="text-center">No</div>,
+    id: "id",
+    cell: ({ row }) => (
+      <div className="text-center tabular-nums">
+        {(row.index + 1).toLocaleString()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "name_buyer",
+    header: "Buyer Name",
+    cell: ({ row }) => (
+      <div className="break-all max-w-[500px]">
+        {row.original.buyer.name_buyer}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "total_point",
+    header: "Total Point",
+  },
+];
+
 export const columnsStorage: ColumnDef<any>[] = [
   {
     header: () => <div className="text-center">No</div>,
@@ -198,6 +223,7 @@ export const Client = () => {
     return data?.data.data.resource;
   }, [data]);
 
+  console.log("datasale", dataSale);
   const dataChart: ChartData[] = useMemo(() => {
     return data?.data.data.resource.chart;
   }, [data]);
@@ -478,6 +504,15 @@ export const Client = () => {
               </AreaChart>
             </ResponsiveContainer>
           )}
+        </div>
+      </div>
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
+        <h2 className="text-xl font-bold">Top 10 Buyers</h2>
+        <div className="flex flex-col w-full gap-4">
+          <DataTable
+            columns={columnsTopTenBuyer}
+            data={dataSale?.list_top_buyer ?? []}
+          />
         </div>
       </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 items-center flex-col">
