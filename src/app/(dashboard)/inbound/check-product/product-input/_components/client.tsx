@@ -551,6 +551,12 @@ export const Client = () => {
     },
   ];
 
+   useEffect(() => {
+      if (isNaN(parseFloat(input.price))) {
+        setInput((prev) => ({ ...prev, price: "0" }));
+      }
+    }, [input]);
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
