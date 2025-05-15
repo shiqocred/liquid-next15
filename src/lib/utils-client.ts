@@ -92,8 +92,37 @@ export const usePagination = (indicator: string = "p") => {
  * );
  */
 
-export const useSearchQuery = () => {
-  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
+export const useSearchQuery = (indicator: string = "q") => {
+  const [search, setSearch] = useQueryState(
+    indicator,
+    parseAsString.withDefault("")
+  );
+  const searchValue = useDebounce(search);
+
+  return { search, searchValue, setSearch };
+};
+
+/**
+ * @description
+ * Custom hook untuk mengelola query bukan searchParams.
+ * Termasuk `useDebounce` otomatis agar search tidak terlalu cepat trigger.
+ *
+ * @returns
+ * - `search`: nilai dari
+ * - `searchValue`: hasil debounced dari search
+ * - `setSearch`: setter untuk update query
+ *
+ * @example
+ * const { search, searchValue, setSearch } = useSearchQuery();
+ * const { data, ... } = useGet({ q: searchValue });
+ *
+ * return (
+ *   <Input value={search ?? ""} onChange={(e) => setSearch(e.target.value)} />
+ * );
+ */
+
+export const useDebounceSearch = () => {
+  const [search, setSearch] = useState("");
   const searchValue = useDebounce(search);
 
   return { search, searchValue, setSearch };

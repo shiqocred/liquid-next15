@@ -6,16 +6,18 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
+  id: string;
   body: any;
 };
+
 type Error = AxiosError;
 
-export const useSubmit = () => {
+export const useUpdateProductStaging = () => {
   const accessToken = getCookie("accessToken");
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/sale-finish`, body, {
+    mutationFn: async ({ id, body }) => {
+      const res = await axios.put(`${baseUrl}/staging_products/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -23,14 +25,18 @@ export const useSubmit = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Sale successfully created");
+      toast.success("Product Staging successfully updated");
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Sale failed to create`);
-        console.log("ERROR_CREATE_SALE:", err);
+        toast.error(
+          `ERROR ${err?.status}: ${
+            (err?.response?.data as any)?.data?.message
+          } Product Staging failed to update`
+        );
+        console.log("ERROR_UPDATE_PRODUCT_STAGING:", err);
       }
     },
   });

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import {
   CheckCircle2,
@@ -19,37 +19,171 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
+import { columnSales } from "../columns";
+import { useConfirm } from "@/hooks/use-confirm";
+import { useApproveDocument } from "../../_api/use-approve-document";
+import { useApproveProduct } from "../../_api/use-approve-product";
+import { useRejectDocument } from "../../_api/use-reject-document";
+import { useRejectProduct } from "../../_api/use-reject-product";
+import { useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
-const DialogDetail = ({
-  open,
-  onCloseModal,
-  data,
-  isLoading,
-  refetch,
-  isRefetching,
-  columns,
-  dataTable,
-  handleApprove,
-  handleReject,
-  isPendingApprove,
-  isPendingReject,
-}: {
+interface DialogDetailSaleProps {
   open: boolean;
   onCloseModal: () => void;
-  data: any;
-  isLoading: boolean;
-  refetch: any;
-  isRefetching: any;
-  columns: any;
-  dataTable: any;
-  handleApprove: any;
-  handleReject: any;
-  isPendingApprove: any;
-  isPendingReject: any;
-}) => {
+  baseData: any;
+  saleId: string;
+  openDialog: string;
+  setSaleId: (value: string | null) => Promise<URLSearchParams>;
+  setOpenDialog: (value: string | null) => Promise<URLSearchParams>;
+}
+
+export const DialogDetailSale = ({
+  open,
+  onCloseModal,
+  baseData,
+  saleId,
+  openDialog,
+  setSaleId,
+  setOpenDialog,
+}: DialogDetailSaleProps) => {
+  const queryClient = useQueryClient();
+  const [AprvDocumentDialog, confirmAprvDocument] = useConfirm(
+    "Approve Document",
+    "This action cannot be undone",
+    "liquid"
+  );
+  const [AprvProductDialog, confirmAprvProduct] = useConfirm(
+    "Approve Product",
+    "This action cannot be undone",
+    "liquid"
+  );
+  const [RjctDocumentDialog, confirmRjctDocument] = useConfirm(
+    "Reject Document",
+    "This action cannot be undone",
+    "destructive"
+  );
+  const [RjctProductDialog, confirmRjctProduct] = useConfirm(
+    "Reject Product",
+    "This action cannot be undone",
+    "destructive"
+  );
+
+  const { mutate: mutateAprvDocument, isPending: isPendingAprvDocument } =
+    useApproveDocument();
+  const { mutate: mutateAprvProduct, isPending: isPendingAprvProduct } =
+    useApproveProduct();
+  const { mutate: mutateRjctDocument, isPending: isPendingRjctDocument } =
+    useRejectDocument();
+  const { mutate: mutateRjctProduct, isPending: isPendingRjctProduct } =
+    useRejectProduct();
+
+  // get data detail
+  const { data, refetch, isLoading, isRefetching, error, isError } = baseData;
+
+  const isLoadingButton =
+    isPendingAprvDocument ||
+    isPendingAprvProduct ||
+    isPendingRjctDocument ||
+    isPendingRjctProduct ||
+    isRefetching;
+
+  // memo data detail
+  const dataListDetail: any[] = useMemo(() => {
+    return open ? data?.data.data.resource.sales : [];
+  }, [data, open]);
+
+  // memo data red detail
+  const dataResDetail: any = useMemo(() => {
+    return open ? data?.data.data.resource : {};
+  }, [data, open]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  const handleApproveDocument = async (id: any) => {
+    const ok = await confirmAprvDocument();
+
+    if (!ok) return;
+
+    mutateAprvDocument(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", { saleId, openDialog }],
+          });
+          setSaleId("");
+          setOpenDialog("");
+        },
+      }
+    );
+  };
+  const handleApproveProduct = async (id: any) => {
+    const ok = await confirmAprvProduct();
+
+    if (!ok) return;
+
+    mutateAprvProduct(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", { saleId, openDialog }],
+          });
+        },
+      }
+    );
+  };
+  const handleRejectDocument = async (id: any) => {
+    const ok = await confirmRjctDocument();
+
+    if (!ok) return;
+
+    mutateRjctDocument(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", { saleId, openDialog }],
+          });
+          setSaleId("");
+          setOpenDialog("");
+        },
+      }
+    );
+  };
+  const handleRejectProduct = async (id: any) => {
+    const ok = await confirmRjctProduct();
+
+    if (!ok) return;
+
+    mutateRjctProduct(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["detail-sale-approve", { saleId, openDialog }],
+          });
+        },
+      }
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
+      <AprvDocumentDialog />
+      <AprvProductDialog />
+      <RjctDocumentDialog />
+      <RjctProductDialog />
       <DialogContent
         onClose={false}
         className="min-w-[75vw]"
@@ -81,7 +215,7 @@ const DialogDetail = ({
                     <ScanBarcode className="size-4" />
                   </div>
                   <p className="font-bold text-xl">
-                    {data?.code_document_sale}
+                    {dataResDetail?.code_document_sale}
                   </p>
                 </div>
                 <div className="flex gap-4">
@@ -90,9 +224,7 @@ const DialogDetail = ({
                       onClick={() => refetch()}
                       className="items-center size-8 px-0 flex-none border-sky-400 text-black hover:bg-sky-50"
                       variant={"outline"}
-                      disabled={
-                        isPendingApprove || isPendingReject || isRefetching
-                      }
+                      disabled={isLoadingButton}
                     >
                       <RefreshCw
                         className={cn(
@@ -106,12 +238,10 @@ const DialogDetail = ({
                     className="bg-sky-400/80 hover:bg-sky-400 text-black"
                     size={"sm"}
                     type="button"
-                    disabled={
-                      isPendingApprove || isPendingReject || isRefetching
-                    }
+                    disabled={isLoadingButton}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleApprove(data?.id);
+                      handleApproveDocument(dataResDetail?.id);
                     }}
                   >
                     <CheckCircle2 className="size-4 mr-1" />
@@ -121,12 +251,10 @@ const DialogDetail = ({
                     className="bg-red-400/80 hover:bg-red-400 text-black"
                     size={"sm"}
                     type="button"
-                    disabled={
-                      isPendingApprove || isPendingReject || isRefetching
-                    }
+                    disabled={isLoadingButton}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleReject(data?.id);
+                      handleRejectDocument(dataResDetail?.id);
                     }}
                   >
                     <XCircle className="size-4 mr-1" />
@@ -138,7 +266,7 @@ const DialogDetail = ({
                 <div className="flex flex-col w-full">
                   <p className="text-xs">Total Product</p>
                   <p className="font-semibold">
-                    {data?.total_product_document_sale?.toLocaleString()}{" "}
+                    {dataResDetail?.total_product_document_sale?.toLocaleString()}{" "}
                     Products
                   </p>
                 </div>
@@ -148,7 +276,9 @@ const DialogDetail = ({
                 />
                 <div className="flex flex-col w-full">
                   <p className="text-xs">Discount</p>
-                  <p className="font-semibold">{data?.new_discount_sale}%</p>
+                  <p className="font-semibold">
+                    {dataResDetail?.new_discount_sale}%
+                  </p>
                 </div>
                 <Separator
                   orientation="vertical"
@@ -178,8 +308,12 @@ const DialogDetail = ({
               maxHeight="h-[40vh]"
               isSticky
               isLoading={isRefetching}
-              columns={columns}
-              data={dataTable}
+              columns={columnSales({
+                isPending: isLoadingButton,
+                handleApproveProduct,
+                handleRejectProduct,
+              })}
+              data={dataListDetail ?? []}
             />
           </div>
         )}
@@ -187,5 +321,3 @@ const DialogDetail = ({
     </Dialog>
   );
 };
-
-export default DialogDetail;

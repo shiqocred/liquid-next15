@@ -1,36 +1,15 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  CircleFadingPlus,
-  Loader2,
-  RefreshCw,
-  XCircle,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import Forbidden from "@/components/403";
+import { useQueryState, parseAsString } from "nuqs";
+import { XCircle, RefreshCw, CircleFadingPlus } from "lucide-react";
 import { AxiosError } from "axios";
+import { useEffect, useMemo, useState } from "react";
+import { alertError, cn } from "@/lib/utils";
+
+import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/data-table";
-import { useGetListNotification } from "../_api/use-get-list-notification";
-import Pagination from "@/components/pagination";
-import { Badge } from "@/components/ui/badge";
-import { id } from "date-fns/locale";
-import { formatDistanceToNowStrict } from "date-fns";
-import { Separator } from "@/components/ui/separator";
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+
 import {
   Popover,
   PopoverContent,
@@ -42,125 +21,68 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Pagination from "@/components/pagination";
+import { DataTable } from "@/components/data-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useGetDetailApprove } from "../_api/use-get-detail-approve";
-import dynamic from "next/dynamic";
-import { useApproveDocument } from "../_api/use-approve-document";
-import { useApproveProduct } from "../_api/use-approve-product";
-import { useRejectDocument } from "../_api/use-reject-document";
-import { useRejectProduct } from "../_api/use-reject-product";
-import { useConfirm } from "@/hooks/use-confirm";
-import { useQueryClient } from "@tanstack/react-query";
+import { Separator } from "@/components/ui/separator";
 
-const DialogDetail = dynamic(() => import("./dialog-detail"), {
-  ssr: false,
-});
+import { columnNotification } from "./columns";
+import { DialogDetailSale } from "./dialogs/dialog-detail-sale";
+
+import { useGetDetailApprove } from "../_api/use-get-detail-approve";
+import { useGetListNotification } from "../_api/use-get-list-notification";
+import { usePagination } from "@/lib/utils-client";
+import { DialogDetailProduct } from "./dialogs/dialog-detail-product";
 
 export const Client = () => {
-  const queryClient = useQueryClient();
   const [isStatus, setIsStatus] = useState(false);
-  const [openDetail, setOpenDetail] = useQueryState(
+  const [openDialog, setOpenDialog] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsString.withDefault("")
   );
 
   // data search, page
-  const [saleId, setSaleId] = useQueryState("saleId", {
-    defaultValue: "",
-  });
+  const [saleId, setSaleId] = useQueryState(
+    "saleId",
+    parseAsString.withDefault("")
+  );
   // data search, page
-  const [status, setStatus] = useQueryState("status", {
-    defaultValue: "",
-  });
-
-  const [AprvDocumentDialog, confirmAprvDocument] = useConfirm(
-    "Approve Document",
-    "This action cannot be undone",
-    "liquid"
-  );
-  const [AprvProductDialog, confirmAprvProduct] = useConfirm(
-    "Approve Product",
-    "This action cannot be undone",
-    "liquid"
-  );
-  const [RjctDocumentDialog, confirmRjctDocument] = useConfirm(
-    "Reject Document",
-    "This action cannot be undone",
-    "destructive"
-  );
-  const [RjctProductDialog, confirmRjctProduct] = useConfirm(
-    "Reject Product",
-    "This action cannot be undone",
-    "destructive"
+  const [status, setStatus] = useQueryState(
+    "status",
+    parseAsString.withDefault("")
   );
 
-  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage, setMetaPage] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
-
-  const { mutate: mutateAprvDocument, isPending: isPendingAprvDocument } =
-    useApproveDocument();
-  const { mutate: mutateAprvProduct, isPending: isPendingAprvProduct } =
-    useApproveProduct();
-  const { mutate: mutateRjctDocument, isPending: isPendingRjctDocument } =
-    useRejectDocument();
-  const { mutate: mutateRjctProduct, isPending: isPendingRjctProduct } =
-    useRejectProduct();
+  const { page, setPage, metaPage, setPagination } = usePagination();
 
   // get data utama
-  const {
-    data,
-    refetch,
-    isLoading,
-    isRefetching,
-    isPending,
-    error,
-    isError,
-    isSuccess,
-  } = useGetListNotification({ p: page, q: status });
+  const { data, refetch, isLoading, isRefetching, error, isError, isSuccess } =
+    useGetListNotification({ p: page, q: status });
 
-  // get data detail
-  const {
-    data: dataDetail,
-    refetch: refetchDetail,
-    isLoading: isLoadingDetail,
-    isRefetching: isRefetchingDetail,
-    error: errorDetail,
-    isError: isErrorDetail,
-  } = useGetDetailApprove({ id: saleId });
+  const dataDetail = useGetDetailApprove({ id: saleId, status: openDialog });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
 
-  // memo data detail
-  const dataListDetail: any[] = useMemo(() => {
-    return dataDetail?.data.data.resource.sales;
-  }, [dataDetail]);
-
-  // memo data red detail
-  const dataResDetail: any = useMemo(() => {
-    return dataDetail?.data.data.resource;
-  }, [dataDetail]);
-
   // load data
-  const loading = isLoading || isRefetching || isPending;
+  const loading = isLoading || isRefetching;
 
   // get pagetination
   useEffect(() => {
-    setPaginate({
-      isSuccess,
-      data,
-      dataPaginate: data?.data.data.resource,
-      setPage,
-      setMetaPage,
-    });
-  }, [data]);
+    if (data && isSuccess) {
+      setPagination(data?.data.data.resource);
+    }
+  }, [data, isSuccess]);
 
   useEffect(() => {
     alertError({
@@ -171,264 +93,6 @@ export const Client = () => {
       method: "GET",
     });
   }, [isError, error]);
-
-  useEffect(() => {
-    alertError({
-      isError: isErrorDetail,
-      error: errorDetail as AxiosError,
-      data: "Detail Data",
-      action: "get data",
-      method: "GET",
-    });
-  }, [isErrorDetail, errorDetail]);
-
-  const handleApproveDocument = async (id: any) => {
-    const ok = await confirmAprvDocument();
-
-    if (!ok) return;
-
-    mutateAprvDocument(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", saleId],
-          });
-          setSaleId("");
-          setOpenDetail(false);
-        },
-      }
-    );
-  };
-  const handleApproveProduct = async (id: any) => {
-    const ok = await confirmAprvProduct();
-
-    if (!ok) return;
-
-    mutateAprvProduct(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", saleId],
-          });
-        },
-      }
-    );
-  };
-  const handleRejectDocument = async (id: any) => {
-    const ok = await confirmRjctDocument();
-
-    if (!ok) return;
-
-    mutateRjctDocument(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", saleId],
-          });
-          setSaleId("");
-          setOpenDetail(false);
-        },
-      }
-    );
-  };
-  const handleRejectProduct = async (id: any) => {
-    const ok = await confirmRjctProduct();
-
-    if (!ok) return;
-
-    mutateRjctProduct(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", saleId],
-          });
-        },
-      }
-    );
-  };
-
-  // column data
-  const columnNotification: ColumnDef<any>[] = [
-    {
-      header: () => <div className="text-center">No</div>,
-      id: "id",
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {(metaPage.from + row.index).toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: () => <div className="text-center">Status</div>,
-      cell: ({ row }) => (
-        <div className="flex justify-center my-1.5">
-          <Badge
-            className={cn(
-              "font-normal capitalize text-black shadow-none",
-              row.original.status.toLowerCase() === "pending" &&
-                "bg-yellow-300 hover:bg-yellow-300",
-              row.original.status.toLowerCase() === "display" &&
-                "bg-sky-400 hover:bg-sky-400",
-              row.original.status.toLowerCase() === "done" &&
-                "bg-green-400 hover:bg-green-400",
-              row.original.status.toLowerCase() === "sale" &&
-                "bg-indigo-400 hover:bg-indigo-400",
-              row.original.status.toLowerCase() === "staging" &&
-                "bg-red-400 hover:bg-red-400"
-            )}
-          >
-            {row.original.status}
-          </Badge>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "notification_name",
-      header: "Notification",
-    },
-    {
-      accessorKey: "created_at",
-      header: "Time",
-      cell: ({ row }) =>
-        formatDistanceToNowStrict(new Date(row.original.created_at), {
-          locale: id,
-          addSuffix: true,
-        }),
-    },
-    {
-      accessorKey: "external_id",
-      header: () => <div className="text-center">Approve</div>,
-      cell: ({ row }) => (
-        <div className="flex justify-center">
-          {row.original.external_id && row.original.approved === "0" ? (
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                setSaleId(row.original.external_id);
-                setOpenDetail(true);
-              }}
-              disabled={isLoadingDetail}
-              className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1"
-            >
-              <p className="text-xs">Check</p>
-              {isLoadingDetail ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <ArrowUpRight />
-              )}
-            </Button>
-          ) : row.original.external_id && row.original.approved === "1" ? (
-            <Badge className="bg-red-300 hover:bg-red-300 font-normal text-black h-7 px-3 cursor-default">
-              Rejected
-            </Badge>
-          ) : row.original.external_id && row.original.approved === "2" ? (
-            <Badge className="bg-green-300 hover:bg-green-300 font-normal text-black h-7 px-3 cursor-default">
-              Approved
-            </Badge>
-          ) : (
-            "-"
-          )}
-        </div>
-      ),
-    },
-  ];
-
-  const columnSales: ColumnDef<any>[] = [
-    {
-      header: () => <div className="text-center">No</div>,
-      id: "id",
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {(1 + row.index).toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "product_barcode_sale",
-      header: "Barcode",
-    },
-    {
-      accessorKey: "product_name_sale",
-      header: "Product Name",
-      cell: ({ row }) => (
-        <div className="max-w-[500px] break-all">
-          {row.original.product_name_sale}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "product_price_sale",
-      header: "Price",
-      cell: ({ row }) => (
-        <div className="tabular-nums">
-          {formatRupiah(row.original.product_price_sale)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => (
-        <div className="flex justify-center">
-          {row.original.approved === "1" ? (
-            <div className="flex gap-2 justify-center items-center my-0.5">
-              <TooltipProviderPage value={"Approve"}>
-                <Button
-                  className="size-8 px-0 hover:bg-sky-100 border-sky-400 hover:border-sky-600 text-black"
-                  size={"icon"}
-                  variant={"outline"}
-                  type="button"
-                  disabled={
-                    isPendingAprvProduct ||
-                    isPendingRjctProduct ||
-                    isPendingAprvDocument ||
-                    isPendingRjctDocument
-                  }
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleApproveProduct(row.original.id);
-                  }}
-                >
-                  <CheckCircle2 className="size-4" />
-                </Button>
-              </TooltipProviderPage>
-              <TooltipProviderPage value={"Reject"}>
-                <Button
-                  className="size-8 px-0 hover:bg-red-100 border-red-400 hover:border-red-600 text-black"
-                  size={"icon"}
-                  variant={"outline"}
-                  type="button"
-                  disabled={
-                    isPendingAprvProduct ||
-                    isPendingRjctProduct ||
-                    isPendingAprvDocument ||
-                    isPendingRjctDocument
-                  }
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleRejectProduct(row.original.id);
-                  }}
-                >
-                  <XCircle className="size-4" />
-                </Button>
-              </TooltipProviderPage>
-            </div>
-          ) : (
-            <div className="flex gap-2 justify-center items-center my-0.5">
-              <Badge className="bg-sky-300 hover:bg-sky-300 font-normal text-black h-7 px-3 cursor-default">
-                Approved
-              </Badge>
-            </div>
-          )}
-        </div>
-      ),
-    },
-  ];
 
   // loading
   const [isMounted, setIsMounted] = useState(false);
@@ -451,28 +115,33 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <AprvDocumentDialog />
-      <AprvProductDialog />
-      <RjctDocumentDialog />
-      <RjctProductDialog />
-      <DialogDetail
-        open={openDetail} // open modal
+      <DialogDetailSale
+        open={openDialog === "sale"} // open modal
         onCloseModal={() => {
-          if (openDetail) {
-            setOpenDetail(false);
+          if (openDialog === "sale") {
+            setOpenDialog("");
             setSaleId("");
           }
-        }} // handle close modal
-        data={dataResDetail}
-        isLoading={isLoadingDetail}
-        refetch={refetchDetail}
-        isRefetching={isRefetchingDetail}
-        columns={columnSales}
-        handleApprove={handleApproveDocument}
-        handleReject={handleRejectDocument}
-        isPendingApprove={isPendingAprvDocument}
-        isPendingReject={isPendingRjctDocument}
-        dataTable={dataListDetail ?? []}
+        }}
+        saleId={saleId}
+        setSaleId={setSaleId}
+        baseData={dataDetail}
+        openDialog={openDialog}
+        setOpenDialog={setOpenDialog}
+      />
+      <DialogDetailProduct
+        open={openDialog === "inventory" || openDialog === "staging"} // open modal
+        onCloseModal={() => {
+          if (openDialog === "inventory" || openDialog === "staging") {
+            setOpenDialog("");
+            setSaleId("");
+          }
+        }}
+        saleId={saleId}
+        setSaleId={setSaleId}
+        baseData={dataDetail}
+        openDialog={openDialog}
+        setOpenDialog={setOpenDialog}
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -522,7 +191,9 @@ export const Client = () => {
                             status === "done" &&
                               "bg-green-400 hover:bg-green-400",
                             status === "sale" &&
-                              "bg-indigo-400 hover:bg-indigo-400"
+                              "bg-indigo-400 hover:bg-indigo-400 text-white",
+                            status === "inventory" &&
+                              "bg-amber-700 hover:bg-amber-700 text-white"
                           )}
                         >
                           {status}
@@ -598,6 +269,22 @@ export const Client = () => {
                             />
                             Sale
                           </CommandItem>
+                          <CommandItem
+                            onSelect={() => {
+                              setStatus("inventory");
+                              setIsStatus(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={status === "inventory"}
+                              onCheckedChange={() => {
+                                setStatus("inventory");
+                                setIsStatus(false);
+                              }}
+                            />
+                            Inventory
+                          </CommandItem>
                         </CommandList>
                       </CommandGroup>
                     </Command>
@@ -616,7 +303,15 @@ export const Client = () => {
               </div>
             </div>
           </div>
-          <DataTable columns={columnNotification} data={dataList ?? []} />
+          <DataTable
+            columns={columnNotification({
+              metaPage,
+              setSaleId,
+              setOpenDialog,
+              isLoading: dataDetail.isLoading,
+            })}
+            data={dataList ?? []}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
