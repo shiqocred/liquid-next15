@@ -143,7 +143,16 @@ const DialogCreateEdit = ({
                 />
               </div>
               <div className="flex flex-col gap-1 w-full">
-                <Label>Points</Label>
+                <Label>Total Points Now</Label>
+                <Input
+                  className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
+                  placeholder="Point buyer..."
+                  value={input.point_buyer}
+                  disabled={true}
+                />
+              </div>
+              <div className="flex flex-col gap-1 w-full">
+                <Label>Change Points</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     className="text-center w-20 border-sky-400/80 focus-visible:ring-0"
