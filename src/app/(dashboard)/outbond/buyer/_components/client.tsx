@@ -50,6 +50,7 @@ export const Client = () => {
     name: "",
     phone: "",
     address: "",
+    point_buyer: 0,
   });
 
   // dataGMaps
@@ -195,6 +196,7 @@ export const Client = () => {
         name: dataBuyer.data.data.resource.name_buyer ?? "",
         phone: dataBuyer.data.data.resource.phone_buyer ?? "",
         address: dataBuyer.data.data.resource.address_buyer ?? "",
+        point_buyer: dataBuyer.data.data.resource.point_buyer ?? 0,
       });
     }
   }, [dataBuyer]);
@@ -257,6 +259,15 @@ export const Client = () => {
       accessorKey: "amount_purchase_buyer",
       header: "Total Purchase",
       cell: ({ row }) => formatRupiah(row.original.amount_purchase_buyer),
+    },
+   {
+      accessorKey: "point_buyer",
+      header: () => <div className="text-center">Total Point</div>,
+      cell: ({ row }) => (
+        <div className="text-center">
+          {row.original.point_buyer.toLocaleString()}
+        </div>
+      ),
     },
     {
       accessorKey: "action",
