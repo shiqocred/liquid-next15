@@ -189,10 +189,10 @@ const sidebarMenu = [
         href: undefined,
         icon: <Warehouse className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
-          {
-            title: "list product",
-            href: "/inventory/slow-moving-product/list-product",
-          },
+          // {
+          //   title: "list product",
+          //   href: "/inventory/slow-moving-product/list-product",
+          // },
           {
             title: "promo product",
             href: "/inventory/slow-moving-product/promo-product",
