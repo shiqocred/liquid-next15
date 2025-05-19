@@ -345,6 +345,26 @@ const DialogExportData = ({
                         </p>
                       </div>
                     </div>
+                    <div className="w-full flex border-t border-black">
+                      <div className="flex w-full">
+                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Point Diperoleh
+                        </p>
+                        <p className="w-full px-3 py-0.5">
+                          {data?.buyer?.buyer_point_document_sale}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full flex border-t border-black">
+                      <div className="flex w-full">
+                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Total Point
+                        </p>
+                        <p className="w-full px-3 py-0.5">
+                          {data?.buyer?.buyer?.point_buyer}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                   <p className="my-3 text-justify indent-5">
                     Bahwa yang bersangkutan di atas telah melakukan pemilihan
