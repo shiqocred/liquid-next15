@@ -675,14 +675,14 @@ export const Client = () => {
                   {dataRes?.buyer_address_document_sale}
                 </p>
               </div>
-            </div>
-            <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
                 <p className="text-sm">Total Product</p>
                 <p className="font-semibold">
                   {dataRes?.total_product_document_sale}
                 </p>
               </div>
+            </div>
+            <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
                 <p className="text-sm">Total Diskon</p>
                 <p className="font-semibold">{dataRes?.new_discount_sale}%</p>
@@ -692,6 +692,14 @@ export const Client = () => {
                 <p className="font-semibold">
                   {formatRupiah(dataRes?.voucher)}
                 </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Points Awarded</p>
+                <p className="font-semibold">{dataRes?.buyer_point_document_sale}</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Total Point</p>
+                <p className="font-semibold">{dataRes?.buyer?.point_buyer}</p>
               </div>
             </div>
           </div>
