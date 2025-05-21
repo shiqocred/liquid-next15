@@ -223,7 +223,6 @@ export const Client = () => {
     return data?.data.data.resource;
   }, [data]);
 
-  console.log("datasale", dataSale);
   const dataChart: ChartData[] = useMemo(() => {
     return data?.data.data.resource.chart;
   }, [data]);
