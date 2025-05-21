@@ -38,6 +38,7 @@ import { useDeleteABN } from "../_api/use-delete-abnormal";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useExportProductAbnormal } from "../_api/use-export-product-abnormal";
+import { toast } from "sonner";
 
 const DialogDetail = dynamic(() => import("../_components/dialog-detail"), {
   ssr: false,
@@ -233,10 +234,12 @@ export const Client = () => {
     mutateToDisplay(
       { id: dataResDetail?.id, body },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
+          toast.success("Successfully updated to display");
           queryClient.invalidateQueries({
-            queryKey: ["detail-abn", data?.data.resource.product?.id],
+            queryKey: ["list-abn"],
           });
+          setOpenDisplay(false);
         },
       }
     );
