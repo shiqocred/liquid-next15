@@ -182,7 +182,7 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
               <div className="h-9 px-4 flex-none flex items-center text-sm rounded-md justify-center border gap-1 border-sky-500 bg-sky-100">
-                Total:
+                Total:{" "}
                 <span className="font-semibold">{metaPage.total} Products</span>
               </div>
             </div>
