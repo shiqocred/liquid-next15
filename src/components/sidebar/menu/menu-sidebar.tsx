@@ -204,17 +204,17 @@ const sidebarMenu = [
         ],
       },
       {
-        title: "Pallet",
+        title: "Pallet Bulky",
         href: undefined,
         icon: <SwatchBook className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
           {
-            title: "Category Pallet",
-            href: "/inventory/pallet/category-pallet",
-          },
-          {
             title: "list Pallet",
             href: "/inventory/pallet/list",
+          },
+          {
+            title: "Category Pallet",
+            href: "/inventory/pallet/category-pallet",
           },
           {
             title: "Warehouse",
