@@ -247,6 +247,18 @@ const sidebarMenu = [
         icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
+       {
+        title: "Abnormal",
+        href: "/repair-station/abnormal",
+        icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
+       {
+        title: "Damaged",
+        href: "/repair-station/damaged",
+        icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
       {
         title: "QCD",
         href: "/repair-station/qcd",
