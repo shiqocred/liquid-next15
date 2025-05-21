@@ -1,7 +1,9 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import {
   Drill,
   Loader2,
@@ -105,6 +107,35 @@ export const columnProductStaging = ({
     ),
   },
   {
+    accessorKey: "new_date_in_product",
+    header: "Input Date",
+    cell: ({ row }) => (
+      <div className="tabular-nums">
+        {format(new Date(row.original.new_date_in_product), "iii, dd MMM yyyy")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "new_status_product",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.new_status_product;
+      return (
+        <Badge
+          className={cn(
+            "shadow-none font-normal rounded-full capitalize text-black",
+            status === "display" && "bg-green-400/80 hover:bg-green-400/80",
+            status === "expired" && "bg-red-400/80 hover:bg-red-400/80",
+            status === "slow moving" &&
+              "bg-yellow-400/80 hover:bg-yellow-400/80"
+          )}
+        >
+          {status}
+        </Badge>
+      );
+    },
+  },
+  {
     accessorKey: "action",
     header: () => <div className="text-center">Action</div>,
     cell: ({ row }) => (
@@ -145,6 +176,7 @@ export const columnProductStaging = ({
     ),
   },
 ];
+
 export const columnFilteredProductStaging = ({
   metaPage,
   isLoading,
