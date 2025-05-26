@@ -12,6 +12,7 @@ import {
   Box,
   BadgeDollarSign,
   DollarSign,
+  ArrowLeft,
 } from "lucide-react";
 import { AxiosError } from "axios";
 import { parseAsString, useQueryState } from "nuqs";
@@ -44,14 +45,28 @@ import {
 
 import {
   useAddProductB2B,
+  useFinishB2B,
   useGetListSaleB2B,
   useRemoveProductB2B,
 } from "../_api";
 import { useDebounceSearch } from "@/lib/utils-client";
 import { useConfirm } from "@/hooks/use-confirm";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+const initialValue = {
+  buyer_id: "",
+  name_buyer: "",
+  discount_bulky: "0",
+  category_bulky: "",
+  total_old_price_bulky: "0",
+  after_price_bulky: "0",
+  total_product_bulky: "0",
+};
 
 export const Client = () => {
   const searchRef = useRef<HTMLInputElement | null>(null);
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [dialog, setDialog] = useQueryState(
     "dialog",
@@ -63,32 +78,46 @@ export const Client = () => {
     "This action cannot be undone",
     "destructive"
   );
+  const [FinishDialog, confirmFinish] = useConfirm(
+    "Create B2B",
+    "This action cannot be undone",
+    "liquid"
+  );
 
-  const [input, setInput] = useState({
-    buyer_id: "",
-    name_buyer: "",
-    discount_bulky: "0",
-    category_bulky: "",
-    total_old_price_bulky: "0",
-    after_price_bulky: "0",
-    total_bulky_sales: "0",
-  });
+  const [input, setInput] = useState(initialValue);
 
+  const addProductMutate = useAddProductB2B();
   const { mutate: addProduct, isPending: isPendingAddProduct } =
-    useAddProductB2B();
+    addProductMutate;
   const { mutate: removeProduct, isPending: isPendingRemoveProduct } =
     useRemoveProductB2B();
+  const { mutate: finishB2B, isPending: isPendingFinishB2B } = useFinishB2B();
 
   const { search, searchValue, setSearch } = useDebounceSearch();
 
   const { data, isPending, isSuccess, refetch, isRefetching, error, isError } =
     useGetListSaleB2B();
 
-  const isLoading = isPending || isRefetching;
+  const isLoading = isPending || isRefetching || isPendingFinishB2B;
 
   const listData: any[] = useMemo(() => {
     return data?.data.data.resource?.bulky_sales ?? [];
   }, [data]);
+
+  const handleFinish = async () => {
+    const ok = await confirmFinish();
+
+    if (!ok) return;
+
+    finishB2B(
+      {},
+      {
+        onSuccess: () => {
+          router.push("/outbond/b2b");
+        },
+      }
+    );
+  };
 
   const handleAddProduct = ({
     type,
@@ -99,29 +128,28 @@ export const Client = () => {
     barcode?: string;
     file?: File;
   }) => {
-    const bodyProductFirst = {
+    const bodyProduct = {
       barcode_product: barcode,
       buyer_id: input.buyer_id,
       discount_bulky: input.discount_bulky,
       category_bulky: input.category_bulky,
     };
-    // const bodyProduct = {
-    //   barcode_product: barcode,
-    // };
 
-    const bodyFileFirst = new FormData();
+    const bodyFile = new FormData();
     if (file) {
-      bodyFileFirst.append("file_import", file);
+      bodyFile.append("file_import", file);
     }
-    bodyFileFirst.append("buyer_id", input.buyer_id);
-    bodyFileFirst.append("discount_bulky", input.discount_bulky);
-    bodyFileFirst.append("category_bulky", input.category_bulky);
+    bodyFile.append("buyer_id", input.buyer_id);
+    bodyFile.append("discount_bulky", input.discount_bulky);
+    bodyFile.append("category_bulky", input.category_bulky);
 
     addProduct(
-      { body: type === "product" ? bodyProductFirst : bodyFileFirst },
+      { body: type === "product" ? bodyProduct : bodyFile },
       {
         onSuccess: () => {
-          setDialog("");
+          if (dialog === "product") {
+            setDialog("");
+          }
           setSearch("");
           if (searchRef.current) {
             searchRef.current.focus();
@@ -146,8 +174,10 @@ export const Client = () => {
   }, [searchValue]);
 
   useEffect(() => {
-    if (data && isSuccess) {
+    if (data && data.data.data.resource && isSuccess) {
       setInput(data.data.data.resource);
+    } else {
+      setInput(initialValue);
     }
   }, [data, isSuccess]);
 
@@ -172,6 +202,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col justify-center bg-gray-100 w-full relative px-4 gap-4 py-4">
       <RemoveDialog />
+      <FinishDialog />
       <DialogProduct
         open={dialog === "product"}
         onOpenChange={() => {
@@ -199,6 +230,7 @@ export const Client = () => {
           }
         }}
         handleAddProduct={handleAddProduct}
+        addProductMutate={addProductMutate}
       />
       <DialogDiscount
         open={dialog === "discount"}
@@ -236,14 +268,17 @@ export const Client = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="w-full relative flex flex-col gap-4">
-        <div className="p-4 bg-white rounded shadow">
-          <div className="w-full flex items-center justify-between mb-4">
-            <div className="flex gap-3 items-center">
-              <h2 className="text-xl font-bold">Create B2B</h2>
-            </div>
+        <div className="p-4 bg-white rounded shadow flex flex-col gap-4">
+          <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
+            <Link href="/outbond/b2b">
+              <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
+                <ArrowLeft className="w-5 h-5 text-black" />
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-semibold">Create B2B</h1>
           </div>
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap">
               <div className="flex items-center gap-4">
                 <TooltipProviderPage
                   value={
@@ -327,12 +362,16 @@ export const Client = () => {
                   </Button>
                 </TooltipProviderPage>
               </div>
-              <Button variant={"liquid"} disabled={listData.length === 0}>
+              <Button
+                onClick={handleFinish}
+                variant={"liquid"}
+                disabled={listData.length === 0 || isPendingFinishB2B}
+              >
                 <SaveIcon />
                 Save
               </Button>
             </div>
-            <Separator />
+            <Separator className="bg-sky-400/80" />
             <div className="flex items-center gap-4">
               <TooltipProviderPage value={"Total Product"}>
                 <Button
@@ -343,7 +382,7 @@ export const Client = () => {
                   <Box />
                   <Separator orientation="vertical" className="bg-gray-500" />
                   <p className="min-w-5">
-                    {parseFloat(input.total_bulky_sales).toLocaleString()}
+                    {parseFloat(input.total_product_bulky).toLocaleString()}
                   </p>
                 </Button>
               </TooltipProviderPage>
@@ -386,7 +425,8 @@ export const Client = () => {
                     ref={searchRef}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10"
+                    disabled={!input.buyer_id || !input.category_bulky}
+                    className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
                   />
                 </div>
               </TooltipProviderPage>
@@ -412,7 +452,11 @@ export const Client = () => {
                 <RefreshCcw className={isLoading ? "animate-spin" : ""} />
               </Button>
             </TooltipProviderPage>
-            <Button variant={"liquid"} onClick={() => setDialog("upload")}>
+            <Button
+              variant={"liquid"}
+              onClick={() => setDialog("upload")}
+              disabled={!input.buyer_id || !input.category_bulky}
+            >
               <Upload />
               Import File
             </Button>
