@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
@@ -11,8 +11,9 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useUploadCreateB2B = () => {
+export const useAddProductB2B = () => {
   const accessToken = getCookie("accessToken");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
@@ -24,15 +25,25 @@ export const useUploadCreateB2B = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("B2B successfuly Createdd");
-      window.location.href = "/outbond/b2b";
+      toast.success("Product successfuly added to B2B");
+      queryClient.invalidateQueries({
+        queryKey: ["list-sale-b2b"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["list-product-b2b"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR: ${(err?.response?.data as any)?.data?.message}`);
-        console.log("ERROR_CREATE_B2B:", err);
+        toast.error(
+          `ERROR: ${
+            (err?.response?.data as any)?.data?.message ??
+            "Failed to add Product to B2B"
+          }`
+        );
+        console.log("ERROR_ADD_PRODUCT_B2B:", err);
       }
     },
   });
