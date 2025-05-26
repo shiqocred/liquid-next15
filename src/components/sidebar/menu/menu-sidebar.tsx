@@ -19,10 +19,12 @@ import {
   RailSymbol,
   Recycle,
   ScanText,
+  Shield,
   ShoppingBasket,
   SquareLibrary,
   SwatchBook,
   Target,
+  TriangleAlert,
   Truck,
   User,
   Warehouse,
@@ -189,10 +191,10 @@ const sidebarMenu = [
         href: undefined,
         icon: <Warehouse className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
-          {
-            title: "list product",
-            href: "/inventory/slow-moving-product/list-product",
-          },
+          // {
+          //   title: "list product",
+          //   href: "/inventory/slow-moving-product/list-product",
+          // },
           {
             title: "promo product",
             href: "/inventory/slow-moving-product/promo-product",
@@ -245,6 +247,18 @@ const sidebarMenu = [
         title: "List Product Repair",
         href: "/repair-station/list-product-repair",
         icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
+       {
+        title: "Abnormal",
+        href: "/repair-station/abnormal",
+        icon: <TriangleAlert className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
+       {
+        title: "Damaged",
+        href: "/repair-station/damaged",
+        icon: <Shield className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
       {

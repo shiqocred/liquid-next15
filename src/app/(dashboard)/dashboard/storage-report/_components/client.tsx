@@ -621,6 +621,140 @@ export const Client = () => {
             </CardContent>
           </Card>
         </div>
+        <div className="w-full flex gap-4">
+          <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+            <CardHeader>
+              <CardTitle>Product Category Slow Moving</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <Package className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Quantity
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {dataStorage?.total_product_category_slow_moving.toLocaleString()}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>
+                        {dataStorage?.percentage_product_category_slow_moving}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_category_slow_moving}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <DollarSign className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Price
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {formatRupiah(
+                        dataStorage?.total_product_category_slow_moving_price
+                      )}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>
+                        {
+                          dataStorage?.percentage_product_category_slow_moving_price
+                        }
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={
+                    dataStorage?.percentage_product_category_slow_moving_price
+                  }
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+            <CardHeader>
+              <CardTitle>Product Slow Moving Staging</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <Package className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Quantity
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {dataStorage?.total_product_slow_moving_staging.toLocaleString()}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>
+                        {dataStorage?.percentage_product_slow_moving_staging}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_slow_moving_staging}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <DollarSign className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Price
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {formatRupiah(
+                        dataStorage?.total_product_slow_moving_staging_price
+                      )}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>
+                        {
+                          dataStorage?.percentage_product_slow_moving_staging_price
+                        }
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={
+                    dataStorage?.percentage_product_slow_moving_staging_price
+                  }
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         <div className="w-full bg-white rounded-md shadow flex flex-col">
           <div className="border-b py-2 border-black w-full px-6">
             <h1 className="font-bold">Product Color</h1>

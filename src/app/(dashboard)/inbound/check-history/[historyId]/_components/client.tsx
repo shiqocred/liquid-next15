@@ -58,6 +58,8 @@ import { useGetProductDetailCheckHistory } from "../_api/use-get-product-check-h
 import { useExportHistory } from "../_api/use-export-history";
 import { useQueryClient } from "@tanstack/react-query";
 import Loading from "@/app/(dashboard)/loading";
+import { useGetRefreshHistoryDocument } from "../_api/use-get-refresh-history-document";
+import { toast } from "sonner";
 
 const chartConfig = {
   values: {
@@ -115,12 +117,27 @@ export const Client = () => {
     isLoading: isLoadingDetail,
   } = useGetDetailCheckHistory({ id: historyId });
 
-  const loadingDetail =
-    isPendingDetail || isRefetchingDetail || isLoadingDetail;
-
   const dataDetailCH = useMemo(() => {
     return dataDetail?.data.data.resource;
   }, [dataDetail]);
+
+  const {
+    data: dataRefresh,
+    refetch: refetchRefresh,
+    isLoading: isLoadingRefresh,
+  } = useGetRefreshHistoryDocument({
+    code_document: dataDetailCH?.code_document,
+  });
+
+  const dataDetailCHAfterRefresh = useMemo(() => {
+    return dataRefresh?.data.data.resource;
+  }, [dataRefresh]);
+
+  const loadingDetail =
+    isPendingDetail ||
+    isRefetchingDetail ||
+    isLoadingDetail ||
+    isLoadingRefresh;
 
   const {
     data: dataProduct,
@@ -346,6 +363,24 @@ export const Client = () => {
             <h3 className="text-xl font-semibold text-black">
               Inventory Details
             </h3>
+            <Button
+              onClick={() =>
+                refetchRefresh().then((res) => {
+                  if (res?.data?.data?.data?.status === true) {
+                    toast.success("Berhasil refresh data");
+                  }
+                })
+              }
+              className="ml-2 w-9 h-9 p-0 flex items-center justify-center border-sky-400 text-black hover:bg-sky-50"
+              variant="outline"
+              disabled={loadingDetail}
+              type="button"
+              aria-label="Refresh Inventory Details"
+            >
+              <RefreshCw
+                className={cn("w-4 h-4", loadingDetail ? "animate-spin" : "")}
+              />
+            </Button>
           </div>
           <div className="w-full flex gap-4">
             <div className="w-full flex flex-col gap-4">
@@ -370,7 +405,11 @@ export const Client = () => {
                   </p>
                   <div className="flex justify-between items-center">
                     <h3 className="text-gray-700 font-bold text-2xl">
-                      {(dataDetailCH?.total_data_in ?? 0).toLocaleString()}
+                      {(
+                        dataDetailCHAfterRefresh?.["all data"] ??
+                        dataDetailCH?.total_data_in ??
+                        0
+                      ).toLocaleString()}{" "}
                     </h3>
                     <Badge className="rounded-full bg-transparent hover:bg-transparent text-black border border-black">
                       {Math.round(dataDetailCH?.percentage_in ?? 0)}%
@@ -386,7 +425,11 @@ export const Client = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <h3 className="text-gray-900 font-bold text-2xl">
-                      {(dataDetailCH?.total_data_lolos ?? 0).toLocaleString()}
+                      {(
+                        dataDetailCHAfterRefresh?.lolos ??
+                        dataDetailCH?.total_data_lolos ??
+                        0
+                      ).toLocaleString()}
                     </h3>
                     <Badge className="rounded-full bg-transparent hover:bg-transparent text-black border border-black">
                       {Math.round(dataDetailCH?.percentage_lolos ?? 0)}%
@@ -400,7 +443,11 @@ export const Client = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <h3 className="text-gray-900 font-bold text-2xl">
-                      {(dataDetailCH?.total_data_damaged ?? 0).toLocaleString()}
+                      {(
+                        dataDetailCHAfterRefresh?.damaged ??
+                        dataDetailCH?.total_data_damaged ??
+                        0
+                      ).toLocaleString()}
                     </h3>
                     <Badge className="rounded-full bg-transparent hover:bg-transparent text-black border border-black">
                       {Math.round(dataDetailCH?.percentage_damaged ?? 0)}%
@@ -415,7 +462,9 @@ export const Client = () => {
                   <div className="flex justify-between items-center">
                     <h3 className="text-gray-900 font-bold text-2xl">
                       {(
-                        dataDetailCH?.total_data_abnormal ?? 0
+                        dataDetailCHAfterRefresh?.abnormal ??
+                        dataDetailCH?.total_data_abnormal ??
+                        0
                       ).toLocaleString()}
                     </h3>
                     <Badge className="rounded-full bg-transparent hover:bg-transparent text-black border border-black">
