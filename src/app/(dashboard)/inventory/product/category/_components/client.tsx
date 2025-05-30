@@ -341,11 +341,29 @@ export const Client = () => {
     {
       accessorKey: "new_status_product",
       header: "Status",
-      cell: ({ row }) => (
-        <Badge className="bg-green-400/80 hover:bg-green-400/80 font-normal rounded-full text-black capitalize">
-          {row.original.new_status_product}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const status = row.original.new_status_product;
+        const color = {
+          display: "bg-green-400/80 hover:bg-green-400/80",
+          expired: "bg-rose-400/80 hover:bg-rose-400/80",
+          slowmoving: "bg-yellow-400/80 hover:bg-yellow-400/80",
+        };
+        return (
+          <Badge
+            className={cn(
+              "font-normal rounded-full text-black capitalize",
+              color[
+                status.replace(/\s+/g, "").toLowerCase() as
+                  | "display"
+                  | "expired"
+                  | "slowmoving"
+              ]
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "action",
