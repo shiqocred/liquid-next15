@@ -348,20 +348,6 @@ const DialogExportData = ({
                     <div className="w-full flex border-t border-black">
                       <div className="flex w-full">
                         <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
-                          Point
-                        </p>
-                        <p className="w-full px-3 py-0.5 flex items-center">
-                          <span>{data?.buyer?.buyer?.point_buyer}</span>
-                          <span className="ml-3 text-[11px]">
-                            (+
-                            {data?.buyer?.buyer_point_document_sale})
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="w-full flex border-t border-black">
-                      <div className="flex w-full">
-                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
                           Rank
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">
