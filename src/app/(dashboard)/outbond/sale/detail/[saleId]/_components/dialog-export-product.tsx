@@ -291,6 +291,41 @@ const DialogExportProduct = ({
                         </p>
                       </div>
                     </div>
+                    <div className="w-full flex border-t border-black">
+                      <div className="flex w-full">
+                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Point
+                        </p>
+                        <p className="w-full px-3 py-0.5 flex items-center">
+                          <span>{data?.buyer?.buyer?.point_buyer}</span>
+                          <span className="ml-3 text-[11px]">
+                            (+
+                            {data?.buyer?.buyer_point_document_sale})
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full flex border-t border-black">
+                      <div className="flex w-full">
+                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Rank
+                        </p>
+                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                          <span>{data?.buyer_loyalty?.rank_buyer ?? "-"}</span>
+                          <span className="text-[11px]">
+                            (exp. {data?.buyer_loyalty?.expire_date ?? "-"})
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex w-1/3 flex-none">
+                        <p className="w-1/3 flex-none px-3 py-0.5 border-x border-black font-bold">
+                          Discount
+                        </p>
+                        <p className="w-full px-3 py-0.5">
+                          {data?.buyer_loyalty?.percentage_discount ?? "0"}%
+                        </p>
+                      </div>
+                    </div>
                   </div>
                   <p className="my-3 text-justify indent-5">
                     Bahwa yang bersangkutan di atas telah melakukan pemilihan
