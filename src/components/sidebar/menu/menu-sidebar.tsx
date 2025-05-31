@@ -3,6 +3,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { ButtonSidebar } from "../button-sidebar";
 import {
+  Award,
   BadgeDollarSign,
   BarChartBig,
   Blocks,
@@ -311,6 +312,12 @@ const sidebarMenu = [
         title: "buyer",
         href: "/outbond/buyer",
         icon: <BadgeDollarSign className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
+       {
+        title: "rank buyer",
+        href: "/outbond/rank-buyer",
+        icon: <Award className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
     ],

@@ -621,7 +621,7 @@ export const Client = () => {
             </CardContent>
           </Card>
         </div>
-        <div className="w-full flex gap-4">
+        {/* <div className="w-full flex gap-4">
           <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
             <CardHeader>
               <CardTitle>Product Category Slow Moving</CardTitle>
@@ -754,7 +754,7 @@ export const Client = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
         <div className="w-full bg-white rounded-md shadow flex flex-col">
           <div className="border-b py-2 border-black w-full px-6">
             <h1 className="font-bold">Product Color</h1>
