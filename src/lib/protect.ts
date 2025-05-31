@@ -1,8 +1,8 @@
-"use server";
+import "server-only";
 
-import { cookies } from "next/headers";
 import { baseUrl } from "./baseUrl";
-import { deleteCookie, hasCookie } from "cookies-next/server";
+import { deleteCookie, hasCookie } from "cookies-next";
+import { cookies } from "next/headers";
 
 export const protect = async () => {
   const cookie = await cookies();
@@ -14,12 +14,9 @@ export const protect = async () => {
     });
 
     if (!res.ok) {
-      if (
-        (await hasCookie("profile", { cookies })) ||
-        (await hasCookie("accessToken", { cookies }))
-      ) {
-        await deleteCookie("profile", { cookies });
-        await deleteCookie("accessToken", { cookies });
+      if ((await hasCookie("profile")) || (await hasCookie("accessToken"))) {
+        await deleteCookie("profile");
+        await deleteCookie("accessToken");
       }
       return false;
     }
