@@ -49,6 +49,7 @@
     "react-hook-form": "^7.54.2",
     "react-to-print": "^3.0.2",
     "recharts": "^2.14.1",
+    "server-only": "^0.0.1",
     "slug": "^10.0.0",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.5",
