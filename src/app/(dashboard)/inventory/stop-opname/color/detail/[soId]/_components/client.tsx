@@ -83,13 +83,15 @@ export const Client = () => {
           <div className="flex items-center gap-1 w-full">
             <p>Period Start:</p>
             <p className="font-bold underline">
-              {format(dataDetail.start_date, "PPP", { locale: id })}
+              {format(dataDetail.start_date ?? new Date(), "PPP", {
+                locale: id,
+              })}
             </p>
           </div>
           <div className="flex items-center gap-1 w-full">
             <p>Period End:</p>
             <p className="font-bold underline">
-              {format(dataDetail.end_date, "PPP", { locale: id })}
+              {format(dataDetail.end_date ?? new Date(), "PPP", { locale: id })}
             </p>
           </div>
           <div className="flex items-center gap-1 w-full">
