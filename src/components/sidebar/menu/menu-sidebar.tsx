@@ -7,6 +7,7 @@ import {
   BadgeDollarSign,
   BarChartBig,
   Blocks,
+  BookMarked,
   Boxes,
   CandlestickChart,
   Container,
@@ -237,6 +238,17 @@ const sidebarMenu = [
           },
         ],
       },
+      {
+        title: "Stop Opname",
+        href: undefined,
+        icon: <BookMarked className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [
+          {
+            title: "Color",
+            href: "/inventory/stop-opname/color",
+          },
+        ],
+      },
     ],
   },
   {
@@ -250,13 +262,13 @@ const sidebarMenu = [
         icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-       {
+      {
         title: "Abnormal",
         href: "/repair-station/abnormal",
         icon: <TriangleAlert className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-       {
+      {
         title: "Damaged",
         href: "/repair-station/damaged",
         icon: <Shield className="w-5 h-5 stroke-[1.5]" />,
@@ -314,7 +326,7 @@ const sidebarMenu = [
         icon: <BadgeDollarSign className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-       {
+      {
         title: "rank buyer",
         href: "/outbond/rank-buyer",
         icon: <Award className="w-5 h-5 stroke-[1.5]" />,
