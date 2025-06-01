@@ -1,24 +1,44 @@
 "use client";
 
-import { DataTable } from "@/components/data-table";
+import Forbidden from "@/components/403";
+import { columnsSOColor } from "./columns";
+import { alertError, cn } from "@/lib/utils";
 import Pagination from "@/components/pagination";
+import { DataTable } from "@/components/data-table";
+import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { alertError, cn } from "@/lib/utils";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { PlayIcon, RefreshCw } from "lucide-react";
-import React, { MouseEvent, useEffect, useMemo } from "react";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
-import { columnsSOColor } from "./columns";
-import { useGetListSOColor } from "../_api/use-get-list-so-color";
+import { PlayIcon, RefreshCw, SquareIcon } from "lucide-react";
+
 import { AxiosError } from "axios";
-import Forbidden from "@/components/403";
-import { useStartSOColor } from "../_api/use-start-so-color";
 import { useRouter } from "next/navigation";
+import React, { MouseEvent, useEffect, useMemo } from "react";
+
+import { useStartSOColor } from "../_api/use-start-so-color";
+import { useGetListSOColor } from "../_api/use-get-list-so-color";
+import { useStopSOColor } from "../_api/use-stop-so-color";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
   const router = useRouter();
-  const { mutate: startSO, isPending: isPendingSO } = useStartSOColor();
+
+  const [StopDialog, confirmStop] = useConfirm(
+    "Stop Period Stop Opname",
+    "This action cannot be undone",
+    "destructive"
+  );
+
+  const { mutate: startSO, isPending: isPendingStartSO } = useStartSOColor();
+  const { mutate: stopSO, isPending: isPendingStopSO } = useStopSOColor();
 
   const { metaPage, page, setPage, setPagination } = usePagination();
   const { search, searchValue, setSearch } = useSearchQuery();
@@ -26,7 +46,8 @@ export const Client = () => {
   const { data, isPending, refetch, isRefetching, error, isError, isSuccess } =
     useGetListSOColor({ p: page, q: searchValue });
 
-  const loading = isPending || isRefetching || isPendingSO;
+  const loading =
+    isPending || isRefetching || isPendingStartSO || isPendingStopSO;
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data ?? [];
@@ -38,10 +59,17 @@ export const Client = () => {
       {},
       {
         onSuccess: () => {
-          router.push("/inventory/stop-opname/color/create");
+          router.push("/inventory/stop-opname/color/new");
         },
       }
     );
+  };
+  const handleStop = async () => {
+    const ok = await confirmStop();
+
+    if (!ok) return;
+
+    stopSO({});
   };
 
   useEffect(() => {
@@ -70,6 +98,20 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <StopDialog />
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>Inventory</BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>Stop Opname</BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>Color</BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Stop Opname Color</h2>
         <div className="flex flex-col w-full gap-4">
@@ -95,11 +137,26 @@ export const Client = () => {
               </TooltipProviderPage>
               <div className="ml-auto flex gap-2 items-center">
                 <Button
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  className="items-center flex-none h-9 bg-red-400/80 hover:bg-red-400 text-black disabled:hover:bg-red-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  variant={"outline"}
+                  onClick={handleStop}
+                  disabled={
+                    dataList.length > 0 && dataList[0].type !== "process"
+                  }
+                >
+                  <SquareIcon className={"w-4 h-4 mr-1"} />
+                  Stop
+                </Button>
+                <Button
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                   onClick={handleStart}
+                  disabled={
+                    dataList.length > 0 && dataList[0].type === "process"
+                  }
                 >
                   <PlayIcon className={"w-4 h-4 mr-1"} />
+                  {dataList.length > 0 && dataList[0].type === "process"}
                   Start
                 </Button>
               </div>
