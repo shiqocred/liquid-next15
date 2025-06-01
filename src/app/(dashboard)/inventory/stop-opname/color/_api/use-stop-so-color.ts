@@ -7,14 +7,14 @@ import { getCookie } from "cookies-next/client";
 
 type Error = AxiosError;
 
-export const useStartSOColor = () => {
+export const useStopSOColor = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, any>({
     mutationFn: async () => {
-      const res = await axios.post(
-        `${baseUrl}/start_so_color`,
+      const res = await axios.put(
+        `${baseUrl}/stop_so_color`,
         {},
         {
           headers: {
@@ -25,7 +25,7 @@ export const useStartSOColor = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("SO Color successfully started");
+      toast.success("SO Color successfully stoped");
       queryClient.invalidateQueries({
         queryKey: ["list-so-color"],
       });
@@ -37,10 +37,10 @@ export const useStartSOColor = () => {
         toast.error(
           `ERROR ${err?.status}: ${
             (err?.response?.data as any)?.data?.message ??
-            "SO Color failed to start"
+            "SO Color failed to stop"
           }`
         );
-        console.log("ERROR_START_SO_COLOR:", err);
+        console.log("ERROR_STOP_SO_COLOR:", err);
       }
     },
   });
