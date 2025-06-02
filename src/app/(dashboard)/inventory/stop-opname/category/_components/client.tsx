@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { alertError, cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { PlayIcon, RefreshCw, SquareIcon } from "lucide-react";
+import { PlayIcon, RefreshCw} from "lucide-react";
 import React, { MouseEvent, useEffect, useMemo } from "react";
 import { usePagination, useSearchQuery } from "@/lib/utils-client";
 import { columnsSOCategory } from "./columns";
@@ -15,12 +15,12 @@ import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import { useStartSOCategory } from "../_api/use-start-so-category";
 import { useRouter } from "next/navigation";
-import { useStopSOCategory } from "../_api/use-stop-so-category";
+// import { useStopSOCategory } from "../_api/use-stop-so-category";
 
 export const Client = () => {
   const router = useRouter();
   const { mutate: startSO, isPending: isPendingSO } = useStartSOCategory();
-  const { mutate: stopSO, isPending: isPendingStopSO } = useStopSOCategory();
+  // const { mutate: stopSO, isPending: isPendingStopSO } = useStopSOCategory();
 
   const { metaPage, page, setPage, setPagination } = usePagination();
   const { search, searchValue, setSearch } = useSearchQuery();
@@ -46,17 +46,17 @@ export const Client = () => {
     );
   };
 
-  const handleStopSO = (e: MouseEvent) => {
-    e.preventDefault();
-    stopSO(
-      {},
-      {
-        onSuccess: () => {
-          router.push("/inventory/stop-opname/category");
-        },
-      }
-    );
-  };
+  // const handleStopSO = (e: MouseEvent) => {
+  //   e.preventDefault();
+  //   stopSO(
+  //     {},
+  //     {
+  //       onSuccess: () => {
+  //         router.push("/inventory/stop-opname/category");
+  //       },
+  //     }
+  //   );
+  // };
 
   useEffect(() => {
     if (data && isSuccess) {
@@ -108,7 +108,7 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
               <div className="ml-auto flex gap-2 items-center">
-                <Button
+                {/* <Button
                   className="items-center flex-none h-9 bg-red-400/80 hover:bg-red-400 text-black"
                   variant={"outline"}
                   onClick={handleStopSO}
@@ -116,7 +116,7 @@ export const Client = () => {
                 >
                   <SquareIcon className={"w-4 h-4 mr-1"} />
                   Stop
-                </Button>
+                </Button> */}
                 <Button
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
