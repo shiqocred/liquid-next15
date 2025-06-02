@@ -215,10 +215,6 @@ export const Client = () => {
       accessorKey: "type",
       header: "Type",
     },
-    {
-      accessorKey: "days_since_created",
-      header: "Days Since Created",
-    },
   ];
 
   const columnProduct: ColumnDef<any>[] = [
