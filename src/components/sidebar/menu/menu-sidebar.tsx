@@ -247,6 +247,10 @@ const sidebarMenu = [
             title: "Color",
             href: "/inventory/stop-opname/color",
           },
+          {
+            title: "Category",
+            href: "/inventory/stop-opname/category",
+          },
         ],
       },
     ],
