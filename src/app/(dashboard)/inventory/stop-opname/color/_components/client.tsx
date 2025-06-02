@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlayIcon, RefreshCw, SquareIcon } from "lucide-react";
+import { PlayIcon, RefreshCw } from "lucide-react";
 
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -25,20 +25,20 @@ import React, { MouseEvent, useEffect, useMemo } from "react";
 
 import { useStartSOColor } from "../_api/use-start-so-color";
 import { useGetListSOColor } from "../_api/use-get-list-so-color";
-import { useStopSOColor } from "../_api/use-stop-so-color";
-import { useConfirm } from "@/hooks/use-confirm";
+// import { useStopSOColor } from "../_api/use-stop-so-color";
+// import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
   const router = useRouter();
 
-  const [StopDialog, confirmStop] = useConfirm(
-    "Stop Period Stop Opname",
-    "This action cannot be undone",
-    "destructive"
-  );
+  // const [StopDialog, confirmStop] = useConfirm(
+  //   "Stop Period Stop Opname",
+  //   "This action cannot be undone",
+  //   "destructive"
+  // );
 
   const { mutate: startSO, isPending: isPendingStartSO } = useStartSOColor();
-  const { mutate: stopSO, isPending: isPendingStopSO } = useStopSOColor();
+  // const { mutate: stopSO, isPending: isPendingStopSO } = useStopSOColor();
 
   const { metaPage, page, setPage, setPagination } = usePagination();
   const { search, searchValue, setSearch } = useSearchQuery();
@@ -47,7 +47,7 @@ export const Client = () => {
     useGetListSOColor({ p: page, q: searchValue });
 
   const loading =
-    isPending || isRefetching || isPendingStartSO || isPendingStopSO;
+    isPending || isRefetching || isPendingStartSO;
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data ?? [];
@@ -64,13 +64,13 @@ export const Client = () => {
       }
     );
   };
-  const handleStop = async () => {
-    const ok = await confirmStop();
+  // const handleStop = async () => {
+  //   const ok = await confirmStop();
 
-    if (!ok) return;
+  //   if (!ok) return;
 
-    stopSO({});
-  };
+  //   stopSO({});
+  // };
 
   useEffect(() => {
     if (data && isSuccess) {
@@ -98,7 +98,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <StopDialog />
+      {/* <StopDialog /> */}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -136,7 +136,7 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
               <div className="ml-auto flex gap-2 items-center">
-                <Button
+                {/* <Button
                   className="items-center flex-none h-9 bg-red-400/80 hover:bg-red-400 text-black disabled:hover:bg-red-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                   onClick={handleStop}
@@ -146,7 +146,7 @@ export const Client = () => {
                 >
                   <SquareIcon className={"w-4 h-4 mr-1"} />
                   Stop
-                </Button>
+                </Button> */}
                 <Button
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
