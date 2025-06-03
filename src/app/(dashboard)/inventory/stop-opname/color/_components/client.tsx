@@ -46,8 +46,7 @@ export const Client = () => {
   const { data, isPending, refetch, isRefetching, error, isError, isSuccess } =
     useGetListSOColor({ p: page, q: searchValue });
 
-  const loading =
-    isPending || isRefetching || isPendingStartSO;
+  const loading = isPending || isRefetching || isPendingStartSO;
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data ?? [];
@@ -58,8 +57,8 @@ export const Client = () => {
     startSO(
       {},
       {
-        onSuccess: () => {
-          router.push("/inventory/stop-opname/color/new");
+        onSuccess: ({ data }) => {
+          router.push(`/inventory/stop-opname/color/${data.data.resource.id}`);
         },
       }
     );

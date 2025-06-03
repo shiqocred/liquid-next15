@@ -1,13 +1,12 @@
 "use client";
 
 import {
-  ArrowLeft,
+  AlertCircle,
   CheckIcon,
   ChevronDown,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
 
@@ -28,13 +27,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,6 +36,7 @@ import Loading from "@/app/(dashboard)/loading";
 
 import { useSubmitSOColor } from "../_api/use-submit-so-color";
 import { useGetListColorSOColor } from "../_api/use-get-list-color-so-color";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ItemsProps {
   name_color: string;
@@ -54,8 +47,15 @@ interface ItemsProps {
   addition: string;
 }
 
-export const Client = () => {
+export const NewSection = ({
+  listData,
+  soId,
+}: {
+  listData: any;
+  soId: any;
+}) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [isColor, setIsColor] = useState<boolean>(false);
@@ -123,10 +123,28 @@ export const Client = () => {
       {
         onSuccess: () => {
           router.push("/inventory/stop-opname/color");
+          queryClient.invalidateQueries({
+            queryKey: ["detail-so-color", { id: soId }],
+          });
         },
       }
     );
   };
+
+  useEffect(() => {
+    if (listData.length > 0) {
+      const mapped: ItemsProps[] = listData.map((item: any) => ({
+        name_color: item.color,
+        total_all: String(item.total_color),
+        product_damaged: String(item.product_damaged),
+        product_abnormal: String(item.product_abnormal),
+        lost: String(item.product_lost),
+        addition: String(item.product_addition),
+      }));
+
+      setItems(mapped);
+    }
+  }, [listData]);
 
   useEffect(() => {
     if (!isMounted) {
@@ -135,42 +153,14 @@ export const Client = () => {
   }, []);
 
   if (!isMounted) return <Loading />;
-
   return (
-    <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>Inventory</BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>Stop Opname</BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/inventory/stop-opname/color">
-              Color
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>Create</BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div className="p-4 bg-white rounded shadow-md flex flex-col gap-4 w-full">
-        <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
-          <Link href="/inventory/stop-opname/color">
-            <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
-              <ArrowLeft className="w-5 h-5 text-black" />
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-semibold">Create Stop Opname Color</h1>
-        </div>
-        <Accordion type="multiple" className="flex flex-col gap-4">
-          {items.map((item) => (
+    <div className="flex flex-col gap-4 w-full">
+      <Accordion type="multiple" className="flex flex-col gap-4">
+        {items.length > 0 ? (
+          items.map((item, idx) => (
             <AccordionItem
-              key={item.name_color}
-              value={item.name_color}
+              key={`${item.name_color}-${idx}`}
+              value={`${item.name_color}-${idx}`}
               className="border rounded-lg"
             >
               <AccordionTrigger className="px-5 group hover:no-underline">
@@ -257,77 +247,83 @@ export const Client = () => {
                 </div>
               </AccordionContent>
             </AccordionItem>
-          ))}
-        </Accordion>
-        <div className="w-full flex items-center gap-4">
-          <div className="w-full flex justify-between">
-            <Popover open={isColor} onOpenChange={setIsColor}>
-              <PopoverTrigger asChild>
-                <Button
-                  disabled={listColorFiltered.length === 0}
-                  variant={"outline"}
-                  className="w-full justify-between h-9 rounded-r-none border-r-0"
-                >
-                  {dataItem.name_color
-                    ? `Color: ${dataItem.name_color}`
-                    : "Select Color"}
-                  <ChevronDown />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0" align="start">
-                <Command>
-                  <CommandList>
-                    <CommandGroup>
-                      {listColorFiltered.map((item) => (
-                        <CommandItem
-                          onSelect={() => {
-                            setIsColor(false);
-                            setDataItem((subItem) => ({
-                              ...subItem,
-                              name_color: item.name_color,
-                            }));
-                          }}
-                          key={item.id}
-                        >
-                          {item.name_color}
-                          <CheckIcon
-                            className={cn(
-                              "size-4 ml-auto",
-                              dataItem.name_color === item.name_color
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <Button
-              disabled={
-                !dataItem.name_color ||
-                listColorFiltered.length === 0 ||
-                loading
-              }
-              variant={"outline"}
-              className="rounded-l-none"
-              onClick={handleAddItem}
-              type="submit"
-            >
-              <PlusIcon />
-              Add Item
-            </Button>
+          ))
+        ) : (
+          <div className="p-5 gap-2 bg-yellow-100 border flex items-center w-full text-sm">
+            <AlertCircle className="size-5" />
+            <p>
+              The data is still empty, please add color below so you can enter
+              data.
+            </p>
           </div>
+        )}
+      </Accordion>
+      <div className="w-full flex items-center gap-4">
+        <div className="w-full flex justify-between">
+          <Popover open={isColor} onOpenChange={setIsColor}>
+            <PopoverTrigger asChild>
+              <Button
+                disabled={listColorFiltered.length === 0}
+                variant={"outline"}
+                className="w-full justify-between h-9 rounded-r-none border-r-0"
+              >
+                {dataItem.name_color
+                  ? `Color: ${dataItem.name_color}`
+                  : "Select Color"}
+                <ChevronDown />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0" align="start">
+              <Command>
+                <CommandList>
+                  <CommandGroup>
+                    {listColorFiltered.map((item) => (
+                      <CommandItem
+                        onSelect={() => {
+                          setIsColor(false);
+                          setDataItem((subItem) => ({
+                            ...subItem,
+                            name_color: item.name_color,
+                          }));
+                        }}
+                        key={item.id}
+                      >
+                        {item.name_color}
+                        <CheckIcon
+                          className={cn(
+                            "size-4 ml-auto",
+                            dataItem.name_color === item.name_color
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <Button
-            disabled={items.length === 0 || loading}
-            variant={"liquid"}
-            onClick={handleSubmit}
+            disabled={
+              !dataItem.name_color || listColorFiltered.length === 0 || loading
+            }
+            variant={"outline"}
+            className="rounded-l-none"
+            onClick={handleAddItem}
+            type="submit"
           >
-            Submit
+            <PlusIcon />
+            Add Item
           </Button>
         </div>
+        <Button
+          disabled={items.length === 0 || loading}
+          variant={"liquid"}
+          onClick={handleSubmit}
+        >
+          Submit
+        </Button>
       </div>
     </div>
   );
