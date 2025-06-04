@@ -28,7 +28,8 @@ export const columnsSOCategory = ({
     accessorKey: "end_date",
     header: "Period End",
     cell: ({ row }) => (row.original.end_date ? row.original.end_date : "-"),
-  },{
+  },
+  {
     accessorKey: "type",
     header: "Status",
     cell: ({ row }) => {
@@ -51,7 +52,7 @@ export const columnsSOCategory = ({
     id: "action",
     header: "Action",
     cell: ({ row }) => (
-      <div className="flex items-center">
+      <div className="flex items-center p-2 gap-2">
         <Link
           href={
             row.original.type === "process"
@@ -62,7 +63,7 @@ export const columnsSOCategory = ({
           <Button
             size={"icon"}
             variant={"outline"}
-            className="border-sky-400/80 hover:bg-sky-50 hover:border-sky-400"
+            className="items-center border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50"
           >
             <ReceiptText />
           </Button>

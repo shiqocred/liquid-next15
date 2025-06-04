@@ -3,19 +3,16 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListStatusPalet = ({ p, q }: any) => {
+export const useGetListActiveSOCategory = () => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-status-palet", { p, q }],
+    queryKey: ["list-data-active-so-category"],
     queryFn: async () => {
-      const res = await axios.get(
-        `${baseUrl}/product-statuses2?page=${p}&q=${q}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const res = await axios.get(`${baseUrl}/active_so_category`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
   });
