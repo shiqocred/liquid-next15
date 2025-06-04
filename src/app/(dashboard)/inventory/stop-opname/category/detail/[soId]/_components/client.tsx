@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowBigRight, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
@@ -73,7 +73,20 @@ export const Client = () => {
               <ArrowLeft className="w-5 h-5 text-black" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-semibold">Detail Stop Opname Category</h1>
+          {dataDetail.type === "process" && (
+            <Link href="/inventory/stop-opname/category/create">
+              <Button
+                size={"icon"}
+                variant={"outline"}
+                className="border-sky-400/80 hover:bg-sky-50 hover:border-sky-400"
+              >
+                <ArrowBigRight />
+              </Button>
+            </Link>
+          )}
+          <h1 className="text-2xl font-semibold">
+            Detail Stop Opname Category
+          </h1>
         </div>
         <div className="flex items-center w-full text-sm py-5">
           <div className="flex items-center gap-1 w-full">
@@ -105,60 +118,62 @@ export const Client = () => {
           </div>
         </div>
         <Accordion type="multiple" className="flex flex-col gap-4">
-            <AccordionItem
-              key={dataDetail?.id}
-              value={dataDetail?.id}
-              className="border rounded-lg disabled:opacity-100"
-              disabled
-            >
-              <AccordionTrigger className="px-5 group hover:no-underline">
-                <p className="whitespace-nowrap group-hover:underline font-bold">
-                  Category: {dataDetail?.category}
+          <AccordionItem
+            key={dataDetail?.id}
+            value={dataDetail?.id}
+            className="border rounded-lg disabled:opacity-100"
+            disabled
+          >
+            <AccordionTrigger className="px-5 group hover:no-underline">
+              <p className="whitespace-nowrap group-hover:underline font-bold">
+                Category: {dataDetail?.category}
+              </p>
+              <div className="w-2/3 grid grid-cols-5 gap-3 ">
+                <p className="group-data-[state=open]:hidden">
+                  Bundle Item:{" "}
+                  <span className="font-semibold">
+                    {dataDetail?.product_bundle}
+                  </span>
                 </p>
-                <div className="w-2/3 grid grid-cols-5 gap-3 ">
-                 <p className="group-data-[state=open]:hidden">
-                    Bundle Item:{" "}
-                    <span className="font-semibold">
-                      {dataDetail?.product_bundle}
-                    </span>
-                  </p>
-                    <p className="group-data-[state=open]:hidden">
-                    Stagging Item:{" "}
-                    <span className="font-semibold">
-                      {dataDetail?.product_staging}
-                    </span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Inventory Item:{" "}
-                    <span className="font-semibold">
-                      {dataDetail?.product_inventory}
-                    </span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Damaged Item:{" "}
-                    <span className="font-semibold">
-                      {dataDetail?.product_damaged}
-                    </span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Abnormal Item:{" "}
-                    <span className="font-semibold">
-                      {dataDetail?.product_abnormal}
-                    </span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Lost Item:{" "}
-                    <span className="font-semibold">{dataDetail?.product_lost}</span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Additional Item:{" "}
-                    <span className="font-semibold">
-                      {dataDetail?.product_addition}
-                    </span>
-                  </p>
-                </div>
-              </AccordionTrigger>
-            </AccordionItem>
+                <p className="group-data-[state=open]:hidden">
+                  Stagging Item:{" "}
+                  <span className="font-semibold">
+                    {dataDetail?.product_staging}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Inventory Item:{" "}
+                  <span className="font-semibold">
+                    {dataDetail?.product_inventory}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Damaged Item:{" "}
+                  <span className="font-semibold">
+                    {dataDetail?.product_damaged}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Abnormal Item:{" "}
+                  <span className="font-semibold">
+                    {dataDetail?.product_abnormal}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Lost Item:{" "}
+                  <span className="font-semibold">
+                    {dataDetail?.product_lost}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Additional Item:{" "}
+                  <span className="font-semibold">
+                    {dataDetail?.product_addition}
+                  </span>
+                </p>
+              </div>
+            </AccordionTrigger>
+          </AccordionItem>
         </Accordion>
       </div>
     </div>

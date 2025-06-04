@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MetaPageProps } from "@/lib/utils-client";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowBigRight, ReceiptText } from "lucide-react";
+import { ReceiptText } from "lucide-react";
 import Link from "next/link";
 
 export const columnsSOCategory = ({
@@ -55,7 +55,9 @@ export const columnsSOCategory = ({
       <div className="flex items-center p-2 gap-2">
         <Link
           href={
-            `/inventory/stop-opname/category/detail/${row.original.id}`
+            row.original.type === "process"
+              ? "/inventory/stop-opname/category/create"
+              : `/inventory/stop-opname/category/detail/${row.original.id}`
           }
         >
           <Button
@@ -66,17 +68,6 @@ export const columnsSOCategory = ({
             <ReceiptText />
           </Button>
         </Link>
-        {row.original.type === "process" && (
-          <Link href="/inventory/stop-opname/category/create">
-             <Button
-            size={"icon"}
-            variant={"outline"}
-            className="border-sky-400/80 hover:bg-sky-50 hover:border-sky-400"
-          >
-            <ArrowBigRight />
-          </Button>
-          </Link>
-        )}
       </div>
     ),
   },
