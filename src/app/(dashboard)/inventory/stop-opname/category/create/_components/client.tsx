@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Loader2,
-  PlusCircle,
-  RefreshCw,
-  Search,
-} from "lucide-react";
+import { Loader2, PlusCircle, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { alertError, cn, setPaginate } from "@/lib/utils";
 import {
@@ -33,6 +28,12 @@ import dynamic from "next/dynamic";
 import { useGetListProductSOCategory } from "../_api/use-get-list-product-so-category";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
+import { useGetListActiveSOCategory } from "../_api/use-get-list-active-so-category";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -70,7 +71,6 @@ export const Client = () => {
   const { mutate: mutateAddProduct, isPending: isPendingAddProduct } =
     useAddProductSOCategory();
 
-
   // mutate end ----------------------------------------------------------------
 
   // query strat ----------------------------------------------------------------
@@ -87,6 +87,9 @@ export const Client = () => {
     isSuccess: isSuccessProduct,
   } = useGetListProductSOCategory({ p: pageProduct, q: searchProductValue });
 
+  const { data: dataActive, refetch: refetchActive } =
+    useGetListActiveSOCategory();
+
   // query end ----------------------------------------------------------------
 
   // memeo strat ----------------------------------------------------------------
@@ -98,6 +101,10 @@ export const Client = () => {
   const dataListProduct: any[] = useMemo(() => {
     return dataProduct?.data.data.resource.data;
   }, [dataProduct]);
+
+  const dataActiveSOCategory: any = useMemo(() => {
+    return dataActive?.data.data.resource;
+  }, [dataActive]);
 
   // memo end ----------------------------------------------------------------
 
@@ -141,6 +148,7 @@ export const Client = () => {
           }
           setAddProductSearch("");
           handleCloseProduct();
+          refetchActive();
         },
       }
     );
@@ -335,7 +343,9 @@ export const Client = () => {
                 className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                 variant={"outline"}
                 onClick={() =>
-                  router.push("/inventory/stop-opname/category/create/add-product-manual")
+                  router.push(
+                    "/inventory/stop-opname/category/create/add-product-manual"
+                  )
                 }
               >
                 Add Product Manual
@@ -343,6 +353,64 @@ export const Client = () => {
             </div>
           </div>
         </div>
+        <Accordion type="multiple" className="flex flex-col gap-4">
+          <AccordionItem
+            key={dataActiveSOCategory?.id}
+            value={dataActiveSOCategory?.id}
+            className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5"
+            disabled
+          >
+            <AccordionTrigger className="px-5 group hover:no-underline">
+              <p className="whitespace-nowrap group-hover:underline font-bold">
+                Category: {dataActiveSOCategory?.category}
+              </p>
+              <div className="w-2/3 grid grid-cols-5 gap-3 ">
+                <p className="group-data-[state=open]:hidden">
+                  Bundle Item:{" "}
+                  <span className="font-semibold">
+                    {dataActiveSOCategory?.product_bundle}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Stagging Item:{" "}
+                  <span className="font-semibold">
+                    {dataActiveSOCategory?.product_staging}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Inventory Item:{" "}
+                  <span className="font-semibold">
+                    {dataActiveSOCategory?.product_inventory}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Damaged Item:{" "}
+                  <span className="font-semibold">
+                    {dataActiveSOCategory?.product_damaged}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Abnormal Item:{" "}
+                  <span className="font-semibold">
+                    {dataActiveSOCategory?.product_abnormal}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Lost Item:{" "}
+                  <span className="font-semibold">
+                    {dataActiveSOCategory?.product_lost}
+                  </span>
+                </p>
+                <p className="group-data-[state=open]:hidden">
+                  Additional Item:{" "}
+                  <span className="font-semibold">
+                    {dataActiveSOCategory?.product_addition}
+                  </span>
+                </p>
+              </div>
+            </AccordionTrigger>
+          </AccordionItem>
+        </Accordion>
         <div className="flex w-full gap-4">
           <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5">
             <div
