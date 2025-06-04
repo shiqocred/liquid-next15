@@ -9,7 +9,7 @@ export const useGetListStatusPalet = ({ p, q }: any) => {
     queryKey: ["list-status-palet", { p, q }],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/product-statuses?page=${p}&q=${q}`,
+        `${baseUrl}/product-statuses2?page=${p}&q=${q}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
