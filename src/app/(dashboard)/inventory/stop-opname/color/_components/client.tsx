@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { PlayIcon, RefreshCw } from "lucide-react";
 
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import React, { MouseEvent, useEffect, useMemo } from "react";
 
 import { useStartSOColor } from "../_api/use-start-so-color";
@@ -29,8 +28,6 @@ import { useGetListSOColor } from "../_api/use-get-list-so-color";
 // import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
-  const router = useRouter();
-
   // const [StopDialog, confirmStop] = useConfirm(
   //   "Stop Period Stop Opname",
   //   "This action cannot be undone",
@@ -58,7 +55,7 @@ export const Client = () => {
       {},
       {
         onSuccess: ({ data }) => {
-          router.push(`/inventory/stop-opname/color/${data.data.resource.id}`);
+          window.location.href = `/inventory/stop-opname/color/${data.data.resource.id}`;
         },
       }
     );
