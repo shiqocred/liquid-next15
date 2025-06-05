@@ -1,15 +1,10 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,13 +20,16 @@ import { useGetDetailSOColor } from "../_api/use-get-detail-so-color";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { NewSection } from "./new";
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { DetailSection } from "./detail";
 
 export const Client = () => {
   const { soId } = useParams();
 
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
-  const { data } = useGetDetailSOColor({ id: soId });
+  const { data, refetch, isRefetching } = useGetDetailSOColor({ id: soId });
 
   const dataDetail: any = useMemo(() => {
     return data?.data.data.resource ?? {};
@@ -67,31 +65,47 @@ export const Client = () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Detail</BreadcrumbItem>
+          <BreadcrumbItem>
+            {dataDetail.type === "process" ? "Create" : "Detail"}
+          </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="p-4 bg-white rounded shadow-md flex flex-col gap-4 w-full">
-        <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
-          <Link href="/inventory/stop-opname/color">
-            <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
-              <ArrowLeft className="w-5 h-5 text-black" />
+        <div className="w-full flex gap-2 justify-between items-center pt-2 pb-1 mb-1 border-b border-gray-500">
+          <div className="flex items-center gap-2">
+            <Link href="/inventory/stop-opname/color">
+              <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
+                <ArrowLeft className="w-5 h-5 text-black" />
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-semibold">
+              {dataDetail.type === "process" ? "Create" : "Detail"} Stop Opname
+              Color
+            </h1>
+          </div>
+          <TooltipProviderPage value="Reload Data">
+            <Button onClick={() => refetch()} size={"icon"} variant={"outline"}>
+              <RefreshCcw className={cn(isRefetching && "animate-spin")} />
             </Button>
-          </Link>
-          <h1 className="text-2xl font-semibold">Detail Stop Opname Color</h1>
+          </TooltipProviderPage>
         </div>
         <div className="flex items-center w-full text-sm py-5">
           <div className="flex items-center gap-1 w-full">
             <p>Period Start:</p>
             <p className="font-bold underline">
-              {format(dataDetail.start_date ?? new Date(), "PPP", {
-                locale: id,
-              })}
+              {dataDetail.start_date
+                ? format(dataDetail.start_date, "PPP", {
+                    locale: id,
+                  })
+                : "-"}
             </p>
           </div>
           <div className="flex items-center gap-1 w-full">
             <p>Period End:</p>
             <p className="font-bold underline">
-              {format(dataDetail.end_date ?? new Date(), "PPP", { locale: id })}
+              {dataDetail.end_date
+                ? format(dataDetail.end_date, "PPP", { locale: id })
+                : "-"}
             </p>
           </div>
           <div className="flex items-center gap-1 w-full">
@@ -108,50 +122,10 @@ export const Client = () => {
             </Badge>
           </div>
         </div>
-        <Accordion type="multiple" className="flex flex-col gap-4">
-          {listData.map((item) => (
-            <AccordionItem
-              key={item.id}
-              value={item.id}
-              className="border rounded-lg disabled:opacity-100"
-              disabled
-            >
-              <AccordionTrigger className="px-5 group hover:no-underline">
-                <p className="whitespace-nowrap group-hover:underline font-bold">
-                  Color: {item.color}
-                </p>
-                <div className="w-2/3 grid grid-cols-5 gap-3 ">
-                  <p className="group-data-[state=open]:hidden">
-                    Total Item:{" "}
-                    <span className="font-semibold">{item.total_color}</span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Damaged Item:{" "}
-                    <span className="font-semibold">
-                      {item.product_damaged}
-                    </span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Abnormal Item:{" "}
-                    <span className="font-semibold">
-                      {item.product_abnormal}
-                    </span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Lost Item:{" "}
-                    <span className="font-semibold">{item.product_lost}</span>
-                  </p>
-                  <p className="group-data-[state=open]:hidden">
-                    Additional Item:{" "}
-                    <span className="font-semibold">
-                      {item.product_addition}
-                    </span>
-                  </p>
-                </div>
-              </AccordionTrigger>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        {dataDetail.type === "process" && (
+          <NewSection listData={listData} soId={soId} />
+        )}
+        {dataDetail.type === "done" && <DetailSection listData={listData} />}
       </div>
     </div>
   );

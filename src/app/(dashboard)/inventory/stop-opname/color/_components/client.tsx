@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { PlayIcon, RefreshCw } from "lucide-react";
 
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import React, { MouseEvent, useEffect, useMemo } from "react";
 
 import { useStartSOColor } from "../_api/use-start-so-color";
@@ -29,8 +28,6 @@ import { useGetListSOColor } from "../_api/use-get-list-so-color";
 // import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
-  const router = useRouter();
-
   // const [StopDialog, confirmStop] = useConfirm(
   //   "Stop Period Stop Opname",
   //   "This action cannot be undone",
@@ -46,8 +43,7 @@ export const Client = () => {
   const { data, isPending, refetch, isRefetching, error, isError, isSuccess } =
     useGetListSOColor({ p: page, q: searchValue });
 
-  const loading =
-    isPending || isRefetching || isPendingStartSO;
+  const loading = isPending || isRefetching || isPendingStartSO;
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data ?? [];
@@ -58,8 +54,8 @@ export const Client = () => {
     startSO(
       {},
       {
-        onSuccess: () => {
-          router.push("/inventory/stop-opname/color/new");
+        onSuccess: ({ data }) => {
+          window.location.href = `/inventory/stop-opname/color/${data.data.resource.id}`;
         },
       }
     );
