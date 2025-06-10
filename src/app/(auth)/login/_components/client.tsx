@@ -10,7 +10,7 @@ import Image from "next/image";
 import { LeftBackground } from "./left-background";
 import { RightBackground } from "./right-background";
 import { FormLogin } from "./form-login";
-import logoImage from "../../../../../public/images/liquid.png";
+import { sizesImage } from "@/lib/utils";
 
 export const Client = () => {
   return (
@@ -26,10 +26,10 @@ export const Client = () => {
           <div className="h-[58px] relative aspect-square">
             <Image
               alt=""
-              src={logoImage}
+              src={"/images/liquid.png"}
               fill
               className="object-contain"
-              placeholder="blur"
+              sizes={sizesImage}
             />
           </div>
           <div className="w-full flex flex-col">

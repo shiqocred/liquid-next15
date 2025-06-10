@@ -25,7 +25,8 @@ import Loading from "@/app/(dashboard)/loading";
 import Pagination from "@/components/pagination";
 import { columnProductStaging } from "./columns";
 import { DataTable } from "@/components/data-table";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { useSearchQuery } from "@/lib/search";
+import { usePagination } from "@/lib/pagination";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
 import { DialogToLPR } from "./dialog-to-lpr";

@@ -111,19 +111,22 @@ export const Client = () => {
 
     if (!ok) return;
 
-    mutateDelete({ id });
+    mutateDelete({ params: { id } });
   };
 
   const handleExport = async () => {
-    mutateExport("", {
-      onSuccess: (res) => {
-        const link = document.createElement("a");
-        link.href = res.data.data.resource;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      },
-    });
+    mutateExport(
+      {},
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
   };
 
   // ---------------- Start Detail Fn -------------------- //
@@ -227,8 +230,9 @@ export const Client = () => {
       display_price: input.displayPrice,
       new_discount: input.discount,
     };
+
     updateProduct(
-      { id: dataDetailProduct.id, body },
+      { body, params: { id: dataDetailProduct.id } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({

@@ -34,7 +34,7 @@ export const FormLogin = () => {
       password: input.password,
     };
 
-    mutate(body);
+    mutate({ body });
   };
   useEffect(() => {
     setIsMounted(true);

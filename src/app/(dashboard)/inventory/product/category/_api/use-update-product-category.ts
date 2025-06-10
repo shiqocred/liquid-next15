@@ -1,40 +1,39 @@
-import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
-import type { AxiosResponse } from "axios";
-import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { getCookie } from "cookies-next/client";
+import { useMutate } from "@/lib/query";
 
-type RequestType = {
+type Params = {
   id: string;
-  body: any;
 };
 
-type Error = AxiosError;
+type Body = {
+  code_document: any;
+  old_barcode_product: string;
+  new_barcode_product: string;
+  new_name_product: string;
+  new_quantity_product: string;
+  new_price_product: string;
+  old_price_product: string;
+  new_date_in_product: any;
+  new_status_product: any;
+  condition: string | undefined;
+  new_category_product: string;
+  new_tag_product: any;
+  display_price: string;
+  new_discount: string;
+};
 
 export const useUpdateProductCategory = () => {
-  const accessToken = getCookie("accessToken");
-
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/new_products/${id}`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      return res;
-    },
+  const mutation = useMutate<Body, Params>({
+    endpoint: "/new_products/:id",
+    method: "put",
     onSuccess: () => {
-      toast.success("Product successfully updated");
+      toast.success("Product successfully Deleted");
     },
-    onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(`ERROR ${err?.status}: Product failed to update`);
-        console.log("ERROR_UPDATE_PRODUCT:", err);
-      }
+    onError: {
+      message: "Product failed to update",
+      title: "UPDATE_PRODUCT",
     },
   });
+
   return mutation;
 };
