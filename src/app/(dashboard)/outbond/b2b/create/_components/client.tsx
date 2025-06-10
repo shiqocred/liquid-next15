@@ -49,7 +49,7 @@ import {
   useGetListSaleB2B,
   useRemoveProductB2B,
 } from "../_api";
-import { useDebounceSearch } from "@/lib/utils-client";
+import { useSearch } from "@/lib/search";
 import { useConfirm } from "@/hooks/use-confirm";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -93,7 +93,7 @@ export const Client = () => {
     useRemoveProductB2B();
   const { mutate: finishB2B, isPending: isPendingFinishB2B } = useFinishB2B();
 
-  const { search, searchValue, setSearch } = useDebounceSearch();
+  const { search, searchValue, setSearch } = useSearch();
 
   const { data, isPending, isSuccess, refetch, isRefetching, error, isError } =
     useGetListSaleB2B();

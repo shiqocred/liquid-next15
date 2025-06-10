@@ -40,7 +40,7 @@ import { DialogDetailSale } from "./dialogs/dialog-detail-sale";
 
 import { useGetDetailApprove } from "../_api/use-get-detail-approve";
 import { useGetListNotification } from "../_api/use-get-list-notification";
-import { usePagination } from "@/lib/utils-client";
+import { usePagination } from "@/lib/pagination";
 import { DialogDetailProduct } from "./dialogs/dialog-detail-product";
 
 export const Client = () => {

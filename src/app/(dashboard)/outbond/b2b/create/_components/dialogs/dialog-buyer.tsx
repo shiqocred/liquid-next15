@@ -12,8 +12,9 @@ import { columnBuyer } from "../columns";
 import { alertError, cn } from "@/lib/utils";
 import Pagination from "@/components/pagination";
 import { DataTable } from "@/components/data-table";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { useSearchQuery } from "@/lib/search";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { usePagination } from "@/lib/pagination";
 
 import { AxiosError } from "axios";
 import { RefreshCw, X } from "lucide-react";

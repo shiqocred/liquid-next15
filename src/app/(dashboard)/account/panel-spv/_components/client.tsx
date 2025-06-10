@@ -28,8 +28,9 @@ import { columnListData } from "./columns";
 import { alertError, cn } from "@/lib/utils";
 import Pagination from "@/components/pagination";
 import { useConfirm } from "@/hooks/use-confirm";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { useSearchQuery } from "@/lib/search";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { usePagination } from "@/lib/pagination";
 
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false); // loading component
@@ -80,7 +81,7 @@ export const Client = () => {
 
     if (!ok) return;
 
-    mutateDelete({ id });
+    mutateDelete({ params: { id } });
   };
 
   // handle close dialog

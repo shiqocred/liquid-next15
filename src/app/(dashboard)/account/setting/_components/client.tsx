@@ -33,8 +33,9 @@ import DialogCreateEdit from "./dialog/dialog-create-edit";
 import { alertError, cn } from "@/lib/utils";
 import { columnDestinationMC } from "./columns";
 import { useConfirm } from "@/hooks/use-confirm";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { useSearchQuery } from "@/lib/search";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { usePagination } from "@/lib/pagination";
 
 export const Client = () => {
   // dialog create edit

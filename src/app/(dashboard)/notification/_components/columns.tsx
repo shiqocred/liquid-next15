@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 import { cn, formatRupiah } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { MetaPageProps } from "@/lib/utils-client";
+import { MetaPageProps } from "@/lib/pagination";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
 import { id } from "date-fns/locale";

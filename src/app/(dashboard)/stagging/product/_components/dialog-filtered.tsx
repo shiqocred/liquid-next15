@@ -19,7 +19,7 @@ import { useGetListFilterProductStaging } from "../_api/use-get-list-filter-prod
 
 import { useConfirm } from "@/hooks/use-confirm";
 import Pagination from "@/components/pagination";
-import { usePagination } from "@/lib/utils-client";
+import { usePagination } from "@/lib/pagination";
 import { columnFilteredProductStaging } from "./columns";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 

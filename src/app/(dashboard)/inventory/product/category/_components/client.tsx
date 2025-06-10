@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,9 +17,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
+import { parseAsBoolean, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
@@ -38,6 +37,8 @@ import { useUpdateProductCategory } from "../_api/use-update-product-category";
 import { useGetProductCategoryDetail } from "../_api/use-get-product-category-detail";
 import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
 import { DialogDetail } from "./dialog-detail";
+import { usePagination } from "@/lib/pagination";
+import { useSearchQuery } from "@/lib/search";
 
 interface QualityData {
   lolos: string | null;
@@ -48,15 +49,8 @@ interface QualityData {
 export const Client = () => {
   const queryClient = useQueryClient();
 
-  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
-  const searchValue = useDebounce(dataSearch);
-  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage, setMetaPage] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
+  const { search, searchValue, setSearch } = useSearchQuery();
+  const { metaPage, page, setPage, setPagination } = usePagination();
 
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Product",
@@ -87,13 +81,9 @@ export const Client = () => {
   const loading = isLoading || isRefetching || isPending;
 
   useEffect(() => {
-    setPaginate({
-      isSuccess,
-      data,
-      dataPaginate: data?.data.data.resource,
-      setPage,
-      setMetaPage,
-    });
+    if (data && isSuccess) {
+      setPagination(data?.data.data.resource);
+    }
   }, [data]);
 
   useEffect(() => {
@@ -111,19 +101,22 @@ export const Client = () => {
 
     if (!ok) return;
 
-    mutateDelete({ id });
+    mutateDelete({ params: { id } });
   };
 
   const handleExport = async () => {
-    mutateExport("", {
-      onSuccess: (res) => {
-        const link = document.createElement("a");
-        link.href = res.data.data.resource;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      },
-    });
+    mutateExport(
+      {},
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
   };
 
   // ---------------- Start Detail Fn -------------------- //
@@ -227,8 +220,9 @@ export const Client = () => {
       display_price: input.displayPrice,
       new_discount: input.discount,
     };
+
     updateProduct(
-      { id: dataDetailProduct.id, body },
+      { body, params: { id: dataDetailProduct.id } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
@@ -464,8 +458,8 @@ export const Client = () => {
             <div className="flex items-center gap-3 w-full">
               <Input
                 className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                value={dataSearch}
-                onChange={(e) => setDataSearch(e.target.value)}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
                 autoFocus
               />

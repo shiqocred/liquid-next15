@@ -118,33 +118,36 @@ export const Client = () => {
           : "",
     };
 
-    mutate(body, {
-      onSuccess: (data) => {
-        setInput({
-          name: "",
-          price: "0",
-          qty: "0",
-          discountPrice: "0",
-          category: "",
-          discount: 0,
-          damaged: "",
-          abnormal: "",
-        });
-        if (nameRef.current) {
-          nameRef.current.focus();
-        }
-        if (data.data.data.resource?.new_category_product) {
-          setBarcodeOpen(true);
-          setMetaBarcode({
-            barcode: data.data.data.resource.new_barcode_product,
-            newPrice: data.data.data.resource.new_price_product,
-            oldPrice: data.data.data.resource.old_price_product,
-            category: data.data.data.resource.new_category_product,
-            discount: data.data.data.resource.discount_category,
+    mutate(
+      { body },
+      {
+        onSuccess: (data) => {
+          setInput({
+            name: "",
+            price: "0",
+            qty: "0",
+            discountPrice: "0",
+            category: "",
+            discount: 0,
+            damaged: "",
+            abnormal: "",
           });
-        }
-      },
-    });
+          if (nameRef.current) {
+            nameRef.current.focus();
+          }
+          if (data.data.data.resource?.new_category_product) {
+            setBarcodeOpen(true);
+            setMetaBarcode({
+              barcode: data.data.data.resource.new_barcode_product,
+              newPrice: data.data.data.resource.new_price_product,
+              oldPrice: data.data.data.resource.old_price_product,
+              category: data.data.data.resource.new_category_product,
+              discount: data.data.data.resource.discount_category,
+            });
+          }
+        },
+      }
+    );
   };
 
   useEffect(() => {
