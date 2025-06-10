@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MetaPageProps } from "@/lib/utils-client";
+import { MetaPageProps } from "@/lib/pagination";
 import { ColumnDef } from "@tanstack/react-table";
 import { ReceiptText } from "lucide-react";
 import Link from "next/link";
