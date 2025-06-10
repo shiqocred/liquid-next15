@@ -119,3 +119,6 @@ export const base64ToBlob = (base64: string, mimeType: string): Blob => {
 export const numericString = (e: string) => {
   return e.startsWith("0") ? e.replace(/^0+/, "") : e;
 };
+
+export const sizesImage =
+  "(max-width: 768px) 33vw, (max-width: 1200px) 50vw, 100vw";

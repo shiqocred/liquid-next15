@@ -1,45 +1,27 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
-import type { AxiosResponse } from "axios";
-import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { getCookie } from "cookies-next/client";
+import { useQueryClient } from "@tanstack/react-query";
 
-type RequestType = {
-  id: string;
-};
-
-type Error = AxiosError;
+import { invalidateQuery, useMutate } from "@/lib/query";
 
 export const useDeleteFormatBarcode = () => {
-  const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/format-barcodes/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      return res;
+  const mutation = useMutate<undefined, { id: string }>({
+    endpoint: "/format-barcodes/:id",
+    method: "delete",
+    onSuccess: (res) => {
+      toast.success("Format successfully deleted");
+      invalidateQuery(queryClient, [
+        ["list-format-barcode"],
+        ["select-panel-spv"],
+        ["format-barcode-detail", res.data.data.resource.id],
+      ]);
     },
-    onSuccess: (data) => {
-      toast.success("Format successfully Deleted");
-      queryClient.invalidateQueries({ queryKey: ["list-format-barcode"] });
-      queryClient.invalidateQueries({ queryKey: ["select-panel-spv"] });
-      queryClient.invalidateQueries({
-        queryKey: ["format-barcode-detail", data.data.data.resource.id],
-      });
-    },
-    onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(`ERROR ${err?.status}: Format failed to delete`);
-        console.log("ERROR_DELETE_FORMAT:", err);
-      }
+    onError: {
+      message: "Format failed to delete",
+      title: "DELETE_FORMAT",
     },
   });
+
   return mutation;
 };

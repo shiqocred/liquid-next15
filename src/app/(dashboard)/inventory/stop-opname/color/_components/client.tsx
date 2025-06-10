@@ -5,7 +5,8 @@ import { columnsSOColor } from "./columns";
 import { alertError, cn } from "@/lib/utils";
 import Pagination from "@/components/pagination";
 import { DataTable } from "@/components/data-table";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { useSearchQuery } from "@/lib/search";
+import { usePagination } from "@/lib/pagination";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
 import {

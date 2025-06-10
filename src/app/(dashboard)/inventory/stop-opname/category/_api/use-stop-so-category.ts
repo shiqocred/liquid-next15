@@ -1,43 +1,16 @@
-import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
-import type { AxiosResponse } from "axios";
-import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { getCookie } from "cookies-next/client";
-
-type Error = AxiosError;
+import { useMutate } from "@/lib/query";
 
 export const useStopSOCategory = () => {
-  const accessToken = getCookie("accessToken");
-
-  const mutation = useMutation<AxiosResponse, Error, any>({
-    mutationFn: async () => {
-      const res = await axios.put(
-        `${baseUrl}/stop_so`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      return res;
-    },
+  const mutation = useMutate({
+    endpoint: "/stop_so",
+    method: "put",
     onSuccess: () => {
-      toast.success("SO Category successfully stop");
+      toast.success("SO Category successfully stoped");
     },
-    onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(
-          `ERROR ${err?.status}: ${
-            (err?.response?.data as any)?.data?.message ??
-            "SO Category failed to stop"
-          }`
-        );
-        console.log("ERROR_STOP_SO_Category:", err);
-      }
+    onError: {
+      message: "SO Category failed to stop",
+      title: "STOP_SO_CATEGORY",
     },
   });
   return mutation;

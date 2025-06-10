@@ -1,45 +1,26 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
-import type { AxiosResponse } from "axios";
-import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { getCookie } from "cookies-next/client";
-
-type RequestType = {
-  body: any;
-};
-
-type Error = AxiosError;
+import { invalidateQuery, useMutate } from "@/lib/query";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useCreateFormatBarcode = () => {
-  const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/format-barcodes`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      return res;
-    },
+  const mutation = useMutate<{ format: string }>({
+    endpoint: "/format-barcodes",
+    method: "post",
     onSuccess: (res) => {
       toast.success("Format successfully created");
-      queryClient.invalidateQueries({ queryKey: ["list-format-barcode"] });
-      queryClient.invalidateQueries({ queryKey: ["select-panel-spv"] });
-      queryClient.invalidateQueries({
-        queryKey: ["format-barcode-detail", res.data.data.resource.id],
-      });
+      invalidateQuery(queryClient, [
+        ["list-format-barcode"],
+        ["select-panel-spv"],
+        ["format-barcode-detail", res.data.data.resource.id],
+      ]);
     },
-    onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(`ERROR ${err?.status}: Format failed to create`);
-        console.log("ERROR_CREATE_FORMAT:", err);
-      }
+    onError: {
+      message: "Format failed to create",
+      title: "CREATE_FORMAT",
     },
   });
+
   return mutation;
 };

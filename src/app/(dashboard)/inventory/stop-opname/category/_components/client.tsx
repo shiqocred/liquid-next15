@@ -6,15 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { alertError, cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { PlayIcon, RefreshCw} from "lucide-react";
+import { PlayIcon, RefreshCw } from "lucide-react";
 import React, { MouseEvent, useEffect, useMemo } from "react";
-import { usePagination, useSearchQuery } from "@/lib/utils-client";
+import { useSearchQuery } from "@/lib/search";
 import { columnsSOCategory } from "./columns";
 import { useGetListSOCategory } from "../_api/use-get-list-so-category";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import { useStartSOCategory } from "../_api/use-start-so-category";
 import { useRouter } from "next/navigation";
+import { usePagination } from "@/lib/pagination";
 // import { useStopSOCategory } from "../_api/use-stop-so-category";
 
 export const Client = () => {
