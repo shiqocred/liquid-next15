@@ -3,14 +3,22 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { invalidateQuery, useMutate } from "@/lib/query";
 
-export const useDeleteFormatBarcode = () => {
+type Body = {
+  format: string;
+  total_scan: any;
+  total_user: any;
+};
+
+type Params = { id: string };
+
+export const useUpdateFormatBarcode = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutate<undefined, { id: string }>({
+  const mutation = useMutate<Body, Params>({
     endpoint: "/format-barcodes/:id",
-    method: "delete",
+    method: "put",
     onSuccess: (res) => {
-      toast.success("Format successfully deleted");
+      toast.success("Format successfully updated");
       invalidateQuery(queryClient, [
         ["list-format-barcode"],
         ["select-panel-spv"],
@@ -18,8 +26,8 @@ export const useDeleteFormatBarcode = () => {
       ]);
     },
     onError: {
-      message: "Format failed to delete",
-      title: "DELETE_FORMAT",
+      message: "Format failed to update",
+      title: "UPDATE_FORMAT",
     },
   });
 

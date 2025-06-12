@@ -16,7 +16,7 @@ export type UseMutateConfig<
   TSearchParams = undefined
 > = {
   endpoint: string;
-  method: "post" | "put" | "delete" | "patch";
+  method: "post" | "put" | "delete" | "patch" | "get";
   onSuccess:
     | ((
         data: AxiosResponse<any, any>,
@@ -26,11 +26,11 @@ export type UseMutateConfig<
     | undefined;
   onError: {
     /**
-     * title for error logging like "ADD_USER" it will be "ERROR_ADD_USER"
+     * Default message to show if server response doesn't contain one.
      */
     message: string;
     /**
-     * Default message to show if server response doesn't contain one.
+     * title for error logging like "ADD_USER" it will be "ERROR_ADD_USER"
      */
     title: string;
   };
@@ -43,11 +43,11 @@ export type ErrorResposeType = {
    */
   err: AxiosError;
   /**
-   * title for error logging like "ADD_USER" it will be "ERROR_ADD_USER"
+   * Default message to show if server response doesn't contain one.
    */
   message: string;
   /**
-   * Default message to show if server response doesn't contain one.
+   * title for error logging like "ADD_USER" it will be "ERROR_ADD_USER"
    */
   title: string;
 };

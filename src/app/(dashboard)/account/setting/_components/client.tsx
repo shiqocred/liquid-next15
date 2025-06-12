@@ -1,8 +1,8 @@
 "use client";
 
-import { Loader, Loader2, PlusCircle, RefreshCw } from "lucide-react";
 import { AxiosError } from "axios";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader, Loader2, PlusCircle } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -11,9 +11,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { parseAsString, useQueryState } from "nuqs";
 
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
@@ -21,43 +20,33 @@ import Loading from "@/app/(dashboard)/loading";
 import Pagination from "@/components/pagination";
 import { DataTable } from "@/components/data-table";
 
-import { useGetListAccount } from "../_api/use-get-list-account";
-import { useDeleteAccount } from "../_api/use-delete-account";
-import { useUpdateAccount } from "../_api/use-update-account";
-import { useGetDetailAccount } from "../_api/use-get-detail-account";
-import { useCreateAccount } from "../_api/use-create-account";
-import { useGetListRole } from "../_api/use-get-list-role";
+import { useGetListAccount, useDeleteAccount, useGetListRole } from "../_api";
 
 import DialogCreateEdit from "./dialog/dialog-create-edit";
 
-import { alertError, cn } from "@/lib/utils";
+import { alertError } from "@/lib/utils";
+import { useSearchQuery } from "@/lib/search";
 import { columnDestinationMC } from "./columns";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useSearchQuery } from "@/lib/search";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { usePagination } from "@/lib/pagination";
+import { InputSearch } from "@/components/input-search";
 
 export const Client = () => {
   // dialog create edit
   const [openDialog, setOpenDialog] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsString.withDefault("")
   );
+
+  // user Id for Edit
   const [userId, setUserId] = useQueryState(
     "userId",
     parseAsString.withDefault("")
-  ); // user Id for Edit
+  );
 
-  // data form create edit
-  const [input, setInput] = useState({
-    name: "",
-    username: "",
-    roleId: "",
-    email: "",
-    password: "",
-  });
+  // loading
+  const [isMounted, setIsMounted] = useState(false);
 
-  // data search, page
   // data search, page
   const { search, searchValue, setSearch } = useSearchQuery();
   const { page, metaPage, setPage, setPagination } = usePagination();
@@ -72,21 +61,17 @@ export const Client = () => {
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } =
     useDeleteAccount();
-  const { mutate: mutateUpdate, isPending: isPendingUpdate } =
-    useUpdateAccount();
-  const { mutate: mutateCreate, isPending: isPendingCreate } =
-    useCreateAccount();
 
   // get data utama
   const {
     data,
-    refetch,
-    isLoading,
-    isRefetching,
-    isPending,
     error,
     isError,
+    refetch,
+    isLoading,
+    isPending,
     isSuccess,
+    isRefetching,
   } = useGetListAccount({ p: page, q: searchValue });
 
   const {
@@ -95,15 +80,6 @@ export const Client = () => {
     error: errorRole,
     isError: isErrorRole,
   } = useGetListRole();
-
-  // get detail data
-  const {
-    data: dataUser,
-    isLoading: isLoadingUser,
-    isSuccess: isSuccessUser,
-    isError: isErrorUser,
-    error: errorUser,
-  } = useGetDetailAccount({ id: userId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -115,14 +91,7 @@ export const Client = () => {
   }, [dataRole]);
 
   // load data
-  const loading =
-    isLoading ||
-    isRefetching ||
-    isPending ||
-    isLoadingUser ||
-    isPendingUpdate ||
-    isPendingCreate ||
-    isPendingDelete;
+  const loading = isLoading || isRefetching || isPending || isPendingDelete;
 
   // get pagetination
   useEffect(() => {
@@ -137,74 +106,8 @@ export const Client = () => {
 
     if (!ok) return;
 
-    mutateDelete({ id });
+    mutateDelete({ params: { id } });
   };
-
-  // handle close
-  const handleClose = () => {
-    setOpenDialog(false);
-    setUserId("");
-    setInput({
-      name: "",
-      username: "",
-      roleId: "",
-      email: "",
-      password: "",
-    });
-  };
-
-  // handle create
-  const handleCreate = (e: FormEvent) => {
-    e.preventDefault();
-    const body = {
-      email: input.email,
-      name: input.name,
-      password: input.password,
-      role_id: input.roleId,
-      username: input.username,
-    };
-    mutateCreate(
-      { body },
-      {
-        onSuccess: () => {
-          handleClose();
-        },
-      }
-    );
-  };
-
-  // handle update
-  const handleUpdate = (e: FormEvent) => {
-    e.preventDefault();
-    const body = {
-      email: input.email,
-      name: input.name,
-      password: input.password,
-      role_id: input.roleId,
-      username: input.username,
-    };
-    mutateUpdate(
-      { id: userId ?? "", body },
-      {
-        onSuccess: () => {
-          handleClose();
-        },
-      }
-    );
-  };
-
-  // set data detail
-  useEffect(() => {
-    if (isSuccessUser && dataUser) {
-      setInput((prev) => ({
-        ...prev,
-        name: dataUser.data.data.resource.name ?? "",
-        username: dataUser.data.data.resource.username ?? "",
-        roleId: dataUser.data.data.resource.role_id ?? "",
-        email: dataUser.data.data.resource.email ?? "",
-      }));
-    }
-  }, [dataUser]);
 
   useEffect(() => {
     alertError({
@@ -212,14 +115,6 @@ export const Client = () => {
       error: error as AxiosError,
       action: "get data",
       data: "Data",
-      method: "GET",
-    });
-    // isError get Detail
-    alertError({
-      isError: isErrorUser,
-      error: errorUser as AxiosError,
-      action: "get data",
-      data: "User",
       method: "GET",
     });
     // isError get Role
@@ -230,10 +125,7 @@ export const Client = () => {
       data: "Role",
       method: "GET",
     });
-  }, [isError, error, isErrorUser, errorUser, isErrorRole, errorRole]);
-
-  // loading
-  const [isMounted, setIsMounted] = useState(false);
+  }, [isError, error, isErrorRole, errorRole]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -255,20 +147,15 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
       <DialogCreateEdit
-        open={openDialog} // open modal
+        open={openDialog === "create" || openDialog === "update"} // open modal
         onCloseModal={() => {
           if (openDialog) {
-            handleClose();
+            setOpenDialog(null);
+            setUserId("");
           }
         }} // handle close modal
         role={dataListRole ?? []}
-        isLoading={isLoadingUser}
         userId={userId} // userId
-        input={input} // input form
-        setInput={setInput} // setInput Form
-        handleClose={handleClose} // handle close for cancel
-        handleCreate={handleCreate} // handle create warehouse
-        handleUpdate={handleUpdate} // handle update warehouse
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -299,43 +186,31 @@ export const Client = () => {
         <h2 className="text-xl font-bold">List Accounts</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
-            <div className="flex items-center gap-3 w-full">
-              <Input
-                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                value={search ?? ""}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-                autoFocus
-              />
-              <TooltipProviderPage value={"Reload Data"}>
-                <Button
-                  onClick={() => refetch()}
-                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
-                  variant={"outline"}
-                >
-                  <RefreshCw
-                    className={cn("w-4 h-4", loading ? "animate-spin" : "")}
-                  />
-                </Button>
-              </TooltipProviderPage>
-              <div className="flex gap-4 items-center ml-auto">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenDialog(true);
-                  }}
-                  disabled={loading}
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                  ) : (
-                    <PlusCircle className={"w-4 h-4 mr-1"} />
-                  )}
-                  Add Account
-                </Button>
-              </div>
+            <InputSearch
+              value={search ?? ""}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              autoFocus
+              onClick={() => refetch()}
+              loading={loading}
+            />
+            <div className="flex gap-4 items-center">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenDialog("create");
+                }}
+                disabled={loading}
+                className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                variant={"outline"}
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                ) : (
+                  <PlusCircle className={"w-4 h-4 mr-1"} />
+                )}
+                Add Account
+              </Button>
             </div>
           </div>
           <DataTable

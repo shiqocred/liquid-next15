@@ -3,6 +3,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -15,8 +16,8 @@ import { cn } from "@/lib/utils";
 import { Loader } from "lucide-react";
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 
-import { useUpdateFormatBarcode } from "../../_api/use-update-format-barcode";
-import { useCreateFormatBarcode } from "../../_api/use-create-format-barcode";
+import { useUpdateFormatBarcode } from "../../_api/mutation/use-update-format-barcode";
+import { useCreateFormatBarcode } from "../../_api/mutation/use-create-format-barcode";
 
 export const DialogCreateEdit = ({
   open,
@@ -27,12 +28,13 @@ export const DialogCreateEdit = ({
   onCloseModal: () => void;
   dataFormat: any;
 }) => {
-  // data form create edit
-  const [input, setInput] = useState({
+  const initialValue = {
     format: "",
     totalScan: "",
     totalUser: "",
-  });
+  };
+  // data form create edit
+  const [input, setInput] = useState(initialValue);
 
   const dataDetail: any = useMemo(() => {
     return dataFormat.data?.data.data.resource;
@@ -74,7 +76,7 @@ export const DialogCreateEdit = ({
     };
 
     mutateUpdate(
-      { id: dataDetail.id, body },
+      { body, params: { id: dataDetail.id } },
       {
         onSuccess: () => {
           onCloseModal();
@@ -87,7 +89,7 @@ export const DialogCreateEdit = ({
     if (open) {
       setInput((prev) => ({ ...prev, format: dataDetail?.format ?? "" }));
     } else {
-      setInput((prev) => ({ ...prev, format: "" }));
+      setInput(initialValue);
     }
   }, [open, dataFormat]);
 
@@ -98,6 +100,7 @@ export const DialogCreateEdit = ({
           <DialogTitle>
             {dataDetail ? "Edit Barcode" : "Create Barcode"}
           </DialogTitle>
+          <DialogDescription />
         </DialogHeader>
         {isLoading ? (
           <div className="h-[140px] flex items-center justify-center">

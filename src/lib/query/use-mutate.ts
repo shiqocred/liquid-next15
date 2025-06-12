@@ -34,8 +34,6 @@ export const useMutate = <
 
       let url = `${baseUrl}${endpoint}`;
 
-      console.log(variables);
-
       function isRecord(value: any): value is Record<string, any> {
         return (
           typeof value === "object" && value !== null && !Array.isArray(value)
@@ -52,7 +50,7 @@ export const useMutate = <
 
         if (isRecord(params)) {
           Object.entries(params).forEach(([key, val]) => {
-            url = url.replace(`:${key}`, encodeURIComponent(val));
+            url = url.replace(`:${key}`, encodeURIComponent(val)); // /:id -> /2 { id: 2 }
           });
         }
       }
@@ -75,6 +73,10 @@ export const useMutate = <
         body = variables.body;
       }
 
+      if (method === "get") {
+        const res = await axios.get(url, config);
+        return res;
+      }
       if (method === "post") {
         const res = await axios.post(url, body, config);
         return res;

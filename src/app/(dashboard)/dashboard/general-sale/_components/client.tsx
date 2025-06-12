@@ -239,7 +239,7 @@ export const Client = () => {
 
   const handleExportYear = async () => {
     mutateExportYear(
-      { year: new Date().getFullYear().toString() },
+      { searchParams: { year: new Date().getFullYear().toString() } },
       {
         onSuccess: (res) => {
           const link = document.createElement("a");
@@ -255,8 +255,10 @@ export const Client = () => {
   const handleExport = async () => {
     mutateExport(
       {
-        from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-        to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+        searchParams: {
+          from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
+          to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+        },
       },
       {
         onSuccess: (res) => {
