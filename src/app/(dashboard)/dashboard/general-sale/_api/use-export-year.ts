@@ -1,42 +1,22 @@
-import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
-import type { AxiosResponse } from "axios";
-import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
-import { getCookie } from "cookies-next/client";
+import { useMutate } from "@/lib/query";
 
-type RequestType = {
+type SearchParams = {
   year: any;
 };
 
-type Error = AxiosError;
-
 export const useExportYearData = () => {
-  const accessToken = getCookie("accessToken");
-
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ year }) => {
-      const res = await axios.get(
-        `${baseUrl}/dashboard/yearly-analytic-sales/export?y=${year}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      return res;
-    },
+  const mutation = useMutate<undefined, undefined, SearchParams>({
+    endpoint: "/dashboard/yearly-analytic-sales/export",
+    method: "get",
     onSuccess: () => {
       toast.success("File Successfully Exported");
     },
-    onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
-      } else {
-        toast.error(`ERROR ${err?.status}: Year Data failed to export`);
-        console.log("ERROR_EXPORT_YEAR_DATA:", err);
-      }
+    onError: {
+      title: "EXPORT_YEAR_DATA",
+      message: "Year Data failed to export",
     },
   });
+
   return mutation;
 };

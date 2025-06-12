@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,52 +11,137 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   PopoverPortal,
   PopoverPortalContent,
   PopoverPortalTrigger,
 } from "@/components/ui/popover-portal";
-import { cn } from "@/lib/utils";
-import { ChevronDown, Eye, EyeOff, Loader } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+
+import { alertError, cn } from "@/lib/utils";
+
+import { AxiosError } from "axios";
+import React, { FormEvent, useEffect, useState } from "react";
+import { ChevronDown, Eye, EyeOff, Loader, Loader2, Send } from "lucide-react";
+
+import {
+  useCreateAccount,
+  useGetDetailAccount,
+  useUpdateAccount,
+} from "../../_api";
 
 const DialogCreateEdit = ({
   open,
   onCloseModal,
-  userId,
   role,
-  input,
-  setInput,
-  isLoading,
-  handleClose,
-  handleCreate,
-  handleUpdate,
+  userId,
 }: {
   open: boolean;
   onCloseModal: () => void;
   role: any[];
   userId: any;
-  input: any;
-  setInput: any;
-  isLoading: boolean;
-  handleClose: () => void;
-  handleCreate: any;
-  handleUpdate: any;
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const defaultValue = {
+    name: "",
+    username: "",
+    roleId: "",
+    email: "",
+    password: "",
+  };
+
+  // data form create edit
+  const [input, setInput] = useState(defaultValue);
+
+  // mutate DELETE, UPDATE, CREATE
+  const { mutate: mutateUpdate, isPending: isPendingUpdate } =
+    useUpdateAccount();
+  const { mutate: mutateCreate, isPending: isPendingCreate } =
+    useCreateAccount();
+
+  const isPendingSubmit = isPendingUpdate || isPendingCreate;
+
+  // get detail data
+  const {
+    data: dataUser,
+    isLoading: isLoadingUser,
+    isSuccess: isSuccessUser,
+    isError: isErrorUser,
+    error: errorUser,
+  } = useGetDetailAccount({ id: userId });
+
+  // set data detail
+  useEffect(() => {
+    if (isSuccessUser && dataUser) {
+      const dataRes = dataUser.data.data.resource;
+      setInput((prev) => ({
+        ...prev,
+        name: dataRes.name ?? "",
+        username: dataRes.username ?? "",
+        roleId: dataRes.role_id ?? "",
+        email: dataRes.email ?? "",
+      }));
+    }
+  }, [dataUser]);
+
+  // handle create
+  const handleSubmit = (isUpdate: boolean, e: FormEvent) => {
+    e.preventDefault();
+    const body = {
+      email: input.email,
+      name: input.name,
+      password: input.password,
+      role_id: input.roleId,
+      username: input.username,
+    };
+    if (isUpdate) {
+      mutateUpdate(
+        { body, params: { id: userId ?? "" } },
+        {
+          onSuccess: () => {
+            onCloseModal();
+          },
+        }
+      );
+    } else {
+      mutateCreate(
+        { body },
+        {
+          onSuccess: () => {
+            onCloseModal();
+          },
+        }
+      );
+    }
+  };
+
+  useEffect(() => {
+    // isError get Detail
+    alertError({
+      isError: isErrorUser,
+      error: errorUser as AxiosError,
+      action: "get data",
+      data: "User",
+      method: "GET",
+    });
+  }, [isErrorUser, errorUser]);
 
   useEffect(() => {
     if (!open) {
       setIsVisible(false);
       setIsOpen(false);
+      setInput(defaultValue);
     }
   }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent className="max-w-lg">
@@ -65,14 +149,15 @@ const DialogCreateEdit = ({
           <DialogTitle>
             {userId ? "Edit Account" : "Create Account"}
           </DialogTitle>
+          <DialogDescription />
         </DialogHeader>
-        {isLoading ? (
+        {isLoadingUser ? (
           <div className="h-[420px] flex items-center justify-center">
             <Loader className="size-5 animate-spin" />
           </div>
         ) : (
           <form
-            onSubmit={!userId ? handleCreate : handleUpdate}
+            onSubmit={(e) => handleSubmit(!!userId, e)}
             className="w-full flex flex-col gap-4"
           >
             <div className="border p-4 rounded border-sky-500 gap-4 flex flex-col">
@@ -82,7 +167,7 @@ const DialogCreateEdit = ({
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
                   placeholder="Name..."
                   value={input.name}
-                  // disabled={loadingSubmit}
+                  disabled={isPendingSubmit}
                   onChange={(e) =>
                     setInput((prev: any) => ({
                       ...prev,
@@ -140,7 +225,7 @@ const DialogCreateEdit = ({
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
                   placeholder="username"
                   value={input.username}
-                  // disabled={loadingSubmit}
+                  disabled={isPendingSubmit}
                   onChange={(e) =>
                     setInput((prev: any) => ({
                       ...prev,
@@ -156,7 +241,7 @@ const DialogCreateEdit = ({
                   placeholder="Email..."
                   type="email"
                   value={input.email}
-                  // disabled={loadingSubmit}
+                  disabled={isPendingSubmit}
                   onChange={(e) =>
                     setInput((prev: any) => ({
                       ...prev,
@@ -173,7 +258,7 @@ const DialogCreateEdit = ({
                     placeholder="****"
                     type={isVisible ? "text" : "password"}
                     value={input.password}
-                    // disabled={loadingSubmit}
+                    disabled={isPendingSubmit}
                     onChange={(e) =>
                       setInput((prev: any) => ({
                         ...prev,
@@ -202,7 +287,7 @@ const DialogCreateEdit = ({
                 className="w-full bg-transparent hover:bg-transparent text-black border-black/50 border hover:border-black"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleClose();
+                  onCloseModal();
                 }}
                 type="button"
               >
@@ -221,9 +306,15 @@ const DialogCreateEdit = ({
                   !input.username ||
                   !input.roleId ||
                   !input.email ||
-                  (!userId && !input.password)
+                  (!userId && !input.password) ||
+                  isPendingSubmit
                 }
               >
+                {isPendingSubmit ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Send />
+                )}
                 {userId ? "Update" : "Create"}
               </Button>
             </div>
