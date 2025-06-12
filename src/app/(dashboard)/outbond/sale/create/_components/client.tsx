@@ -153,6 +153,7 @@ export const Client = () => {
     voucher: "0",
     ppnActive: 0,
     discountFor: "",
+    buyerRank: "",
   });
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -327,6 +328,7 @@ export const Client = () => {
       ).toString(),
       discountFor: data?.data.data.resource.data?.[0]?.type_discount ?? "",
       price: Math.round(data?.data.data.resource.total_sale ?? "0").toString(),
+      buyerRank: data?.data.data.resource.rank,
     }));
   }, [data]);
 
@@ -771,6 +773,7 @@ export const Client = () => {
                   buyerId: row.original.id,
                   buyerPhone: row.original.phone_buyer,
                   buyerAddress: row.original.address_buyer,
+                  buyerRank: row.original.rank,
                 }));
               }}
               type="button"
@@ -1314,6 +1317,10 @@ export const Client = () => {
                 <p className="font-semibold">
                   {input.buyerAddress ? input.buyerAddress : "-"}
                 </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Buyer Rank</p>
+                <p className="font-semibold">{input.buyerRank ? input.buyerRank : "-"}</p>
               </div>
             </div>
             <div className="w-full flex flex-col gap-4">
