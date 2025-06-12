@@ -1,13 +1,15 @@
-import { Button } from "@/components/ui/button";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit3, Loader2, Trash2 } from "lucide-react";
 
-interface columnDestinationMCProps {
+import { Button } from "@/components/ui/button";
+
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+
+interface ColumnDestinationMCProps {
   metaPage: { from: number };
   isLoading: boolean;
   setUserId: (value: string) => Promise<URLSearchParams>;
-  setOpenDialog: (value: boolean) => Promise<URLSearchParams>;
+  setOpenDialog: (value: string) => Promise<URLSearchParams>;
   handleDelete: (id: any) => Promise<void>;
 }
 
@@ -56,7 +58,7 @@ export const columnDestinationMC = ({
   setUserId,
   setOpenDialog,
   handleDelete,
-}: columnDestinationMCProps): ColumnDef<any>[] => [
+}: ColumnDestinationMCProps): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
     id: "id",
@@ -101,7 +103,7 @@ export const columnDestinationMC = ({
           loading={isLoading}
           onClick={() => {
             setUserId(row.original.id);
-            setOpenDialog(true);
+            setOpenDialog("update");
           }}
           tooltip="Edit"
           icon={<Edit3 className="w-4 h-4" />}

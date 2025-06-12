@@ -2,10 +2,12 @@ import { toast } from "sonner";
 import { invalidateQuery, useMutate } from "@/lib/query";
 import { useQueryClient } from "@tanstack/react-query";
 
+type Body = { format: string };
+
 export const useCreateFormatBarcode = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutate<{ format: string }>({
+  const mutation = useMutate<Body>({
     endpoint: "/format-barcodes",
     method: "post",
     onSuccess: (res) => {

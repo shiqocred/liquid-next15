@@ -3,7 +3,7 @@
 import { AxiosError } from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { parseAsString, useQueryState } from "nuqs";
-import { Link2Icon, Loader2, PlusCircle, RefreshCw } from "lucide-react";
+import { Link2Icon, Loader2, PlusCircle } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -12,25 +12,26 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Pagination from "@/components/pagination";
 import { DataTable } from "@/components/data-table";
+import { InputSearch } from "@/components/input-search";
 import { DialogCreateEdit, DialogDetail, DialogMatchUser } from "./dialog";
 
-import { useGetListFormatBarcode } from "../_api/use-get-list-format-barcode";
-import { useDeleteFormatBarcode } from "../_api/use-delete-format-detail";
-import { useGetDetailFormatBarcode } from "../_api/use-get-detail-format-barcode";
+import {
+  useGetListFormatBarcode,
+  useDeleteFormatBarcode,
+  useGetDetailFormatBarcode,
+} from "../_api";
 
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
 
+import { alertError } from "@/lib/utils";
 import { columnListData } from "./columns";
-import { alertError, cn } from "@/lib/utils";
-import Pagination from "@/components/pagination";
-import { useConfirm } from "@/hooks/use-confirm";
 import { useSearchQuery } from "@/lib/search";
-import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { usePagination } from "@/lib/pagination";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false); // loading component
@@ -163,59 +164,47 @@ export const Client = () => {
         <h2 className="text-xl font-bold">List Barcode Account</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
-            <div className="flex items-center gap-3 w-full">
-              <Input
-                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                value={search ?? ""}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-                autoFocus
-              />
-              <TooltipProviderPage value={"Reload Data"}>
-                <Button
-                  onClick={() => refetch()}
-                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
-                  variant={"outline"}
-                >
-                  <RefreshCw
-                    className={cn("w-4 h-4", loading ? "animate-spin" : "")}
-                  />
-                </Button>
-              </TooltipProviderPage>
-              <div className="flex gap-4 items-center ml-auto">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenDialog("match");
-                  }}
-                  disabled={loadingDetail}
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                >
-                  {loadingDetail ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                  ) : (
-                    <Link2Icon className={"w-4 h-4 mr-1"} />
-                  )}
-                  Match User
-                </Button>
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenDialog("create");
-                  }}
-                  disabled={isLoading}
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                >
-                  {loadingDetail ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                  ) : (
-                    <PlusCircle className={"w-4 h-4 mr-1"} />
-                  )}
-                  Add Barcode
-                </Button>
-              </div>
+            <InputSearch
+              value={search ?? ""}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              autoFocus
+              onClick={() => refetch()}
+              loading={loading}
+            />
+            <div className="flex gap-4 items-center">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenDialog("match");
+                }}
+                disabled={loadingDetail}
+                className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                variant={"outline"}
+              >
+                {loadingDetail ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                ) : (
+                  <Link2Icon className={"w-4 h-4 mr-1"} />
+                )}
+                Match User
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenDialog("create");
+                }}
+                disabled={isLoading}
+                className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                variant={"outline"}
+              >
+                {loadingDetail ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                ) : (
+                  <PlusCircle className={"w-4 h-4 mr-1"} />
+                )}
+                Add Barcode
+              </Button>
             </div>
           </div>
           <DataTable

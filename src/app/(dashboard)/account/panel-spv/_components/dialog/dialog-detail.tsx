@@ -3,6 +3,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -58,6 +59,7 @@ export const DialogDetail = ({
               </button>
             </TooltipProviderPage>
           </DialogTitle>
+          <DialogDescription />
         </DialogHeader>
         {isLoading ? (
           <div className="w-full h-[78vh] flex justify-center items-center">

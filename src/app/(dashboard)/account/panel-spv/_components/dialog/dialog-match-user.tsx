@@ -11,6 +11,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -26,8 +27,8 @@ import { AxiosError } from "axios";
 import { ChevronDown, Loader } from "lucide-react";
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 
-import { useSubmitMatch } from "../../_api/use-submit-match";
-import { useGetSelectPanelSPV } from "../../_api/use-get-select";
+import { useSubmitMatch } from "../../_api/mutation/use-submit-match";
+import { useGetSelectPanelSPV } from "../../_api/query/use-get-select";
 
 import { alertError } from "@/lib/utils";
 
@@ -38,12 +39,13 @@ export const DialogMatchUser = ({
   open: boolean;
   onCloseModal: () => void;
 }) => {
-  const [isFormat, setIsFormat] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [input, setInput] = useState({
+  const initialValue = {
     formatId: "",
     userId: "",
-  });
+  };
+  const [isFormat, setIsFormat] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState(initialValue);
 
   // mutation data
   const { mutate: mutateSubmit, isPending } = useSubmitMatch();
@@ -94,6 +96,7 @@ export const DialogMatchUser = ({
     if (!open) {
       setIsFormat(false);
       setIsOpen(false);
+      setInput(initialValue);
     }
   }, [open]);
 
@@ -102,6 +105,7 @@ export const DialogMatchUser = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Match User</DialogTitle>
+          <DialogDescription />
         </DialogHeader>
         {isPending ? (
           <div className="h-[420px] flex items-center justify-center">
