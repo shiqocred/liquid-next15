@@ -401,19 +401,19 @@ const DialogExportData = ({
                     <div className="w-full flex border-t border-black">
                       <div className="flex w-full">
                         <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
-                          Rank
+                          Kelas
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">
                           <RankIcon rank={data?.buyer_loyalty?.rank} />
                           <span>{data?.buyer_loyalty?.rank ?? "-"}</span>
                           <span className="text-[11px]">
-                            (exp. {data?.buyer_loyalty?.expire_date ?? "-"})
+                            (exp. {data?.buyer_loyalty?.expired_rank ?? "-"})
                           </span>
                         </p>
                       </div>
                       <div className="flex w-1/3 flex-none">
                         <p className="w-1/3 flex-none px-3 py-0.5 border-x border-black font-bold">
-                          Next Rank
+                          Kelas Berikutnya
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">
                           <RankIcon rank={data?.buyer_loyalty?.next_rank} />
@@ -424,7 +424,7 @@ const DialogExportData = ({
                     <div className="w-full flex border-t border-black">
                       <div className="flex w-full">
                         <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
-                          Next Transaction to Upgrade Rank
+                          Transaksi Berikutnya Untuk Naik Kelas
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">
                           <span>

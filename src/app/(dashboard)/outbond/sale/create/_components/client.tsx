@@ -1371,14 +1371,14 @@ export const Client = () => {
                 </p>
               </div>
               <div className="flex flex-col">
-                <p className="text-sm">Buyer Rank</p>
+                <p className="text-sm">Buyer Class</p>
                 <div className="flex items-center gap-2 font-semibold">
                   <RankIcon rank={input.buyerRank ? input.buyerRank : "-"} />
                   <p>{input.buyerRank ? input.buyerRank : "-"}</p>
                 </div>
               </div>
               <div className="flex flex-col">
-                <p className="text-sm">Next Buyer Rank</p>
+                <p className="text-sm">Next Buyer Class</p>
                 <div className="flex items-center gap-2 font-semibold">
                   <RankIcon
                     rank={input.nextBuyerRank ? input.nextBuyerRank : "-"}
@@ -1389,7 +1389,7 @@ export const Client = () => {
             </div>
             <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
-                <p className="text-sm">Next Transaction to Upgrade Rank</p>
+                <p className="text-sm">Next Transaction to Upgrade Class</p>
                 <p className="font-semibold">
                   {input.nextTransactionBuyerRank
                     ? input.nextTransactionBuyerRank

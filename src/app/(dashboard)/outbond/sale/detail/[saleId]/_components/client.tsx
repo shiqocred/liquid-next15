@@ -721,21 +721,21 @@ export const Client = () => {
                 </p>
               </div>
               <div className="flex flex-col">
-                <p className="text-sm">Rank</p>
+                <p className="text-sm">Class</p>
                 <div className="flex items-center gap-2 font-semibold">
                   <RankIcon rank={dataRes?.buyer?.rank} />
                   <p>{dataRes?.buyer?.rank || "-"}</p>
                 </div>
               </div>
               <div className="flex flex-col">
-                <p className="text-sm">Next Rank</p>
+                <p className="text-sm">Next Class</p>
                 <div className="flex items-center gap-2 font-semibold">
                   <RankIcon rank={dataRes?.buyer?.next_rank} />
                   <p>{dataRes?.buyer?.next_rank || "-"}</p>
                 </div>
               </div>
               <div className="flex flex-col">
-                <p className="text-sm">Next Transaction to Upgrade Rank</p>
+                <p className="text-sm">Next Transaction to Upgrade Class</p>
                 <p className="font-semibold">
                   {dataRes?.buyer?.transaction_next}
                 </p>
