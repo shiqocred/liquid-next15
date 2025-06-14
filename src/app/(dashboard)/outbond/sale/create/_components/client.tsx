@@ -9,6 +9,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   Edit2,
+  Hexagon,
   Loader2,
   Package,
   Percent,
@@ -19,6 +20,7 @@ import {
   Search,
   Send,
   Settings,
+  Star,
   TicketPercent,
   Trash2,
 } from "lucide-react";
@@ -154,6 +156,8 @@ export const Client = () => {
     ppnActive: 0,
     discountFor: "",
     buyerRank: "",
+    nextBuyerRank: "",
+    nextTransactionBuyerRank: "",
   });
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -329,9 +333,12 @@ export const Client = () => {
       discountFor: data?.data.data.resource.data?.[0]?.type_discount ?? "",
       price: Math.round(data?.data.data.resource.total_sale ?? "0").toString(),
       buyerRank: data?.data.data.resource.rank,
+      nextBuyerRank: data?.data.data.resource.next_rank,
+      nextTransactionBuyerRank: data?.data.data.resource.transaction_next,
     }));
   }, [data]);
-
+  console.log("data", data);
+  console.log("next transaction", data?.data.data.resource.transaction_next);
   useEffect(() => {
     setInput((prev) => ({
       ...prev,
@@ -774,6 +781,8 @@ export const Client = () => {
                   buyerPhone: row.original.phone_buyer,
                   buyerAddress: row.original.address_buyer,
                   buyerRank: row.original.rank,
+                  nextBuyerRank: row.original.next_rank,
+                  nextTransactionBuyerRank: row.original.transaction_next,
                 }));
               }}
               type="button"
@@ -932,6 +941,49 @@ export const Client = () => {
       ),
     },
   ];
+
+  const RankIcon = ({ rank }: { rank: string }) => {
+    if (!rank) return null;
+
+    const iconSize = 24;
+
+    switch (rank.toLowerCase()) {
+      case "bronze":
+        return <Hexagon size={iconSize} color="#cd7f32" />; // bronze color
+      case "silver":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#c0c0c0" /> {/* Silver Hexagon */}
+            <Hexagon
+              size={10}
+              className="absolute top-[7px] left-[7px] text-[#c0c0c0] fill-current"
+            />
+          </div>
+        );
+      case "gold":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#FFD700" /> {/* Gold Hexagon */}
+            <Hexagon
+              size={16}
+              className="absolute top-[4px] left-[4px] text-[#FFD700] fill-current"
+            />
+          </div>
+        );
+      case "platinum":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#e5e4e2" />
+            <Star
+              size={10}
+              className="absolute top-[7px] left-[7px] text-[#c0c0c0] fill-current"
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -1320,10 +1372,30 @@ export const Client = () => {
               </div>
               <div className="flex flex-col">
                 <p className="text-sm">Buyer Rank</p>
-                <p className="font-semibold">{input.buyerRank ? input.buyerRank : "-"}</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <RankIcon rank={input.buyerRank ? input.buyerRank : "-"} />
+                  <p>{input.buyerRank ? input.buyerRank : "-"}</p>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Next Buyer Rank</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <RankIcon
+                    rank={input.nextBuyerRank ? input.nextBuyerRank : "-"}
+                  />
+                  <p>{input.nextBuyerRank ? input.nextBuyerRank : "-"}</p>
+                </div>
               </div>
             </div>
             <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Next Transaction to Upgrade Rank</p>
+                <p className="font-semibold">
+                  {input.nextTransactionBuyerRank
+                    ? input.nextTransactionBuyerRank
+                    : "-"}
+                </p>
+              </div>
               <div className="flex flex-col">
                 <p className="text-sm">Total Product</p>
                 <p className="font-semibold">
