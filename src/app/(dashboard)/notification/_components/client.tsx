@@ -193,7 +193,9 @@ export const Client = () => {
                             status === "sale" &&
                               "bg-indigo-400 hover:bg-indigo-400 text-white",
                             status === "inventory" &&
-                              "bg-amber-700 hover:bg-amber-700 text-white"
+                              "bg-amber-700 hover:bg-amber-700 text-white",
+                            status === "staging" &&
+                              "bg-rose-300 hover:bg-rose-300"
                           )}
                         >
                           {status}
@@ -284,6 +286,22 @@ export const Client = () => {
                               }}
                             />
                             Inventory
+                          </CommandItem>
+                           <CommandItem
+                            onSelect={() => {
+                              setStatus("staging");
+                              setIsStatus(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={status === "staging"}
+                              onCheckedChange={() => {
+                                setStatus("staging");
+                                setIsStatus(false);
+                              }}
+                            />
+                            Staging
                           </CommandItem>
                         </CommandList>
                       </CommandGroup>
