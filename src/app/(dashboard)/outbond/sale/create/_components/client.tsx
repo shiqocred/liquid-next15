@@ -337,8 +337,6 @@ export const Client = () => {
       nextTransactionBuyerRank: data?.data.data.resource.transaction_next,
     }));
   }, [data]);
-  console.log("data", data);
-  console.log("next transaction", data?.data.data.resource.transaction_next);
   useEffect(() => {
     setInput((prev) => ({
       ...prev,
