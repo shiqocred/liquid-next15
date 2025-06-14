@@ -370,6 +370,16 @@ const DialogExportProduct = ({
                     <div className="w-full flex border-t border-black">
                       <div className="flex w-full">
                         <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Jumlah Transaksi Saat Ini
+                        </p>
+                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                          <span>
+                            {data?.buyer_loyalty?.transaction_next ?? "-"}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex w-1/3 flex-none">
+                        <p className="w-1/3 flex-none px-3 py-0.5 border-x border-black font-bold">
                           Transaksi Berikutnya Untuk Naik Kelas
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">

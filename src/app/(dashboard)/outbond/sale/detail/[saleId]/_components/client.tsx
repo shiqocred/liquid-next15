@@ -735,13 +735,19 @@ export const Client = () => {
                 </div>
               </div>
               <div className="flex flex-col">
+                <p className="text-sm">Current Transaction to Upgrade Class</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer?.current_transaction}
+                </p>
+              </div>
+            </div>
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
                 <p className="text-sm">Next Transaction to Upgrade Class</p>
                 <p className="font-semibold">
                   {dataRes?.buyer?.transaction_next}
                 </p>
               </div>
-            </div>
-            <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
                 <p className="text-sm">Total Product</p>
                 <p className="font-semibold">
