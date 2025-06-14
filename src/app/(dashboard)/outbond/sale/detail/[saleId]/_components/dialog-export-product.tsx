@@ -18,8 +18,10 @@ import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { format } from "date-fns";
 import {
   ArrowRight,
+  Hexagon,
   Printer,
   SquareArrowOutUpRight,
+  Star,
   X,
   XCircle,
 } from "lucide-react";
@@ -80,6 +82,49 @@ const DialogExportProduct = ({
     documentTitle: `Document By Product - ${data?.buyer?.code_document_sale}`,
     contentRef,
   });
+
+  const RankIcon = ({ rank }: { rank: string }) => {
+    if (!rank) return null;
+
+    const iconSize = 24;
+
+    switch (rank.toLowerCase()) {
+      case "bronze":
+        return <Hexagon size={iconSize} color="#cd7f32" />;
+      case "silver":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#c0c0c0" />
+            <Hexagon
+              size={10}
+              className="absolute top-[7px] left-[7px] text-[#c0c0c0] fill-current"
+            />
+          </div>
+        );
+      case "gold":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#FFD700" />
+            <Hexagon
+              size={16}
+              className="absolute top-[4px] left-[4px] text-[#FFD700] fill-current"
+            />
+          </div>
+        );
+      case "platinum":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#e5e4e2" />
+            <Star
+              size={10}
+              className="absolute top-[7px] left-[7px] text-[#c0c0c0] fill-current"
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -290,25 +335,47 @@ const DialogExportProduct = ({
                           {data?.buyer?.buyer_address_document_sale}
                         </p>
                       </div>
-                    </div>
-                    <div className="w-full flex border-t border-black">
-                      <div className="flex w-full">
-                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
-                          Rank
-                        </p>
-                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
-                          <span>{data?.buyer_loyalty?.rank_buyer ?? "-"}</span>
-                          <span className="text-[11px]">
-                            (exp. {data?.buyer_loyalty?.expire_date ?? "-"})
-                          </span>
-                        </p>
-                      </div>
                       <div className="flex w-1/3 flex-none">
                         <p className="w-1/3 flex-none px-3 py-0.5 border-x border-black font-bold">
                           Discount
                         </p>
                         <p className="w-full px-3 py-0.5">
                           {data?.buyer_loyalty?.percentage_discount ?? "0"}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full flex border-t border-black">
+                      <div className="flex w-full">
+                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Kelas
+                        </p>
+                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                          <RankIcon rank={"data?.buyer_loyalty?.rank"} />
+                          <span>{data?.buyer_loyalty?.rank ?? "-"}</span>
+                          <span className="text-[11px]">
+                            (exp. {data?.buyer_loyalty?.expired_rank ?? "-"})
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex w-1/3 flex-none">
+                        <p className="w-1/3 flex-none px-3 py-0.5 border-x border-black font-bold">
+                          Kelas Berikutnya
+                        </p>
+                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                          <RankIcon rank={data?.buyer_loyalty?.next_rank} />
+                          <span>{data?.buyer_loyalty?.next_rank ?? "-"}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full flex border-t border-black">
+                      <div className="flex w-full">
+                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Transaksi Berikutnya Untuk Naik Kelas
+                        </p>
+                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                          <span>
+                            {data?.buyer_loyalty?.transaction_next ?? "-"}
+                          </span>
                         </p>
                       </div>
                     </div>
