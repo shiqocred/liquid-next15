@@ -158,6 +158,7 @@ export const Client = () => {
     buyerRank: "",
     nextBuyerRank: "",
     nextTransactionBuyerRank: "",
+    currentTransactionBuyerRank: "",
   });
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -335,6 +336,7 @@ export const Client = () => {
       buyerRank: data?.data.data.resource.rank,
       nextBuyerRank: data?.data.data.resource.next_rank,
       nextTransactionBuyerRank: data?.data.data.resource.transaction_next,
+      currentTransactionBuyerRank: data?.data.data.resource.current_transaction,
     }));
   }, [data]);
   useEffect(() => {
@@ -781,6 +783,7 @@ export const Client = () => {
                   buyerRank: row.original.rank,
                   nextBuyerRank: row.original.next_rank,
                   nextTransactionBuyerRank: row.original.transaction_next,
+                  currentTransactionBuyerRank: row.original.current_transaction,
                 }));
               }}
               type="button"
@@ -1386,6 +1389,14 @@ export const Client = () => {
               </div>
             </div>
             <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Current Transaction</p>
+                <p className="font-semibold">
+                  {input.currentTransactionBuyerRank
+                    ? input.currentTransactionBuyerRank
+                    : "-"}
+                </p>
+              </div>
               <div className="flex flex-col">
                 <p className="text-sm">Next Transaction to Upgrade Class</p>
                 <p className="font-semibold">
