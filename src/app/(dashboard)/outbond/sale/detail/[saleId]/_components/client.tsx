@@ -6,6 +6,7 @@ import {
   CircleDollarSign,
   FileDown,
   FileSpreadsheet,
+  Hexagon,
   Landmark,
   Loader2,
   Package,
@@ -15,6 +16,7 @@ import {
   Printer,
   RefreshCw,
   ScanBarcode,
+  Star,
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -506,6 +508,49 @@ export const Client = () => {
     },
   ];
 
+  const RankIcon = ({ rank }: { rank: string }) => {
+    if (!rank) return null;
+
+    const iconSize = 24;
+
+    switch (rank.toLowerCase()) {
+      case "bronze":
+        return <Hexagon size={iconSize} color="#cd7f32" />; // bronze color
+      case "silver":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#c0c0c0" /> {/* Silver Hexagon */}
+            <Hexagon
+              size={10}
+              className="absolute top-[7px] left-[7px] text-[#c0c0c0] fill-current"
+            />
+          </div>
+        );
+      case "gold":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#FFD700" /> {/* Gold Hexagon */}
+            <Hexagon
+              size={16}
+              className="absolute top-[4px] left-[4px] text-[#FFD700] fill-current"
+            />
+          </div>
+        );
+      case "platinum":
+        return (
+          <div className="relative w-6 h-6">
+            <Hexagon size={iconSize} color="#e5e4e2" />
+            <Star
+              size={10}
+              className="absolute top-[7px] left-[7px] text-[#c0c0c0] fill-current"
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -676,13 +721,39 @@ export const Client = () => {
                 </p>
               </div>
               <div className="flex flex-col">
+                <p className="text-sm">Class</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <RankIcon rank={dataRes?.buyer?.rank} />
+                  <p>{dataRes?.buyer?.rank || "-"}</p>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Next Class</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <RankIcon rank={dataRes?.buyer?.next_rank} />
+                  <p>{dataRes?.buyer?.next_rank || "-"}</p>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Current Transaction to Upgrade Class</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer?.current_transaction}
+                </p>
+              </div>
+            </div>
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Next Transaction to Upgrade Class</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer?.transaction_next}
+                </p>
+              </div>
+              <div className="flex flex-col">
                 <p className="text-sm">Total Product</p>
                 <p className="font-semibold">
                   {dataRes?.total_product_document_sale}
                 </p>
               </div>
-            </div>
-            <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
                 <p className="text-sm">Total Diskon</p>
                 <p className="font-semibold">{dataRes?.new_discount_sale}%</p>
@@ -695,7 +766,9 @@ export const Client = () => {
               </div>
               <div className="flex flex-col">
                 <p className="text-sm">Points Awarded</p>
-                <p className="font-semibold">{dataRes?.buyer_point_document_sale}</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer_point_document_sale}
+                </p>
               </div>
               <div className="flex flex-col">
                 <p className="text-sm">Total Point</p>
