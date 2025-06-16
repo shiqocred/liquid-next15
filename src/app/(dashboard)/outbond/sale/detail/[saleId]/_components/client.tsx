@@ -725,9 +725,9 @@ export const Client = () => {
                 <p className="text-sm">Date</p>
                 <p className="font-semibold">
                   {format(
-                    new Date(dataRes?.created_at),
-                    "iii, dd MMM yyyy"
-                  )}
+                    new Date(dataRes?.created_at ?? new Date().toString()),
+                    "iiii, dd MMMM yyyy"
+                  )}{" "}
                 </p>
               </div>
               <div className="flex flex-col">
