@@ -350,7 +350,7 @@ const DialogExportProduct = ({
                           Kelas
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">
-                          <RankIcon rank={"data?.buyer_loyalty?.rank"} />
+                          <RankIcon rank={data?.buyer_loyalty?.rank} />
                           <span>{data?.buyer_loyalty?.rank ?? "-"}</span>
                           <span className="text-[11px]">
                             (exp. {data?.buyer_loyalty?.expired_rank ?? "-"})
@@ -392,8 +392,7 @@ const DialogExportProduct = ({
                   </div>
                   <p className="my-3 text-justify indent-5">
                     Bahwa yang bersangkutan di atas telah melakukan pemilihan
-                    dan pemilahan atas barang yang berada di area Liquid8
-                    Wholesale dan sepakat untuk melakukan pembelian sebagaimana
+                    dan pemilahan atas barang yang berada di area Bulky dan sepakat untuk melakukan pembelian sebagaimana
                     detail barang & harga berlaku di bawah:
                   </p>
                   <h3 className="font-bold my-3">
