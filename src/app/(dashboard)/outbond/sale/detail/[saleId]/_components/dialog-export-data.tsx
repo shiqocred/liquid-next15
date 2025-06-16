@@ -447,8 +447,7 @@ const DialogExportData = ({
                   </div>
                   <p className="my-3 text-justify indent-5">
                     Bahwa yang bersangkutan di atas telah melakukan pemilihan
-                    dan pemilahan atas barang yang berada di area Liquid8
-                    Wholesale dan sepakat untuk melakukan pembelian sebagaimana
+                    dan pemilahan atas barang yang berada di area Bulky dan sepakat untuk melakukan pembelian sebagaimana
                     detail barang & harga berlaku di bawah:
                   </p>
                   <h3 className="font-bold my-3">
