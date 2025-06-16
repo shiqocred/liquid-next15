@@ -2,7 +2,7 @@
 
 import { Edit3, Loader2, PlusCircle, RefreshCw, Trash2 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,9 +11,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
+import { parseAsBoolean, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
@@ -28,6 +27,8 @@ import { useGetDetailBuyer } from "../_api/use-get-detail-buyer";
 import { useCreateBuyer } from "../_api/use-create-buyer";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
+import { useSearchQuery } from "@/lib/search";
+import { usePagination } from "@/lib/pagination";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
@@ -59,15 +60,8 @@ export const Client = () => {
   });
 
   // data search, page
-  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
-  const searchValue = useDebounce(dataSearch);
-  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage, setMetaPage] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
+  const { search, searchValue, setSearch } = useSearchQuery();
+  const { metaPage, page, setPage, setPagination } = usePagination();
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
@@ -112,13 +106,9 @@ export const Client = () => {
 
   // get pagetination
   useEffect(() => {
-    setPaginate({
-      isSuccess: isSuccess,
-      data: data,
-      dataPaginate: data?.data.data.resource,
-      setMetaPage: setMetaPage,
-      setPage: setPage,
-    });
+    if (data && isSuccess) {
+      setPagination(data?.data.data.resource.data);
+    }
   }, [data]);
 
   // handle delete
@@ -260,7 +250,7 @@ export const Client = () => {
       header: "Total Purchase",
       cell: ({ row }) => formatRupiah(row.original.amount_purchase_buyer),
     },
-   {
+    {
       accessorKey: "point_buyer",
       header: () => <div className="text-center">Total Point</div>,
       cell: ({ row }) => (
@@ -370,8 +360,8 @@ export const Client = () => {
             <div className="flex items-center gap-3 w-full">
               <Input
                 className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                value={dataSearch}
-                onChange={(e) => setDataSearch(e.target.value)}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
                 autoFocus
               />

@@ -49,6 +49,7 @@ import { useUpdatePriceProduct } from "../_api/use-update-price-product";
 import { useParams } from "next/navigation";
 import { useExport } from "../_api/use-export";
 import { useExportExcel } from "../_api/use-export-excel";
+import { format } from "date-fns";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -718,6 +719,15 @@ export const Client = () => {
                 <p className="text-sm">Buyer Address</p>
                 <p className="font-semibold">
                   {dataRes?.buyer_address_document_sale}
+                </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Date</p>
+                <p className="font-semibold">
+                  {format(
+                    new Date(dataRes?.created_at ?? new Date().toString()),
+                    "iiii, dd MMMM yyyy"
+                  )}{" "}
                 </p>
               </div>
               <div className="flex flex-col">
