@@ -26,6 +26,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import DialogSync from "./dialog-sync";
 import { useCreateSync } from "../_api/use-create-sync";
+import { format } from "date-fns";
 
 export const Client = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -127,6 +128,15 @@ export const Client = () => {
       accessorKey: "price_after_tax",
       header: "Price",
       cell: ({ row }) => formatRupiah(row.original.price_after_tax),
+    },
+    {
+      accessorKey: "created_at",
+      header: "Date",
+      cell: ({ row }) => (
+        <div className="">
+          {format(new Date(row.original.created_at), "iii, dd MMM yyyy")}
+        </div>
+      ),
     },
     {
       accessorKey: "approved",

@@ -2,7 +2,7 @@
 
 import { Edit3, Loader2, PlusCircle, RefreshCw, Trash2 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
