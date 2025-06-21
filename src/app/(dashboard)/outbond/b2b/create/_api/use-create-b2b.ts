@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useAddProductB2B = () => {
+export const useCreateB2B = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/bulky-sales`, body, {
+      const res = await axios.post(`${baseUrl}/create-b2b`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,25 +25,17 @@ export const useAddProductB2B = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfuly added to B2B");
+      toast.success("B2B successfully created");
       queryClient.invalidateQueries({
-        queryKey: ["list-sale-b2b"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["list-product-b2b"],
+        queryKey: ["list-bag-by-user-b2b"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(
-          `ERROR: ${
-            (err?.response?.data as any)?.data?.message ??
-            "Failed to add Product to B2B"
-          }`
-        );
-        console.log("ERROR_ADD_PRODUCT_B2B:", err);
+        toast.error(`ERROR ${err?.status}: B2B failed to create`);
+        console.log("ERROR_CREATE_B2B:", err);
       }
     },
   });

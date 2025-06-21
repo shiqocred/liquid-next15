@@ -532,7 +532,7 @@ export const DialogDetail = ({
                   <Input
                     id="priceNew"
                     className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent  disabled:opacity-100"
-                    value={formatRupiah(parseFloat(input.displayPrice))}
+                    value={formatRupiah(parseFloat(input.price || "0"))}
                     disabled
                   />
                 </div>

@@ -2,6 +2,7 @@
 
 import {
   Loader2,
+  Pencil,
   PlusCircle,
   ReceiptText,
   RefreshCw,
@@ -33,12 +34,15 @@ import dynamic from "next/dynamic";
 import { useDeleteB2B } from "../_api/use-delete-b2b";
 import { useConfirm } from "@/hooks/use-confirm";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
 });
 
 export const Client = () => {
+  const router = useRouter();
   const [openDetail, setOpenDetail] = useQueryState(
     "dialog",
     parseAsBoolean.withDefault(false)
@@ -161,6 +165,10 @@ export const Client = () => {
       header: "Code Document",
     },
     {
+      accessorKey: "name_document",
+      header: "Name Document",
+    },
+    {
       accessorKey: "total_product_bulky",
       header: () => <div className="text-center">Total Product</div>,
       cell: ({ row }) => (
@@ -170,10 +178,41 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "status_bulky",
+      header: () => <div className="text-center">Status</div>,
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          <Badge
+            className={cn(
+              "rounded w-20 px-0 justify-center text-black font-normal capitalize",
+              row.original.status_bulky.toLowerCase() === "selesai"
+                ? "bg-green-400 hover:bg-green-400"
+                : "bg-yellow-400 hover:bg-yellow-400"
+            )}
+          >
+            {row.original.status_bulky}
+          </Badge>
+        </div>
+      ),
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Edit</p>}>
+            {row.original.status_bulky.toLowerCase() !== "selesai" && (
+              <Button
+                className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50"
+                variant={"outline"}
+                onClick={() =>
+                  router.push(`/outbond/b2b/edit/${row.original.id}`)
+                }
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            )}
+          </TooltipProviderPage>
           <TooltipProviderPage value={<p>Detail</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
@@ -192,6 +231,7 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
+
           <TooltipProviderPage value={<p>Delete</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
