@@ -5,32 +5,29 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
-type RequestType = {
-  id: any;
-};
-
 type Error = AxiosError;
 
-export const useRemoveProductB2B = () => {
+export const useFinishB2B = ({ b2bId }: any) => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/bulky-sales/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+  const mutation = useMutation<AxiosResponse, Error, any>({
+    mutationFn: async () => {
+      const res = await axios.post(
+        `${baseUrl}/bulky-sale-finish?id=${b2bId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfuly removed to B2B");
+      toast.success("B2B successfuly created");
       queryClient.invalidateQueries({
         queryKey: ["list-sale-b2b"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["list-product-b2b"],
       });
     },
     onError: (err) => {
@@ -40,10 +37,10 @@ export const useRemoveProductB2B = () => {
         toast.error(
           `ERROR: ${
             (err?.response?.data as any)?.data?.message ??
-            "Failed to remove Product to B2B"
+            "Failed to create B2B"
           }`
         );
-        console.log("ERROR_REMOVE_PRODUCT_B2B:", err);
+        console.log("ERROR_CREATE_B2B:", err);
       }
     },
   });
