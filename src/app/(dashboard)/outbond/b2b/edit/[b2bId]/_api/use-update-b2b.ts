@@ -38,8 +38,9 @@ export const useUpdateB2B = () => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Buyer failed to update`);
-        console.log("ERROR_UPDATE_BUYER:", err);
+        console
+        toast.error(`ERROR ${err?.status}: b2b failed to update`);
+        console.log("ERROR_UPDATE_B2B:", err);
       }
     },
   });

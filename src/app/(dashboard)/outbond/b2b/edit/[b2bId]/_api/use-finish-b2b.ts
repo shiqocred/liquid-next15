@@ -25,7 +25,7 @@ export const useFinishB2B = ({ b2bId }: any) => {
       return res;
     },
     onSuccess: () => {
-      toast.success("B2B successfuly created");
+      toast.success("B2B successfuly finished");
       queryClient.invalidateQueries({
         queryKey: ["list-sale-b2b"],
       });
@@ -37,10 +37,10 @@ export const useFinishB2B = ({ b2bId }: any) => {
         toast.error(
           `ERROR: ${
             (err?.response?.data as any)?.data?.message ??
-            "Failed to create B2B"
+            "Failed to finish B2B"
           }`
         );
-        console.log("ERROR_CREATE_B2B:", err);
+        console.log("ERROR_FINISH_B2B:", err);
       }
     },
   });
