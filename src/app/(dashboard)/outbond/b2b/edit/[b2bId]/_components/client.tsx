@@ -100,7 +100,7 @@ export const Client = () => {
     "destructive"
   );
   const [FinishDialog, confirmFinish] = useConfirm(
-    "Create B2B",
+    "Finish B2B",
     "This action cannot be undone",
     "liquid"
   );
@@ -135,6 +135,8 @@ export const Client = () => {
   const listIdBag: any[] = useMemo(() => {
     return data?.data.data.resource.ids ?? [];
   }, [data]);
+
+  const getBagNumber = (idx: number) => listIdBag.length - idx;
 
   const selectedBagIndex =
     selectedBagId && listIdBag.length > 0
@@ -493,11 +495,11 @@ export const Client = () => {
                 </TooltipProviderPage>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleUpdateB2B} variant={"liquid"}>
+                <Button onClick={handleUpdateB2B} variant={"liquid"} disabled={!input.buyer_id}>
                   <SaveIcon />
                   Update
                 </Button>
-                <Button onClick={handleFinish} variant={"liquid"}>
+                <Button onClick={handleFinish} variant={"liquid"} disabled={!input.buyer_id}>
                   <SaveIcon />
                   Finish
                 </Button>
@@ -563,7 +565,7 @@ export const Client = () => {
                         />
                         <Badge className="rounded w-24 px-0 justify-center text-black font-normal capitalize bg-sky-400 hover:bg-sky-400">
                           {selectedBagIndex !== -1
-                            ? selectedBagIndex + 1
+                            ? getBagNumber(selectedBagIndex)
                             : selectedBagId}
                         </Badge>
                       </>
@@ -593,7 +595,7 @@ export const Client = () => {
                                 setIsBagOpen(false);
                               }}
                             />
-                            {idx + 1}
+                            {getBagNumber(idx)}
                           </CommandItem>
                         ))}
                       </CommandList>

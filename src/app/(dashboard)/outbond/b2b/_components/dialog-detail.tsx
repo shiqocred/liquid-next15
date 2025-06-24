@@ -65,6 +65,18 @@ const DialogDetail = ({
                   <div className="flex items-center w-full">
                     <div className="flex w-full items-end gap-4">
                       <div className="flex flex-col">
+                        <p className="text-xs">Name Buyer</p>
+                        <p className="font-semibold capitalize text-lg">
+                          {data?.name_buyer}
+                        </p>
+                      </div>
+                    </div>
+                    <Separator
+                      orientation="vertical"
+                      className="bg-gray-500 h-20"
+                    />
+                    <div className="flex w-full pl-5 items-end gap-4">
+                      <div className="flex flex-col">
                         <p className="text-xs">Document Code</p>
                         <p className="font-semibold capitalize text-lg">
                           {data?.code_document_bulky}
@@ -80,18 +92,6 @@ const DialogDetail = ({
                         <p className="text-xs">Discount</p>
                         <p className="font-semibold capitalize text-lg">
                           {data?.discount_bulky?.toLocaleString()}%
-                        </p>
-                      </div>
-                    </div>
-                    <Separator
-                      orientation="vertical"
-                      className="bg-gray-500 h-20"
-                    />
-                    <div className="flex w-full pl-5 items-end gap-4">
-                      <div className="flex flex-col">
-                        <p className="text-xs">Total Product</p>
-                        <p className="font-semibold capitalize text-lg">
-                          {data?.total_product_bulky.toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -123,7 +123,19 @@ const DialogDetail = ({
                 <Separator className="bg-gray-500" />
                 <div className="w-full flex items-center">
                   <div className="flex items-center w-full">
-                    <div className="flex w-full items-end gap-4">
+                     <div className="flex w-full items-end gap-4">
+                      <div className="flex flex-col">
+                        <p className="text-xs">Total Product</p>
+                        <p className="font-semibold capitalize text-lg">
+                          {data?.total_product_bulky.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <Separator
+                      orientation="vertical"
+                      className="bg-gray-500 h-20"
+                    />
+                    <div className="flex w-full pl-5 items-end gap-4">
                       <div className="flex flex-col">
                         <p className="text-xs">Total Old Price</p>
                         <p className="font-semibold capitalize text-lg">
