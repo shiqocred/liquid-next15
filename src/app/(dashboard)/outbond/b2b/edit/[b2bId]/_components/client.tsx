@@ -14,6 +14,7 @@ import {
   DollarSign,
   ArrowLeft,
   ScanText,
+  XCircle,
 } from "lucide-react";
 import { AxiosError } from "axios";
 import { parseAsString, useQueryState } from "nuqs";
@@ -45,16 +46,31 @@ import {
 } from "./dialogs";
 
 import {
+  useAddBagB2B,
   useAddProductB2B,
   useFinishB2B,
   useGetListBagByUser,
   useRemoveProductB2B,
+  useUpdateB2B,
 } from "../_api";
 import { useSearch } from "@/lib/search";
 import { useConfirm } from "@/hooks/use-confirm";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { DialogName } from "./dialogs/dialog-name";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const initialValue = {
   buyer_id: "",
@@ -88,6 +104,8 @@ export const Client = () => {
     "This action cannot be undone",
     "liquid"
   );
+  const [isBagOpen, setIsBagOpen] = useState(false);
+  const [selectedBagId, setSelectedBagId] = useState<string>("");
 
   const [input, setInput] = useState(initialValue);
 
@@ -99,15 +117,59 @@ export const Client = () => {
   const { mutate: finishB2B, isPending: isPendingFinishB2B } = useFinishB2B({
     b2bId,
   });
+  const { mutate: addBag, isPending: isPendingAddBag } = useAddBagB2B();
+  const { mutate: updateB2B } = useUpdateB2B();
+
   const { search, searchValue, setSearch } = useSearch();
   const { data, isPending, isSuccess, refetch, isRefetching, error, isError } =
-    useGetListBagByUser({ b2bId });
+    useGetListBagByUser({ b2bId, ids: selectedBagId });
 
   const isLoading = isPending || isRefetching || isPendingFinishB2B;
 
   const listData: any[] = useMemo(() => {
     return data?.data.data.resource?.bag_product?.bulky_sales ?? [];
   }, [data]);
+
+  const isBagDone = data?.data.data.resource?.bag_product?.status === "done";
+
+  const listIdBag: any[] = useMemo(() => {
+    return data?.data.data.resource.ids ?? [];
+  }, [data]);
+
+  const handleAddBag = () => {
+    addBag(
+      {
+        body: {
+          bag_id: listData[0]?.bag_product_id,
+          bulky_document_id: listData[0]?.bulky_document_id,
+        },
+      },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+  };
+
+  const handleUpdateB2B = async () => {
+    updateB2B(
+      {
+        id: b2bId as string,
+        body: {
+          buyer_id: input.buyer_id,
+          discount_bulky: input.discount_bulky,
+          category_bulky: input.category_bulky,
+          name_document: input.name_document,
+        },
+      },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+  };
 
   const handleFinish = async () => {
     const ok = await confirmFinish();
@@ -177,9 +239,19 @@ export const Client = () => {
     removeProduct({ id });
   };
 
+  const handleReset = () => {
+    setSelectedBagId("");
+  };
+
+  useEffect(() => {
+    if (selectedBagId) {
+      refetch();
+    }
+  }, [selectedBagId, refetch]);
+
   useEffect(() => {
     refetch();
-  }, []);
+  }, [selectedBagId, refetch]);
 
   useEffect(() => {
     if (searchValue) {
@@ -324,7 +396,7 @@ export const Client = () => {
                     variant={"outline"}
                     className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                     onClick={() => setDialog("buyer")}
-                    disabled={listData.length > 0}
+                    // disabled={listData.length > 0}
                   >
                     <Briefcase />
                     <Separator orientation="vertical" className="bg-gray-500" />
@@ -349,7 +421,7 @@ export const Client = () => {
                     variant={"outline"}
                     className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                     onClick={() => setDialog("discount")}
-                    disabled={listData.length > 0}
+                    // disabled={listData.length > 0}
                   >
                     <PercentCircle />
                     <Separator orientation="vertical" className="bg-gray-500" />
@@ -376,7 +448,7 @@ export const Client = () => {
                     variant={"outline"}
                     className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                     onClick={() => setDialog("category")}
-                    disabled={listData.length > 0}
+                    // disabled={listData.length > 0}
                   >
                     <Tag />
                     <Separator orientation="vertical" className="bg-gray-500" />
@@ -405,7 +477,7 @@ export const Client = () => {
                     variant={"outline"}
                     className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                     onClick={() => setDialog("name")}
-                    disabled={listData.length > 0}
+                    // disabled={listData.length > 0}
                   >
                     <ScanText />
                     <Separator orientation="vertical" className="bg-gray-500" />
@@ -415,10 +487,16 @@ export const Client = () => {
                   </Button>
                 </TooltipProviderPage>
               </div>
-              <Button onClick={handleFinish} variant={"liquid"}>
-                <SaveIcon />
-                Finish
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleUpdateB2B} variant={"liquid"}>
+                  <SaveIcon />
+                  Update
+                </Button>
+                <Button onClick={handleFinish} variant={"liquid"}>
+                  <SaveIcon />
+                  Finish
+                </Button>
+              </div>
             </div>
             <Separator className="bg-sky-400/80" />
             <div className="flex items-center gap-4">
@@ -457,59 +535,131 @@ export const Client = () => {
                   <DollarSign />
                   <Separator orientation="vertical" className="bg-gray-500" />
                   <p className="min-w-5">
-                    {formatRupiah(parseFloat(input.after_price_bulky))}
+                    {formatRupiah(
+                      parseFloat(input.total_old_price_bulky) *
+                        (1 - parseFloat(input.discount_bulky || "0") / 100)
+                    )}
                   </p>
                 </Button>
               </TooltipProviderPage>
+              <Popover open={isBagOpen} onOpenChange={setIsBagOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:opacity-100"
+                  >
+                    <Box className="h-4 w-4 mr-2" />
+                    Karung
+                    {selectedBagId && (
+                      <>
+                        <Separator
+                          orientation="vertical"
+                          className="mx-2 bg-gray-500 w-[1.5px]"
+                        />
+                        <Badge className="rounded w-24 px-0 justify-center text-black font-normal capitalize bg-sky-400 hover:bg-sky-400">
+                          {selectedBagId}
+                        </Badge>
+                      </>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-60" align="start">
+                  <Command>
+                    <CommandGroup>
+                      <CommandList>
+                        {listIdBag.length === 0 && (
+                          <CommandItem disabled>Tidak ada karung</CommandItem>
+                        )}
+                        {listIdBag.map((item) => (
+                          <CommandItem
+                            key={item}
+                            onSelect={() => {
+                              setSelectedBagId(item);
+                              setIsBagOpen(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={selectedBagId === item}
+                              onCheckedChange={() => {
+                                setSelectedBagId(item);
+                                setIsBagOpen(false);
+                              }}
+                            />
+                            {item}
+                          </CommandItem>
+                        ))}
+                      </CommandList>
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {selectedBagId && (
+                <Button
+                  variant={"ghost"}
+                  className="flex px-3"
+                  onClick={handleReset}
+                >
+                  Reset
+                  <XCircle className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+              <Button onClick={handleAddBag} variant={"liquid"}>
+                <Box className={isPendingAddBag ? "animate-spin" : ""} />
+                Add Bag
+              </Button>
             </div>
           </div>
         </div>
+
         <div className="p-4 bg-white rounded-b rounded-tr shadow flex flex-col gap-4">
-          <div className="flex items-center gap-4 w-full">
-            <div className="flex items-center w-full">
-              <TooltipProviderPage value={"Add Product"}>
-                <div className="relative flex w-full items-center">
-                  <Search className="absolute size-4 ml-3" />
-                  <Input
-                    ref={searchRef}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+          {!isBagDone && (
+            <div className="flex items-center gap-4 w-full">
+              <div className="flex items-center w-full">
+                <TooltipProviderPage value={"Add Product"}>
+                  <div className="relative flex w-full items-center">
+                    <Search className="absolute size-4 ml-3" />
+                    <Input
+                      ref={searchRef}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      disabled={!input.buyer_id || !input.category_bulky}
+                      className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
+                    />
+                  </div>
+                </TooltipProviderPage>
+                <TooltipProviderPage value={"Open List Products"}>
+                  <Button
+                    size={"icon"}
+                    variant={"liquid"}
+                    className="rounded-l-none"
                     disabled={!input.buyer_id || !input.category_bulky}
-                    className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
-                  />
-                </div>
-              </TooltipProviderPage>
-              <TooltipProviderPage value={"Open List Products"}>
+                    onClick={() => setDialog("product")}
+                  >
+                    <ArrowUpRightFromSquare />
+                  </Button>
+                </TooltipProviderPage>
+              </div>
+              <TooltipProviderPage value={"Reload Data"}>
                 <Button
+                  variant={"outline"}
+                  className="border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 flex-none"
                   size={"icon"}
-                  variant={"liquid"}
-                  className="rounded-l-none"
-                  disabled={!input.buyer_id || !input.category_bulky}
-                  onClick={() => setDialog("product")}
+                  onClick={() => refetch()}
                 >
-                  <ArrowUpRightFromSquare />
+                  <RefreshCcw className={isLoading ? "animate-spin" : ""} />
                 </Button>
               </TooltipProviderPage>
-            </div>
-            <TooltipProviderPage value={"Reload Data"}>
               <Button
-                variant={"outline"}
-                className="border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 flex-none"
-                size={"icon"}
-                onClick={() => refetch()}
+                variant={"liquid"}
+                onClick={() => setDialog("upload")}
+                disabled={!input.buyer_id || !input.category_bulky}
               >
-                <RefreshCcw className={isLoading ? "animate-spin" : ""} />
+                <Upload />
+                Import File
               </Button>
-            </TooltipProviderPage>
-            <Button
-              variant={"liquid"}
-              onClick={() => setDialog("upload")}
-              disabled={!input.buyer_id || !input.category_bulky}
-            >
-              <Upload />
-              Import File
-            </Button>
-          </div>
+            </div>
+          )}
           <DataTable
             columns={columnProductB2B({
               handleRemoveProduct,
