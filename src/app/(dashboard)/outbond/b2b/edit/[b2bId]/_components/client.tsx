@@ -136,6 +136,11 @@ export const Client = () => {
     return data?.data.data.resource.ids ?? [];
   }, [data]);
 
+  const selectedBagIndex =
+    selectedBagId && listIdBag.length > 0
+      ? listIdBag.findIndex((id) => id === selectedBagId)
+      : -1;
+
   const handleAddBag = () => {
     addBag(
       {
@@ -557,7 +562,9 @@ export const Client = () => {
                           className="mx-2 bg-gray-500 w-[1.5px]"
                         />
                         <Badge className="rounded w-24 px-0 justify-center text-black font-normal capitalize bg-sky-400 hover:bg-sky-400">
-                          {selectedBagId}
+                          {selectedBagIndex !== -1
+                            ? selectedBagIndex + 1
+                            : selectedBagId}
                         </Badge>
                       </>
                     )}
@@ -570,7 +577,7 @@ export const Client = () => {
                         {listIdBag.length === 0 && (
                           <CommandItem disabled>Tidak ada karung</CommandItem>
                         )}
-                        {listIdBag.map((item) => (
+                        {listIdBag.map((item, idx) => (
                           <CommandItem
                             key={item}
                             onSelect={() => {
@@ -586,7 +593,7 @@ export const Client = () => {
                                 setIsBagOpen(false);
                               }}
                             />
-                            {item}
+                            {idx + 1}
                           </CommandItem>
                         ))}
                       </CommandList>
@@ -648,10 +655,7 @@ export const Client = () => {
                   <RefreshCcw className={isLoading ? "animate-spin" : ""} />
                 </Button>
               </TooltipProviderPage>
-              <Button
-                variant={"liquid"}
-                onClick={() => setDialog("upload")}
-              >
+              <Button variant={"liquid"} onClick={() => setDialog("upload")}>
                 <Upload />
                 Import File
               </Button>
