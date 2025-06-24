@@ -623,7 +623,6 @@ export const Client = () => {
                       ref={searchRef}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      disabled={!input.buyer_id || !input.category_bulky}
                       className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
                     />
                   </div>
@@ -633,7 +632,6 @@ export const Client = () => {
                     size={"icon"}
                     variant={"liquid"}
                     className="rounded-l-none"
-                    disabled={!input.buyer_id || !input.category_bulky}
                     onClick={() => setDialog("product")}
                   >
                     <ArrowUpRightFromSquare />
@@ -653,7 +651,6 @@ export const Client = () => {
               <Button
                 variant={"liquid"}
                 onClick={() => setDialog("upload")}
-                disabled={!input.buyer_id || !input.category_bulky}
               >
                 <Upload />
                 Import File
