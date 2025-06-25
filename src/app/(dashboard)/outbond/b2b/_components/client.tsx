@@ -36,6 +36,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { useExportDetailDataB2B } from "../_api/use-export-detail-data-b2b";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -70,6 +71,8 @@ export const Client = () => {
 
   // mutate delete
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteB2B();
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportDetailDataB2B();
 
   // get data utama
   const {
@@ -147,6 +150,22 @@ export const Client = () => {
     if (!ok) return;
 
     mutateDelete({ id });
+  };
+
+  // handle export
+  const handleExport = async () => {
+    mutateExport(
+      { id: b2bId },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
   };
 
   // column data
@@ -324,6 +343,8 @@ export const Client = () => {
         isRefetching={isRefetchingDetail}
         columns={columnB2BDetail}
         dataTable={dataListDetail ?? []}
+        isPendingExport={isPendingExport}
+        handleExport={handleExport}
       />
       <Breadcrumb>
         <BreadcrumbList>
