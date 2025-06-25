@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { Loader, RefreshCw, X } from "lucide-react";
+import { FileDown, Loader, RefreshCw, X } from "lucide-react";
 import React from "react";
 
 const DialogDetail = ({
@@ -23,6 +23,7 @@ const DialogDetail = ({
   isRefetching,
   columns,
   dataTable,
+  handleExport,
 }: {
   open: boolean;
   onCloseModal: () => void;
@@ -32,6 +33,7 @@ const DialogDetail = ({
   isRefetching: any;
   columns: any;
   dataTable: any;
+  handleExport: any;
 }) => {
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
@@ -123,7 +125,7 @@ const DialogDetail = ({
                 <Separator className="bg-gray-500" />
                 <div className="w-full flex items-center">
                   <div className="flex items-center w-full">
-                     <div className="flex w-full items-end gap-4">
+                    <div className="flex w-full items-end gap-4">
                       <div className="flex flex-col">
                         <p className="text-xs">Total Product</p>
                         <p className="font-semibold capitalize text-lg">
@@ -158,6 +160,18 @@ const DialogDetail = ({
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="flex justify-end items-center gap-4">
+              <Button
+                variant={"liquid"}
+                type="button"
+                onClick={() => handleExport("data")}
+                // disabled={isPendingExport}
+                // className="bg-white text-black hover:bg-sky-50"
+              >
+                <FileDown className="size-4 ml-1" />
+                Export Data
+              </Button>
             </div>
             <DataTable
               maxHeight="h-[45vh]"
