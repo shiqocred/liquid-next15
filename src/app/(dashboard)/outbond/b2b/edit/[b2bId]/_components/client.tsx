@@ -100,7 +100,7 @@ export const Client = () => {
     "destructive"
   );
   const [FinishDialog, confirmFinish] = useConfirm(
-    "Create B2B",
+    "Finish B2B",
     "This action cannot be undone",
     "liquid"
   );
@@ -135,6 +135,13 @@ export const Client = () => {
   const listIdBag: any[] = useMemo(() => {
     return data?.data.data.resource.ids ?? [];
   }, [data]);
+
+  const getBagNumber = (idx: number) => listIdBag.length - idx;
+
+  const selectedBagIndex =
+    selectedBagId && listIdBag.length > 0
+      ? listIdBag.findIndex((id) => id === selectedBagId)
+      : -1;
 
   const handleAddBag = () => {
     addBag(
@@ -488,11 +495,11 @@ export const Client = () => {
                 </TooltipProviderPage>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleUpdateB2B} variant={"liquid"}>
+                <Button onClick={handleUpdateB2B} variant={"liquid"} disabled={!input.buyer_id}>
                   <SaveIcon />
                   Update
                 </Button>
-                <Button onClick={handleFinish} variant={"liquid"}>
+                <Button onClick={handleFinish} variant={"liquid"} disabled={!input.buyer_id}>
                   <SaveIcon />
                   Finish
                 </Button>
@@ -557,7 +564,9 @@ export const Client = () => {
                           className="mx-2 bg-gray-500 w-[1.5px]"
                         />
                         <Badge className="rounded w-24 px-0 justify-center text-black font-normal capitalize bg-sky-400 hover:bg-sky-400">
-                          {selectedBagId}
+                          {selectedBagIndex !== -1
+                            ? getBagNumber(selectedBagIndex)
+                            : selectedBagId}
                         </Badge>
                       </>
                     )}
@@ -570,7 +579,7 @@ export const Client = () => {
                         {listIdBag.length === 0 && (
                           <CommandItem disabled>Tidak ada karung</CommandItem>
                         )}
-                        {listIdBag.map((item) => (
+                        {listIdBag.map((item, idx) => (
                           <CommandItem
                             key={item}
                             onSelect={() => {
@@ -586,7 +595,7 @@ export const Client = () => {
                                 setIsBagOpen(false);
                               }}
                             />
-                            {item}
+                            {getBagNumber(idx)}
                           </CommandItem>
                         ))}
                       </CommandList>
@@ -623,7 +632,6 @@ export const Client = () => {
                       ref={searchRef}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      disabled={!input.buyer_id || !input.category_bulky}
                       className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
                     />
                   </div>
@@ -633,7 +641,6 @@ export const Client = () => {
                     size={"icon"}
                     variant={"liquid"}
                     className="rounded-l-none"
-                    disabled={!input.buyer_id || !input.category_bulky}
                     onClick={() => setDialog("product")}
                   >
                     <ArrowUpRightFromSquare />
@@ -650,11 +657,7 @@ export const Client = () => {
                   <RefreshCcw className={isLoading ? "animate-spin" : ""} />
                 </Button>
               </TooltipProviderPage>
-              <Button
-                variant={"liquid"}
-                onClick={() => setDialog("upload")}
-                disabled={!input.buyer_id || !input.category_bulky}
-              >
+              <Button variant={"liquid"} onClick={() => setDialog("upload")}>
                 <Upload />
                 Import File
               </Button>

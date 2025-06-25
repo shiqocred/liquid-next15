@@ -1,21 +1,24 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
+type RequestType = {
+  id: any;
+};
+
 type Error = AxiosError;
 
-export const useFinishB2B = ({ b2bId }: any) => {
+export const useExportDetailDataB2B = () => {
   const accessToken = getCookie("accessToken");
-  const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, any>({
-    mutationFn: async () => {
+  const mutation = useMutation<AxiosResponse, Error, RequestType>({
+    mutationFn: async ({ id }) => {
       const res = await axios.post(
-        `${baseUrl}/bulky-sale-finish?id=${b2bId}`,
-        {},
+        `${baseUrl}/export-b2b`,
+        {id: id},
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -25,22 +28,16 @@ export const useFinishB2B = ({ b2bId }: any) => {
       return res;
     },
     onSuccess: () => {
-      toast.success("B2B successfuly finished");
-      queryClient.invalidateQueries({
-        queryKey: ["list-sale-b2b"],
-      });
+      toast.success("File Successfully Exported");
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
         toast.error(
-          `ERROR: ${
-            (err?.response?.data as any)?.data?.message ??
-            "Failed to finish B2B"
-          }`
+          `ERROR ${err?.status}: Detail B2B failed to export`
         );
-        console.log("ERROR_FINISH_B2B:", err);
+        console.log("ERROR_EXPORT_DETAIL_B2B:", err);
       }
     },
   });
