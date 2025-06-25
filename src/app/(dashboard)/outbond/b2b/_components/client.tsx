@@ -155,7 +155,7 @@ export const Client = () => {
   // handle export
   const handleExport = async () => {
     mutateExport(
-      { id: b2bId  },
+      { id: b2bId },
       {
         onSuccess: (res) => {
           const link = document.createElement("a");
@@ -343,6 +343,7 @@ export const Client = () => {
         isRefetching={isRefetchingDetail}
         columns={columnB2BDetail}
         dataTable={dataListDetail ?? []}
+        isPendingExport={isPendingExport}
         handleExport={handleExport}
       />
       <Breadcrumb>

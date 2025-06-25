@@ -24,6 +24,7 @@ const DialogDetail = ({
   columns,
   dataTable,
   handleExport,
+  isPendingExport,
 }: {
   open: boolean;
   onCloseModal: () => void;
@@ -34,6 +35,7 @@ const DialogDetail = ({
   columns: any;
   dataTable: any;
   handleExport: any;
+  isPendingExport: any;
 }) => {
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
@@ -166,7 +168,7 @@ const DialogDetail = ({
                 variant={"liquid"}
                 type="button"
                 onClick={() => handleExport("data")}
-                // disabled={isPendingExport}
+                disabled={isPendingExport}
                 // className="bg-white text-black hover:bg-sky-50"
               >
                 <FileDown className="size-4 ml-1" />
