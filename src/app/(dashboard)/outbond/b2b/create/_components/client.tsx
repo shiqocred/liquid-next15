@@ -12,7 +12,7 @@ import {
   ScanText,
 } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Breadcrumb,
@@ -31,7 +31,7 @@ import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { DialogBuyer, DialogDiscount, DialogCategory, DialogName } from "./dialogs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCreateB2B } from "../_api";
+import { useCreateB2B, useGetListCategories } from "../_api";
 
 const initialValue = {
   buyer_id: "",
@@ -54,6 +54,10 @@ export const Client = () => {
 
   const [input, setInput] = useState(initialValue);
   const { mutate: createB2B } = useCreateB2B();
+  const { data: dataCategories } = useGetListCategories();
+    const listCategories: any[] = useMemo(() => {
+      return dataCategories?.data.data.resource ?? [];
+    }, [dataCategories]);
 
   const handleCreateB2B = async () => {
     createB2B(
@@ -112,6 +116,7 @@ export const Client = () => {
         }}
         data={input}
         setData={setInput}
+        categories={listCategories}
       />
       <DialogName
         open={dialog === "name"}

@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
@@ -18,27 +17,42 @@ export const DialogCategory = ({
   onOpenChange,
   data,
   setData,
+  categories = [],
 }: {
   open: boolean;
   onOpenChange: () => void;
   data: any;
   setData: any;
+  categories?: any[];
 }) => {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string[]>([]);
 
   const handleApply = (e: FormEvent) => {
     e.preventDefault();
-    setData((prev: any) => ({ ...prev, category_bulky: input }));
+    setData((prev: any) => ({
+      ...prev,
+      category_bulky: input.join(","),
+    }));
     onOpenChange();
   };
 
   useEffect(() => {
     if (open) {
-      setInput(data.category_bulky);
+      if (Array.isArray(data.category_bulky)) {
+        setInput(data.category_bulky);
+      } else if (
+        typeof data.category_bulky === "string" &&
+        data.category_bulky
+      ) {
+        setInput(data.category_bulky.split(","));
+      } else {
+        setInput([]);
+      }
     } else {
-      setInput("");
+      setInput([]);
     }
-  }, [open]);
+  }, [open, data]);
+
   return (
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,12 +64,30 @@ export const DialogCategory = ({
           <form onSubmit={handleApply} className="w-full flex flex-col gap-4">
             <div className="flex flex-col gap-1 w-full relative">
               <Label>Category</Label>
-              <Input
-                className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
-                placeholder="Type category"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-              />
+              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto border rounded p-2 bg-white">
+                {categories.map((cat: any) => {
+                  const categoryName = String(cat.name_category ?? cat);
+                  return (
+                    <label
+                      key={categoryName}
+                      className="flex items-center gap-1"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={input.includes(categoryName)}
+                        onChange={(e) => {
+                          setInput((prev) =>
+                            e.target.checked
+                              ? [...prev, categoryName]
+                              : prev.filter((c) => c !== categoryName)
+                          );
+                        }}
+                      />
+                      {categoryName}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
             <div className="flex w-full gap-2">
               <Button

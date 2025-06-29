@@ -197,6 +197,15 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "total_old_price_bulky",
+      header: () => <div className="text-center">Total Old Price</div>,
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {formatRupiah(row.original.total_old_price_bulky)}
+        </div>
+      ),
+    },
+    {
       accessorKey: "status_bulky",
       header: () => <div className="text-center">Status</div>,
       cell: ({ row }) => (
@@ -236,18 +245,21 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isLoadingDetail}
-              onClick={(e) => {
-                e.preventDefault();
-                setB2BId(row.original.id);
-                setOpenDetail(true);
-              }}
+              // disabled={isLoadingDetail}
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   setB2BId(row.original.id);
+              //   setOpenDetail(true);
+              // }}
+              onClick={() =>
+                  router.push(`/outbond/b2b/detail/${row.original.id}`)
+                }
             >
-              {isLoadingDetail ? (
+              {/* {isLoadingDetail ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
+              ) : ( */}
                 <ReceiptText className="w-4 h-4" />
-              )}
+              {/* // )} */}
             </Button>
           </TooltipProviderPage>
 
