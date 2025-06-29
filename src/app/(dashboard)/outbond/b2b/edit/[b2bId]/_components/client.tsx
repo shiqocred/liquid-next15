@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   ScanText,
   XCircle,
+  Boxes,
 } from "lucide-react";
 import { AxiosError } from "axios";
 import { parseAsString, useQueryState } from "nuqs";
@@ -554,7 +555,7 @@ export const Client = () => {
                   className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:opacity-100"
                   disabled
                 >
-                  <Box />
+                  <Boxes />
                   <Separator orientation="vertical" className="bg-gray-500" />
                   <p className="min-w-5">
                     {parseFloat(input.total_product_bulky).toLocaleString()}
