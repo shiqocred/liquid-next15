@@ -124,6 +124,7 @@ export const Client = () => {
   }, [data]);
 
   const isBagDone = data?.data.data.resource?.bag_product?.status === "done";
+  const bagProduct = data?.data.data.resource?.bag_product;
 
   const listIdBag: any[] = useMemo(() => {
     return data?.data.data.resource.ids ?? [];
@@ -534,7 +535,11 @@ export const Client = () => {
                 <Button
                   onClick={handleFinish}
                   variant={"liquid"}
-                  disabled={!input.buyer_id}
+                  disabled={
+                    !input.buyer_id ||
+                    input.discount_bulky === "0" ||
+                    input.category_bulky === ""
+                  }
                 >
                   <SaveIcon />
                   Finish
@@ -623,46 +628,54 @@ export const Client = () => {
         </div>
 
         <div className="p-4 bg-white rounded-b rounded-tr shadow flex flex-col gap-4">
-          {!isBagDone && (
-            <div className="flex items-center gap-4 w-full">
-              <div className="flex items-center w-full">
-                <TooltipProviderPage value={"Add Product"}>
-                  <div className="relative flex w-full items-center">
-                    <Search className="absolute size-4 ml-3" />
-                    <Input
-                      ref={searchRef}
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
-                    />
-                  </div>
-                </TooltipProviderPage>
-                <TooltipProviderPage value={"Open List Products"}>
+          {bagProduct == null ? (
+            <div className="flex items-center justify-center w-full min-h-[60px]">
+              <span className="text-sm text-gray-500">
+                Silakan buat bag terlebih dahulu sebelum menambah produk.
+              </span>
+            </div>
+          ) : (
+            !isBagDone && (
+              <div className="flex items-center gap-4 w-full opacity-100">
+                <div className="flex items-center w-full">
+                  <TooltipProviderPage value={"Add Product"}>
+                    <div className="relative flex w-full items-center">
+                      <Search className="absolute size-4 ml-3" />
+                      <Input
+                        ref={searchRef}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
+                      />
+                    </div>
+                  </TooltipProviderPage>
+                  <TooltipProviderPage value={"Open List Products"}>
+                    <Button
+                      size={"icon"}
+                      variant={"liquid"}
+                      className="rounded-l-none"
+                      onClick={() => setDialog("product")}
+                    >
+                      <ArrowUpRightFromSquare />
+                    </Button>
+                  </TooltipProviderPage>
+                </div>
+                <TooltipProviderPage value={"Reload Data"}>
                   <Button
+                    variant={"outline"}
+                    className="border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 flex-none"
                     size={"icon"}
-                    variant={"liquid"}
-                    className="rounded-l-none"
-                    onClick={() => setDialog("product")}
+                    onClick={() => refetch()}
                   >
-                    <ArrowUpRightFromSquare />
+                    <RefreshCcw className={isLoading ? "animate-spin" : ""} />
                   </Button>
                 </TooltipProviderPage>
-              </div>
-              <TooltipProviderPage value={"Reload Data"}>
-                <Button
-                  variant={"outline"}
-                  className="border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 flex-none"
-                  size={"icon"}
-                  onClick={() => refetch()}
-                >
-                  <RefreshCcw className={isLoading ? "animate-spin" : ""} />
+                <Button variant={"liquid"} onClick={() => setDialog("upload")}>
+                  <Upload />
+                  Import File
                 </Button>
-              </TooltipProviderPage>
-              <Button variant={"liquid"} onClick={() => setDialog("upload")}>
-                <Upload />
-                Import File
-              </Button>
-            </div>
+              </div>
+            )
           )}
           <DataTable
             columns={columnProductB2B({
