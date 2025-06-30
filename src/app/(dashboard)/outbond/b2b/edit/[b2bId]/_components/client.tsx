@@ -597,7 +597,7 @@ export const Client = () => {
                 onClick={() => setDialog("list-edit-bag")}
               >
                 <Box className="h-4 w-4 mr-2" />
-                Karung
+                Bag
                 {selectedBagId && (
                   <>
                     <Separator
