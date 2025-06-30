@@ -248,10 +248,10 @@ export const columnEditListBag = ({ onClose, onSelectBag, selectedBagId }: any):
     ),
   },
   {
-    accessorKey: "category_bag",
-    header: "Category",
+    accessorKey: "total_product",
+    header: "Total Product",
     cell: ({ row }) => (
-      <div className="max-w-[500px]">{row.original.category_bag}</div>
+      <div className="max-w-[500px]">{row.original.total_product}</div>
     ),
   },
   {

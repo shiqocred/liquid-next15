@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Tag,
   Upload,
   Search,
   SaveIcon,
@@ -43,7 +42,6 @@ import {
   DialogUpload,
   DialogProduct,
   DialogDiscount,
-  DialogCategory,
 } from "./dialogs";
 
 import {
@@ -51,7 +49,6 @@ import {
   useAddProductB2B,
   useFinishB2B,
   useGetListBagByUser,
-  useGetListCategories,
   useRemoveProductB2B,
   useUpdateB2B,
 } from "../_api";
@@ -60,7 +57,6 @@ import { useConfirm } from "@/hooks/use-confirm";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { DialogName } from "./dialogs/dialog-name";
-import { DialogBag } from "./dialogs/dialog-bag";
 import { DialogListBagEdit } from "./dialogs/dialog-list-bag-edit";
 import { Badge } from "@/components/ui/badge";
 
@@ -96,12 +92,14 @@ export const Client = () => {
     "This action cannot be undone",
     "liquid"
   );
+  const [AddBagDialog, confirmAddBag] = useConfirm(
+    "Add Bag",
+    "Are you sure you want to add a new bag?",
+    "liquid"
+  );
   const [selectedBagId, setSelectedBagId] = useState<string>("");
 
   const [input, setInput] = useState(initialValue);
-  const [isDialogBagOpen, setIsDialogBagOpen] = useState(false);
-  const [inputBag, setInputBag] = useState({ name_bag: "", category_bag: "" });
-
   const addProductMutate = useAddProductB2B();
   const { mutate: addProduct, isPending: isPendingAddProduct } =
     addProductMutate;
@@ -116,11 +114,15 @@ export const Client = () => {
   const { search, searchValue, setSearch } = useSearch();
   const { data, isPending, isSuccess, refetch, isRefetching, error, isError } =
     useGetListBagByUser({ b2bId, ids: selectedBagId });
-
-  const { data: dataCategories } = useGetListCategories();
   const isLoading = isPending || isRefetching || isPendingFinishB2B;
 
   const listData: any[] = useMemo(() => {
+    return data?.data.data.resource?.bulky_document;
+  }, [data]);
+
+  console.log("listData", listData);
+
+  const listDataBulkySale: any[] = useMemo(() => {
     return data?.data.data.resource?.bag_product?.bulky_sales ?? [];
   }, [data]);
 
@@ -131,10 +133,6 @@ export const Client = () => {
     return data?.data.data.resource.ids ?? [];
   }, [data]);
 
-  const listCategories: any[] = useMemo(() => {
-    return dataCategories?.data.data.resource ?? [];
-  }, [dataCategories]);
-
   const getSelectedBagName = () => {
     const selectedBag = listIdBag.find(
       (bag: any) => String(bag.id) === String(selectedBagId)
@@ -142,25 +140,18 @@ export const Client = () => {
     return selectedBag ? selectedBag.name_bag : "";
   };
 
-  const handleOpenAddBag = () => {
-    setInputBag({ name_bag: "", category_bag: "" });
-    setIsDialogBagOpen(true);
-  };
-
-  const handleSubmitAddBag = (input: { name: string; category: string }) => {
+  const handleAddBag = async () => {
+    const ok = await confirmAddBag();
+    if (!ok) return;
     addBag(
       {
         body: {
-          bag_id: listData[0]?.bag_product_id,
           bulky_document_id: b2bId,
-          name_bag: input.name,
-          category_bag: input.category,
         },
       },
       {
         onSuccess: () => {
           refetch();
-          setIsDialogBagOpen(false); // tutup dialog setelah sukses
         },
       }
     );
@@ -303,6 +294,7 @@ export const Client = () => {
     <div className="flex flex-col justify-center bg-gray-100 w-full relative px-4 gap-4 py-4">
       <RemoveDialog />
       <FinishDialog />
+      <AddBagDialog />
       <DialogProduct
         open={dialog === "product"}
         onOpenChange={() => {
@@ -342,17 +334,6 @@ export const Client = () => {
         data={input}
         setData={setInput}
       />
-      <DialogCategory
-        open={dialog === "category"}
-        onOpenChange={() => {
-          if (dialog === "category") {
-            setDialog("");
-          }
-        }}
-        data={input}
-        setData={setInput}
-        categories={listCategories}
-      />
       <DialogName
         open={dialog === "name"}
         onOpenChange={() => {
@@ -362,14 +343,6 @@ export const Client = () => {
         }}
         data={input}
         setData={setInput}
-      />
-      <DialogBag
-        open={isDialogBagOpen}
-        onOpenChange={() => setIsDialogBagOpen(false)}
-        data={inputBag}
-        setData={setInputBag}
-        handleSubmit={handleSubmitAddBag}
-        categories={listCategories}
       />
       <DialogListBagEdit
         open={dialog === "list-edit-bag"}
@@ -420,7 +393,7 @@ export const Client = () => {
                     ) : (
                       <div className="flex flex-col max-w-72">
                         <p>Buyer: {input.name_buyer}</p>
-                        {listData.length > 0 && (
+                        {listDataBulkySale.length > 0 && (
                           <p className="text-red-300">
                             (Delete all product to change)
                           </p>
@@ -433,7 +406,7 @@ export const Client = () => {
                     variant={"outline"}
                     className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                     onClick={() => setDialog("buyer")}
-                    // disabled={listData.length > 0}
+                    // disabled={listDataBulkySale.length > 0}
                   >
                     <Briefcase />
                     <Separator orientation="vertical" className="bg-gray-500" />
@@ -446,7 +419,7 @@ export const Client = () => {
                   value={
                     <div className="flex flex-col max-w-72">
                       <p>Discount: {input.discount_bulky}%</p>
-                      {listData.length > 0 && (
+                      {listDataBulkySale.length > 0 && (
                         <p className="text-red-300">
                           (Delete all product to change)
                         </p>
@@ -458,40 +431,11 @@ export const Client = () => {
                     variant={"outline"}
                     className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                     onClick={() => setDialog("discount")}
-                    // disabled={listData.length > 0}
+                    // disabled={listDataBulkySale.length > 0}
                   >
                     <PercentCircle />
                     <Separator orientation="vertical" className="bg-gray-500" />
                     <p className="min-w-5">{input.discount_bulky}%</p>
-                  </Button>
-                </TooltipProviderPage>
-                <TooltipProviderPage
-                  value={
-                    !input.category_bulky ? (
-                      "Add Category"
-                    ) : (
-                      <div className="flex flex-col max-w-72">
-                        <p>Category: {input.category_bulky}</p>
-                        {listData.length > 0 && (
-                          <p className="text-red-300">
-                            (Delete all product to change)
-                          </p>
-                        )}
-                      </div>
-                    )
-                  }
-                >
-                  <Button
-                    variant={"outline"}
-                    className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
-                    onClick={() => setDialog("category")}
-                    // disabled={listData.length > 0}
-                  >
-                    <Tag />
-                    <Separator orientation="vertical" className="bg-gray-500" />
-                    <p className="min-w-5 max-w-52 truncate">
-                      {input.category_bulky ? input.category_bulky : "-"}
-                    </p>
                   </Button>
                 </TooltipProviderPage>
                 <TooltipProviderPage
@@ -501,7 +445,7 @@ export const Client = () => {
                     ) : (
                       <div className="flex flex-col max-w-72">
                         <p>Name Bulky: {input.name_document}</p>
-                        {listData.length > 0 && (
+                        {listDataBulkySale.length > 0 && (
                           <p className="text-red-300">
                             (Delete all product to change)
                           </p>
@@ -514,7 +458,7 @@ export const Client = () => {
                     variant={"outline"}
                     className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
                     onClick={() => setDialog("name")}
-                    // disabled={listData.length > 0}
+                    // disabled={listDataBulkySale.length > 0}
                   >
                     <ScanText />
                     <Separator orientation="vertical" className="bg-gray-500" />
@@ -537,9 +481,9 @@ export const Client = () => {
                   onClick={handleFinish}
                   variant={"liquid"}
                   disabled={
-                    !input.buyer_id ||
-                    input.discount_bulky === "0" ||
-                    input.category_bulky === ""
+                    !listData?.[0] ||
+                    !listData[0].name_buyer ||
+                    listData[0].discount_bulky === "0"
                   }
                 >
                   <SaveIcon />
@@ -620,7 +564,7 @@ export const Client = () => {
                   <XCircle className="h-4 w-4 ml-2" />
                 </Button>
               )}
-              <Button onClick={handleOpenAddBag} variant={"liquid"}>
+              <Button onClick={handleAddBag} variant={"liquid"}>
                 <Box className={isPendingAddBag ? "animate-spin" : ""} />
                 Add Bag
               </Button>
@@ -683,7 +627,7 @@ export const Client = () => {
               handleRemoveProduct,
               isLoading: isPendingRemoveProduct,
             })}
-            data={listData ?? []}
+            data={listDataBulkySale ?? []}
             isLoading={isLoading}
           />
         </div>

@@ -6,4 +6,3 @@ export * from "./use-finish-b2b";
 export * from "./use-remove-product-b2b";
 export * from "./use-add-new-bag-b2b";
 export * from "./use-update-b2b";
-export * from "./use-get-list-categories";
