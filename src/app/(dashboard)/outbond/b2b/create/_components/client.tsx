@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Tag,
   SaveIcon,
   Briefcase,
   PercentCircle,
@@ -12,7 +11,7 @@ import {
   ScanText,
 } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Breadcrumb,
@@ -28,10 +27,10 @@ import Loading from "@/app/(dashboard)/loading";
 import { formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
-import { DialogBuyer, DialogDiscount, DialogCategory, DialogName } from "./dialogs";
+import { DialogBuyer, DialogDiscount, DialogName } from "./dialogs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCreateB2B, useGetListCategories } from "../_api";
+import { useCreateB2B } from "../_api";
 
 const initialValue = {
   buyer_id: "",
@@ -54,10 +53,6 @@ export const Client = () => {
 
   const [input, setInput] = useState(initialValue);
   const { mutate: createB2B } = useCreateB2B();
-  const { data: dataCategories } = useGetListCategories();
-    const listCategories: any[] = useMemo(() => {
-      return dataCategories?.data.data.resource ?? [];
-    }, [dataCategories]);
 
   const handleCreateB2B = async () => {
     createB2B(
@@ -106,17 +101,6 @@ export const Client = () => {
         }}
         data={input}
         setData={setInput}
-      />
-      <DialogCategory
-        open={dialog === "category"}
-        onOpenChange={() => {
-          if (dialog === "category") {
-            setDialog("");
-          }
-        }}
-        data={input}
-        setData={setInput}
-        categories={listCategories}
       />
       <DialogName
         open={dialog === "name"}
@@ -184,19 +168,6 @@ export const Client = () => {
                     <PercentCircle />
                     <Separator orientation="vertical" className="bg-gray-500" />
                     <p className="min-w-5">{input.discount_bulky}%</p>
-                  </Button>
-                </TooltipProviderPage>
-                <TooltipProviderPage value={input.category_bulky}>
-                  <Button
-                    variant={"outline"}
-                    className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
-                    onClick={() => setDialog("category")}
-                  >
-                    <Tag />
-                    <Separator orientation="vertical" className="bg-gray-500" />
-                    <p className="min-w-5 max-w-52 truncate">
-                      {input.category_bulky ? input.category_bulky : "-"}
-                    </p>
                   </Button>
                 </TooltipProviderPage>
                 <TooltipProviderPage value={input.name_document}>

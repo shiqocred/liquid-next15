@@ -86,15 +86,20 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "category_bag",
-      header: "Category",
-    },
-    {
       accessorKey: "total_product",
       header: "Total Product",
       cell: ({ row }) => (
         <div className="max-w-[400px] break-all">
           {row.original.total_product}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "price",
+      header: "Price",
+      cell: ({ row }) => (
+        <div className="max-w-[400px] break-all">
+          {formatRupiah(row.original.price)}
         </div>
       ),
     },
@@ -288,6 +293,18 @@ export const Client = () => {
                     <p className="text-xs">Total Product</p>
                     <p className="font-semibold capitalize text-lg">
                       {dataListDetail?.total_product_bulky.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <Separator
+                  orientation="vertical"
+                  className="bg-gray-500 h-20"
+                />
+                <div className="flex w-full pl-5 items-end gap-4">
+                  <div className="flex flex-col">
+                    <p className="text-xs">Total Bag</p>
+                    <p className="font-semibold capitalize text-lg">
+                      {formatRupiah(dataListDetail?.total_old_price_bulky)}
                     </p>
                   </div>
                 </div>
