@@ -33,7 +33,7 @@ export const DialogListBagEdit = ({
       >
         <DialogHeader>
           <DialogTitle className="justify-between flex items-center">
-            Select Buyer
+            Select Bag
             <TooltipProviderPage value="close" side="left">
               <button
                 onClick={() => onOpenChange()}
