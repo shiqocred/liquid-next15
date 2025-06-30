@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   ScanText,
   XCircle,
+  Boxes,
 } from "lucide-react";
 import { AxiosError } from "axios";
 import { parseAsString, useQueryState } from "nuqs";
@@ -50,6 +51,7 @@ import {
   useAddProductB2B,
   useFinishB2B,
   useGetListBagByUser,
+  useGetListCategories,
   useRemoveProductB2B,
   useUpdateB2B,
 } from "../_api";
@@ -58,19 +60,9 @@ import { useConfirm } from "@/hooks/use-confirm";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { DialogName } from "./dialogs/dialog-name";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { DialogBag } from "./dialogs/dialog-bag";
+import { DialogListBagEdit } from "./dialogs/dialog-list-bag-edit";
 import { Badge } from "@/components/ui/badge";
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const initialValue = {
   buyer_id: "",
@@ -104,10 +96,11 @@ export const Client = () => {
     "This action cannot be undone",
     "liquid"
   );
-  const [isBagOpen, setIsBagOpen] = useState(false);
   const [selectedBagId, setSelectedBagId] = useState<string>("");
 
   const [input, setInput] = useState(initialValue);
+  const [isDialogBagOpen, setIsDialogBagOpen] = useState(false);
+  const [inputBag, setInputBag] = useState({ name_bag: "", category_bag: "" });
 
   const addProductMutate = useAddProductB2B();
   const { mutate: addProduct, isPending: isPendingAddProduct } =
@@ -124,6 +117,7 @@ export const Client = () => {
   const { data, isPending, isSuccess, refetch, isRefetching, error, isError } =
     useGetListBagByUser({ b2bId, ids: selectedBagId });
 
+  const { data: dataCategories } = useGetListCategories();
   const isLoading = isPending || isRefetching || isPendingFinishB2B;
 
   const listData: any[] = useMemo(() => {
@@ -131,29 +125,42 @@ export const Client = () => {
   }, [data]);
 
   const isBagDone = data?.data.data.resource?.bag_product?.status === "done";
+  const bagProduct = data?.data.data.resource?.bag_product;
 
   const listIdBag: any[] = useMemo(() => {
     return data?.data.data.resource.ids ?? [];
   }, [data]);
 
-  const getBagNumber = (idx: number) => listIdBag.length - idx;
+  const listCategories: any[] = useMemo(() => {
+    return dataCategories?.data.data.resource ?? [];
+  }, [dataCategories]);
 
-  const selectedBagIndex =
-    selectedBagId && listIdBag.length > 0
-      ? listIdBag.findIndex((id) => id === selectedBagId)
-      : -1;
+  const getSelectedBagName = () => {
+    const selectedBag = listIdBag.find(
+      (bag: any) => String(bag.id) === String(selectedBagId)
+    );
+    return selectedBag ? selectedBag.name_bag : "";
+  };
 
-  const handleAddBag = () => {
+  const handleOpenAddBag = () => {
+    setInputBag({ name_bag: "", category_bag: "" });
+    setIsDialogBagOpen(true);
+  };
+
+  const handleSubmitAddBag = (input: { name: string; category: string }) => {
     addBag(
       {
         body: {
           bag_id: listData[0]?.bag_product_id,
-          bulky_document_id: listData[0]?.bulky_document_id,
+          bulky_document_id: b2bId,
+          name_bag: input.name,
+          category_bag: input.category,
         },
       },
       {
         onSuccess: () => {
           refetch();
+          setIsDialogBagOpen(false); // tutup dialog setelah sukses
         },
       }
     );
@@ -344,6 +351,7 @@ export const Client = () => {
         }}
         data={input}
         setData={setInput}
+        categories={listCategories}
       />
       <DialogName
         open={dialog === "name"}
@@ -354,6 +362,28 @@ export const Client = () => {
         }}
         data={input}
         setData={setInput}
+      />
+      <DialogBag
+        open={isDialogBagOpen}
+        onOpenChange={() => setIsDialogBagOpen(false)}
+        data={inputBag}
+        setData={setInputBag}
+        handleSubmit={handleSubmitAddBag}
+        categories={listCategories}
+      />
+      <DialogListBagEdit
+        open={dialog === "list-edit-bag"}
+        onOpenChange={() => {
+          if (dialog === "list-edit-bag") {
+            setDialog("");
+          }
+        }}
+        listIdBag={listIdBag}
+        selectedBagId={selectedBagId}
+        onSelectBag={(id: string) => {
+          setSelectedBagId(id);
+          setDialog("");
+        }}
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -495,11 +525,23 @@ export const Client = () => {
                 </TooltipProviderPage>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleUpdateB2B} variant={"liquid"} disabled={!input.buyer_id}>
+                <Button
+                  onClick={handleUpdateB2B}
+                  variant={"liquid"}
+                  disabled={!input.buyer_id}
+                >
                   <SaveIcon />
                   Update
                 </Button>
-                <Button onClick={handleFinish} variant={"liquid"} disabled={!input.buyer_id}>
+                <Button
+                  onClick={handleFinish}
+                  variant={"liquid"}
+                  disabled={
+                    !input.buyer_id ||
+                    input.discount_bulky === "0" ||
+                    input.category_bulky === ""
+                  }
+                >
                   <SaveIcon />
                   Finish
                 </Button>
@@ -513,7 +555,7 @@ export const Client = () => {
                   className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:opacity-100"
                   disabled
                 >
-                  <Box />
+                  <Boxes />
                   <Separator orientation="vertical" className="bg-gray-500" />
                   <p className="min-w-5">
                     {parseFloat(input.total_product_bulky).toLocaleString()}
@@ -549,60 +591,25 @@ export const Client = () => {
                   </p>
                 </Button>
               </TooltipProviderPage>
-              <Popover open={isBagOpen} onOpenChange={setIsBagOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:opacity-100"
-                  >
-                    <Box className="h-4 w-4 mr-2" />
-                    Karung
-                    {selectedBagId && (
-                      <>
-                        <Separator
-                          orientation="vertical"
-                          className="mx-2 bg-gray-500 w-[1.5px]"
-                        />
-                        <Badge className="rounded w-24 px-0 justify-center text-black font-normal capitalize bg-sky-400 hover:bg-sky-400">
-                          {selectedBagIndex !== -1
-                            ? getBagNumber(selectedBagIndex)
-                            : selectedBagId}
-                        </Badge>
-                      </>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="p-0 w-60" align="start">
-                  <Command>
-                    <CommandGroup>
-                      <CommandList>
-                        {listIdBag.length === 0 && (
-                          <CommandItem disabled>Tidak ada karung</CommandItem>
-                        )}
-                        {listIdBag.map((item, idx) => (
-                          <CommandItem
-                            key={item}
-                            onSelect={() => {
-                              setSelectedBagId(item);
-                              setIsBagOpen(false);
-                            }}
-                          >
-                            <Checkbox
-                              className="w-4 h-4 mr-2"
-                              checked={selectedBagId === item}
-                              onCheckedChange={() => {
-                                setSelectedBagId(item);
-                                setIsBagOpen(false);
-                              }}
-                            />
-                            {getBagNumber(idx)}
-                          </CommandItem>
-                        ))}
-                      </CommandList>
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <Button
+                variant={"outline"}
+                className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:opacity-100"
+                onClick={() => setDialog("list-edit-bag")}
+              >
+                <Box className="h-4 w-4 mr-2" />
+                Bag
+                {selectedBagId && (
+                  <>
+                    <Separator
+                      orientation="vertical"
+                      className="mx-2 bg-gray-500 w-[1.5px]"
+                    />
+                    <Badge className="rounded w-24 px-0 justify-center text-black font-normal capitalize bg-sky-400 hover:bg-sky-400">
+                      {getSelectedBagName() || "-"}
+                    </Badge>
+                  </>
+                )}
+              </Button>
               {selectedBagId && (
                 <Button
                   variant={"ghost"}
@@ -613,7 +620,7 @@ export const Client = () => {
                   <XCircle className="h-4 w-4 ml-2" />
                 </Button>
               )}
-              <Button onClick={handleAddBag} variant={"liquid"}>
+              <Button onClick={handleOpenAddBag} variant={"liquid"}>
                 <Box className={isPendingAddBag ? "animate-spin" : ""} />
                 Add Bag
               </Button>
@@ -622,46 +629,54 @@ export const Client = () => {
         </div>
 
         <div className="p-4 bg-white rounded-b rounded-tr shadow flex flex-col gap-4">
-          {!isBagDone && (
-            <div className="flex items-center gap-4 w-full">
-              <div className="flex items-center w-full">
-                <TooltipProviderPage value={"Add Product"}>
-                  <div className="relative flex w-full items-center">
-                    <Search className="absolute size-4 ml-3" />
-                    <Input
-                      ref={searchRef}
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
-                    />
-                  </div>
-                </TooltipProviderPage>
-                <TooltipProviderPage value={"Open List Products"}>
+          {bagProduct == null ? (
+            <div className="flex items-center justify-center w-full min-h-[60px]">
+              <span className="text-sm text-gray-500">
+                Silakan buat bag terlebih dahulu sebelum menambah produk.
+              </span>
+            </div>
+          ) : (
+            !isBagDone && (
+              <div className="flex items-center gap-4 w-full opacity-100">
+                <div className="flex items-center w-full">
+                  <TooltipProviderPage value={"Add Product"}>
+                    <div className="relative flex w-full items-center">
+                      <Search className="absolute size-4 ml-3" />
+                      <Input
+                        ref={searchRef}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-0 border-r-0 rounded-r-none pl-10 disabled:opacity-100"
+                      />
+                    </div>
+                  </TooltipProviderPage>
+                  <TooltipProviderPage value={"Open List Products"}>
+                    <Button
+                      size={"icon"}
+                      variant={"liquid"}
+                      className="rounded-l-none"
+                      onClick={() => setDialog("product")}
+                    >
+                      <ArrowUpRightFromSquare />
+                    </Button>
+                  </TooltipProviderPage>
+                </div>
+                <TooltipProviderPage value={"Reload Data"}>
                   <Button
+                    variant={"outline"}
+                    className="border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 flex-none"
                     size={"icon"}
-                    variant={"liquid"}
-                    className="rounded-l-none"
-                    onClick={() => setDialog("product")}
+                    onClick={() => refetch()}
                   >
-                    <ArrowUpRightFromSquare />
+                    <RefreshCcw className={isLoading ? "animate-spin" : ""} />
                   </Button>
                 </TooltipProviderPage>
-              </div>
-              <TooltipProviderPage value={"Reload Data"}>
-                <Button
-                  variant={"outline"}
-                  className="border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 flex-none"
-                  size={"icon"}
-                  onClick={() => refetch()}
-                >
-                  <RefreshCcw className={isLoading ? "animate-spin" : ""} />
+                <Button variant={"liquid"} onClick={() => setDialog("upload")}>
+                  <Upload />
+                  Import File
                 </Button>
-              </TooltipProviderPage>
-              <Button variant={"liquid"} onClick={() => setDialog("upload")}>
-                <Upload />
-                Import File
-              </Button>
-            </div>
+              </div>
+            )
           )}
           <DataTable
             columns={columnProductB2B({

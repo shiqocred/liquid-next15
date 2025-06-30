@@ -222,3 +222,58 @@ export const columnBuyer = ({
     ),
   },
 ];
+
+export const columnEditListBag = ({ onClose, onSelectBag, selectedBagId }: any): ColumnDef<any>[] => [
+  {
+    header: () => <div className="text-center">No</div>,
+    id: "id",
+    cell: ({ row }) => (
+      <div className="text-center tabular-nums">
+        {(1 + row.index).toLocaleString()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "barcode_bag",
+    header: "Barcode",
+    cell: ({ row }) => (
+      <div className="max-w-[500px]">{row.original.barcode_bag}</div>
+    ),
+  },
+  {
+    accessorKey: "name_bag",
+    header: "Name",
+    cell: ({ row }) => (
+      <div className="max-w-[500px]">{row.original.name_bag}</div>
+    ),
+  },
+  {
+    accessorKey: "category_bag",
+    header: "Category",
+    cell: ({ row }) => (
+      <div className="max-w-[500px]">{row.original.category_bag}</div>
+    ),
+  },
+  {
+    accessorKey: "action",
+    header: () => <div className="text-center">Action</div>,
+    cell: ({ row }) => {
+      const isSelected = selectedBagId === row.original.id;
+      return (
+        <div className="flex gap-4 justify-center items-center">
+          <ButtonAction
+            isLoading={false}
+            label={isSelected ? "Dipilih" : "Pilih"}
+            onClick={(e) => {
+              e.preventDefault();
+              onSelectBag(row.original.id);
+              onClose();
+            }}
+            type={isSelected ? "yellow" : "sky"}
+            icon={CheckCircle2}
+          />
+        </div>
+      );
+    },
+  },
+];
