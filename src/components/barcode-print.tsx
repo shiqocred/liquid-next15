@@ -3,7 +3,6 @@
 import React, { useRef } from "react";
 import Barcode from "react-barcode";
 import { useReactToPrint } from "react-to-print";
-import { formatRupiah } from "@/lib/utils";
 
 interface OnlyBarcodePrint {
   barcode: string;
