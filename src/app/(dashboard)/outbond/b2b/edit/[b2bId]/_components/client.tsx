@@ -116,11 +116,9 @@ export const Client = () => {
     useGetListBagByUser({ b2bId, ids: selectedBagId });
   const isLoading = isPending || isRefetching || isPendingFinishB2B;
 
-  const listData: any[] = useMemo(() => {
+  const listData: any = useMemo(() => {
     return data?.data.data.resource?.bulky_document;
   }, [data]);
-
-  console.log("listData", listData);
 
   const listDataBulkySale: any[] = useMemo(() => {
     return data?.data.data.resource?.bag_product?.bulky_sales ?? [];
@@ -480,11 +478,7 @@ export const Client = () => {
                 <Button
                   onClick={handleFinish}
                   variant={"liquid"}
-                  disabled={
-                    !listData?.[0] ||
-                    !listData[0].name_buyer ||
-                    listData[0].discount_bulky === "0"
-                  }
+                  disabled={!listData?.name_buyer}
                 >
                   <SaveIcon />
                   Finish
