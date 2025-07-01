@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { cn, formatRupiah } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { FileDown, ReceiptText, RefreshCw } from "lucide-react";
+import { FileDown, Printer, ReceiptText, RefreshCw } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
@@ -22,10 +22,17 @@ import Loading from "@/app/(dashboard)/loading";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import { parseAsBoolean, useQueryState } from "nuqs";
+import dynamic from "next/dynamic";
 import DialogDetail from "./dialog-detail";
+
+const DialogBarcode = dynamic(() => import("./dialog-barcode"), {
+  ssr: false,
+});
 
 export const Client = () => {
   const { b2bId } = useParams();
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
+  const [selectedBarcodeBag, setSelectedBarcodeBag] = useState("");
   const [openDetail, setOpenDetail] = useQueryState(
     "dialog",
     parseAsBoolean.withDefault(false)
@@ -140,6 +147,19 @@ export const Client = () => {
               <ReceiptText className="w-4 h-4" />
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Print Barcode</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedBarcodeBag(row.original.barcode_bag);
+                setBarcodeOpen(true);
+              }}
+            >
+              <Printer className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -210,6 +230,18 @@ export const Client = () => {
         }}
         columns={columnB2BDetailBag}
         idBagB2B={idBagB2B}
+      />
+      <DialogBarcode
+        onCloseModal={() => {
+          if (barcodeOpen) {
+            setBarcodeOpen(false);
+          }
+        }}
+        open={barcodeOpen}
+        barcode={selectedBarcodeBag}
+        handleCancel={() => {
+          setBarcodeOpen(false);
+        }}
       />
       <Breadcrumb>
         <BreadcrumbList>
