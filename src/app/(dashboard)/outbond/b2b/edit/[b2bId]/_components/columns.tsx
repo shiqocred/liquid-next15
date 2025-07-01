@@ -166,63 +166,6 @@ export const columnProducts = ({
   },
 ];
 
-export const columnBuyer = ({
-  metaPage,
-  setAdd,
-  onClose,
-}: any): ColumnDef<any>[] => [
-  {
-    header: () => <div className="text-center">No</div>,
-    id: "id",
-    cell: ({ row }) => (
-      <div className="text-center tabular-nums">
-        {(metaPage.from + row.index).toLocaleString()}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "name_buyer",
-    header: "Buyer Name",
-    cell: ({ row }) => (
-      <div className="max-w-[500px]">{row.original.name_buyer}</div>
-    ),
-  },
-  {
-    accessorKey: "phone_buyer",
-    header: "No. Hp",
-  },
-  {
-    accessorKey: "address_buyer",
-    header: "Address",
-    cell: ({ row }) => (
-      <div className="max-w-[500px]">{row.original.address_buyer}</div>
-    ),
-  },
-  {
-    accessorKey: "action",
-    header: () => <div className="text-center">Action</div>,
-    cell: ({ row }) => (
-      <div className="flex gap-4 justify-center items-center">
-        <ButtonAction
-          isLoading={false}
-          label={"Remove"}
-          onClick={(e) => {
-            e.preventDefault();
-            setAdd((prev: any) => ({
-              ...prev,
-              buyer_id: row.original.id,
-              name_buyer: row.original.name_buyer,
-            }));
-            onClose();
-          }}
-          type={"sky"}
-          icon={CheckCircle2}
-        />
-      </div>
-    ),
-  },
-];
-
 export const columnEditListBag = ({ onClose, onSelectBag, selectedBagId }: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,

@@ -4,9 +4,7 @@ import {
   Upload,
   Search,
   SaveIcon,
-  Briefcase,
   RefreshCcw,
-  PercentCircle,
   ArrowUpRightFromSquare,
   Box,
   BadgeDollarSign,
@@ -37,12 +35,7 @@ import { DataTable } from "@/components/data-table";
 import { alertError, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
-import {
-  DialogBuyer,
-  DialogUpload,
-  DialogProduct,
-  DialogDiscount,
-} from "./dialogs";
+import { DialogUpload, DialogProduct } from "./dialogs";
 
 import {
   useAddBagB2B,
@@ -116,10 +109,6 @@ export const Client = () => {
     useGetListBagByUser({ b2bId, ids: selectedBagId });
   const isLoading = isPending || isRefetching || isPendingFinishB2B;
 
-  const listData: any = useMemo(() => {
-    return data?.data.data.resource?.bulky_document;
-  }, [data]);
-
   const listDataBulkySale: any[] = useMemo(() => {
     return data?.data.data.resource?.bag_product?.bulky_sales ?? [];
   }, [data]);
@@ -161,8 +150,6 @@ export const Client = () => {
         id: b2bId as string,
         body: {
           buyer_id: input.buyer_id,
-          discount_bulky: input.discount_bulky,
-          category_bulky: input.category_bulky,
           name_document: input.name_document,
         },
       },
@@ -303,15 +290,6 @@ export const Client = () => {
         isPendingAddProduct={isPendingAddProduct}
         handleAddProduct={handleAddProduct}
       />
-      <DialogBuyer
-        open={dialog === "buyer"}
-        onOpenChange={() => {
-          if (dialog === "buyer") {
-            setDialog("");
-          }
-        }}
-        setInput={setInput}
-      />
       <DialogUpload
         open={dialog === "upload"}
         onOpenChange={() => {
@@ -321,16 +299,6 @@ export const Client = () => {
         }}
         handleAddProduct={handleAddProduct}
         addProductMutate={addProductMutate}
-      />
-      <DialogDiscount
-        open={dialog === "discount"}
-        onOpenChange={() => {
-          if (dialog === "discount") {
-            setDialog("");
-          }
-        }}
-        data={input}
-        setData={setInput}
       />
       <DialogName
         open={dialog === "name"}
@@ -386,58 +354,6 @@ export const Client = () => {
               <div className="flex items-center gap-4">
                 <TooltipProviderPage
                   value={
-                    !input.name_buyer ? (
-                      "Add Buyer"
-                    ) : (
-                      <div className="flex flex-col max-w-72">
-                        <p>Buyer: {input.name_buyer}</p>
-                        {listDataBulkySale.length > 0 && (
-                          <p className="text-red-300">
-                            (Delete all product to change)
-                          </p>
-                        )}
-                      </div>
-                    )
-                  }
-                >
-                  <Button
-                    variant={"outline"}
-                    className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
-                    onClick={() => setDialog("buyer")}
-                    // disabled={listDataBulkySale.length > 0}
-                  >
-                    <Briefcase />
-                    <Separator orientation="vertical" className="bg-gray-500" />
-                    <p className="w-72 text-left truncate">
-                      {input.buyer_id ? input.name_buyer : "Select Buyer"}
-                    </p>
-                  </Button>
-                </TooltipProviderPage>
-                <TooltipProviderPage
-                  value={
-                    <div className="flex flex-col max-w-72">
-                      <p>Discount: {input.discount_bulky}%</p>
-                      {listDataBulkySale.length > 0 && (
-                        <p className="text-red-300">
-                          (Delete all product to change)
-                        </p>
-                      )}
-                    </div>
-                  }
-                >
-                  <Button
-                    variant={"outline"}
-                    className="border-sky-400/80 hover:bg-sky-50 disabled:pointer-events-auto disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:opacity-100"
-                    onClick={() => setDialog("discount")}
-                    // disabled={listDataBulkySale.length > 0}
-                  >
-                    <PercentCircle />
-                    <Separator orientation="vertical" className="bg-gray-500" />
-                    <p className="min-w-5">{input.discount_bulky}%</p>
-                  </Button>
-                </TooltipProviderPage>
-                <TooltipProviderPage
-                  value={
                     !input.name_document ? (
                       "Add Name Bulky"
                     ) : (
@@ -467,19 +383,11 @@ export const Client = () => {
                 </TooltipProviderPage>
               </div>
               <div className="flex gap-2">
-                <Button
-                  onClick={handleUpdateB2B}
-                  variant={"liquid"}
-                  disabled={!input.buyer_id}
-                >
+                <Button onClick={handleUpdateB2B} variant={"liquid"}>
                   <SaveIcon />
                   Update
                 </Button>
-                <Button
-                  onClick={handleFinish}
-                  variant={"liquid"}
-                  disabled={!listData?.name_buyer}
-                >
+                <Button onClick={handleFinish} variant={"liquid"}>
                   <SaveIcon />
                   Finish
                 </Button>
