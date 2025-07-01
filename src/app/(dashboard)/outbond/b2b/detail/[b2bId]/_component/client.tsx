@@ -304,7 +304,7 @@ export const Client = () => {
                   <div className="flex flex-col">
                     <p className="text-xs">Total Bag</p>
                     <p className="font-semibold capitalize text-lg">
-                      {formatRupiah(dataListDetail?.total_old_price_bulky)}
+                      {dataListDetail?.total_bag.toLocaleString()}
                     </p>
                   </div>
                 </div>
