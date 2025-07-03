@@ -217,12 +217,12 @@ export const Client = () => {
           <BreadcrumbItem>Inventory</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/inventory/stop-opname/category">
+            <BreadcrumbLink href="/inventory/stock-opname/category">
               Category
             </BreadcrumbLink>{" "}
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbLink href="/inventory/stop-opname/category/create">
+          <BreadcrumbLink href="/inventory/stock-opname/category/create">
             Create
           </BreadcrumbLink>{" "}
           <BreadcrumbSeparator />

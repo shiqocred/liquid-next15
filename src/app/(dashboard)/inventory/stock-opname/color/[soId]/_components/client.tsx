@@ -57,10 +57,10 @@ export const Client = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>Inventory</BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Stop Opname</BreadcrumbItem>
+          <BreadcrumbItem>Stock Opname</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/inventory/stop-opname/color">
+            <BreadcrumbLink href="/inventory/stock-opname/color">
               Color
             </BreadcrumbLink>
           </BreadcrumbItem>
@@ -73,13 +73,13 @@ export const Client = () => {
       <div className="p-4 bg-white rounded shadow-md flex flex-col gap-4 w-full">
         <div className="w-full flex gap-2 justify-between items-center pt-2 pb-1 mb-1 border-b border-gray-500">
           <div className="flex items-center gap-2">
-            <Link href="/inventory/stop-opname/color">
+            <Link href="/inventory/stock-opname/color">
               <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
                 <ArrowLeft className="w-5 h-5 text-black" />
               </Button>
             </Link>
             <h1 className="text-2xl font-semibold">
-              {dataDetail.type === "process" ? "Create" : "Detail"} Stop Opname
+              {dataDetail.type === "process" ? "Create" : "Detail"} Stock Opname
               Color
             </h1>
           </div>

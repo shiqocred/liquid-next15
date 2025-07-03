@@ -71,7 +71,7 @@ export const NewSection = ({
       { body: { colors: items } },
       {
         onSuccess: () => {
-          router.push("/inventory/stop-opname/color");
+          router.push("/inventory/stock-opname/color");
           queryClient.invalidateQueries({
             queryKey: ["detail-so-color", { id: soId }],
           });

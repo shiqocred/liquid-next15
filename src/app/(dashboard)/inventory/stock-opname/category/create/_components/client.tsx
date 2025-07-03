@@ -328,7 +328,7 @@ export const Client = () => {
             <BreadcrumbItem>Inventory</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/inventory/stop-opname/category">
+              <BreadcrumbLink href="/inventory/stock-opname/category">
                 Category
               </BreadcrumbLink>{" "}
             </BreadcrumbItem>
@@ -344,7 +344,7 @@ export const Client = () => {
                 variant={"outline"}
                 onClick={() =>
                   router.push(
-                    "/inventory/stop-opname/category/create/add-product-manual"
+                    "/inventory/stock-opname/category/create/add-product-manual"
                   )
                 }
               >
