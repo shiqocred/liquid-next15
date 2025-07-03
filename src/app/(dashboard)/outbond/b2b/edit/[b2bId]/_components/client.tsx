@@ -13,6 +13,7 @@ import {
   ScanText,
   XCircle,
   Boxes,
+  Trash2,
 } from "lucide-react";
 import { AxiosError } from "axios";
 import { parseAsString, useQueryState } from "nuqs";
@@ -42,6 +43,7 @@ import {
   useAddProductB2B,
   useFinishB2B,
   useGetListBagByUser,
+  useRemoveBagB2B,
   useRemoveProductB2B,
   useUpdateB2B,
 } from "../_api";
@@ -80,6 +82,13 @@ export const Client = () => {
     "This action cannot be undone",
     "destructive"
   );
+
+  const [RemoveBagDialog, confirmBagRemove] = useConfirm(
+    "Delete Bag B2B",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   const [FinishDialog, confirmFinish] = useConfirm(
     "Finish B2B",
     "This action cannot be undone",
@@ -98,6 +107,8 @@ export const Client = () => {
     addProductMutate;
   const { mutate: removeProduct, isPending: isPendingRemoveProduct } =
     useRemoveProductB2B();
+  const { mutate: removeBag, isPending: isPendingRemoveBag } =
+    useRemoveBagB2B();
   const { mutate: finishB2B, isPending: isPendingFinishB2B } = useFinishB2B({
     b2bId,
   });
@@ -229,6 +240,14 @@ export const Client = () => {
     removeProduct({ id });
   };
 
+  const handleRemoveBag = async (id: string) => {
+    const ok = await confirmBagRemove();
+
+    if (!ok) return;
+
+    removeBag({ id });
+  };
+
   const handleReset = () => {
     setSelectedBagId("");
   };
@@ -278,6 +297,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col justify-center bg-gray-100 w-full relative px-4 gap-4 py-4">
       <RemoveDialog />
+      <RemoveBagDialog />
       <FinishDialog />
       <AddBagDialog />
       <DialogProduct
@@ -470,6 +490,15 @@ export const Client = () => {
                 <Box className={isPendingAddBag ? "animate-spin" : ""} />
                 Add Bag
               </Button>
+                <Button
+                  onClick={() => handleRemoveBag(bagProduct?.id)}
+                  variant={"destructive"}
+                >
+                  <Trash2
+                    className={isPendingRemoveBag ? "animate-spin" : ""}
+                  />
+                  Delete Bag
+                </Button>
             </div>
           </div>
         </div>
