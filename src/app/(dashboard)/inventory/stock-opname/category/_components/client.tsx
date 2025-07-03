@@ -41,7 +41,7 @@ export const Client = () => {
       {},
       {
         onSuccess: () => {
-          router.push("/inventory/stop-opname/category/create");
+          router.push("/inventory/stock-opname/category/create");
         },
       }
     );
@@ -53,7 +53,7 @@ export const Client = () => {
   //     {},
   //     {
   //       onSuccess: () => {
-  //         router.push("/inventory/stop-opname/category");
+  //         router.push("/inventory/stock-opname/category");
   //       },
   //     }
   //   );
@@ -86,7 +86,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Stop Opname Category</h2>
+        <h2 className="text-xl font-bold">List Stock Opname Category</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">

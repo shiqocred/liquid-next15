@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useRemoveProductB2B = () => {
+export const useRemoveBagB2B = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/bulky-sales/${id}`, {
+      const res = await axios.delete(`${baseUrl}/bag_product/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,7 +25,7 @@ export const useRemoveProductB2B = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfuly removed to B2B");
+      toast.success("Bag successfuly removed to B2B");
       queryClient.invalidateQueries({
         queryKey: ["list-bag-by-user-b2b"],
       });
@@ -40,10 +40,10 @@ export const useRemoveProductB2B = () => {
         toast.error(
           `ERROR: ${
             (err?.response?.data as any)?.data?.message ??
-            "Failed to remove Product to B2B"
+            "Failed to remove Bag to B2B"
           }`
         );
-        console.log("ERROR_REMOVE_PRODUCT_B2B:", err);
+        console.log("ERROR_REMOVE_BAG_B2B:", err);
       }
     },
   });

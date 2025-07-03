@@ -27,7 +27,10 @@ export const useRemoveProductB2B = () => {
     onSuccess: () => {
       toast.success("Product successfuly removed to B2B");
       queryClient.invalidateQueries({
-        queryKey: ["list-bag-by-user-b2b"],
+        queryKey: ["detail-b2b"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["detail-bag-b2b"],
       });
       queryClient.invalidateQueries({
         queryKey: ["list-product-b2b"],

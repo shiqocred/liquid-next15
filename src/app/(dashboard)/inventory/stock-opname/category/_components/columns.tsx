@@ -56,8 +56,8 @@ export const columnsSOCategory = ({
         <Link
           href={
             row.original.type === "process"
-              ? "/inventory/stop-opname/category/create"
-              : `/inventory/stop-opname/category/detail/${row.original.id}`
+              ? "/inventory/stock-opname/category/create"
+              : `/inventory/stock-opname/category/detail/${row.original.id}`
           }
         >
           <Button

@@ -165,41 +165,6 @@ export const Client = () => {
     },
   ];
 
-  // column data detail bag
-  const columnB2BDetailBag: ColumnDef<any>[] = [
-    {
-      header: () => <div className="text-center">No</div>,
-      id: "id",
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {(1 + row.index).toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "barcode_bulky_sale",
-      header: "Barcode",
-    },
-    {
-      accessorKey: "name_product_bulky_sale",
-      header: () => <div className="text-center">Product Name</div>,
-      cell: ({ row }) => (
-        <div className="max-w-[400px] break-all">
-          {row.original.name_product_bulky_sale}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "product_category_bulky_sale",
-      header: "Category",
-    },
-    {
-      accessorKey: "old_price_bulky_sale",
-      header: "Price",
-      cell: ({ row }) => formatRupiah(row.original.old_price_bulky_sale),
-    },
-  ];
-
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -228,7 +193,6 @@ export const Client = () => {
             setIdBagB2B("");
           }
         }}
-        columns={columnB2BDetailBag}
         idBagB2B={idBagB2B}
       />
       <DialogBarcode
