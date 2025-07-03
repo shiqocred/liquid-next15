@@ -239,17 +239,17 @@ const sidebarMenu = [
         ],
       },
       {
-        title: "Stop Opname",
+        title: "Stock Opname",
         href: undefined,
         icon: <BookMarked className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
           {
             title: "Color",
-            href: "/inventory/stop-opname/color",
+            href: "/inventory/stock-opname/color",
           },
           {
             title: "Category",
-            href: "/inventory/stop-opname/category",
+            href: "/inventory/stock-opname/category",
           },
         ],
       },

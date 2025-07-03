@@ -53,7 +53,7 @@ export const columnsSOColor = ({
     header: "Action",
     cell: ({ row }) => (
       <div className="flex items-center">
-        <Link href={`/inventory/stop-opname/color/${row.original.id}`}>
+        <Link href={`/inventory/stock-opname/color/${row.original.id}`}>
           <Button
             size={"icon"}
             variant={"outline"}

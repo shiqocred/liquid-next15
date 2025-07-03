@@ -25,18 +25,11 @@ import React, { MouseEvent, useEffect, useMemo } from "react";
 
 import { useStartSOColor } from "../_api/use-start-so-color";
 import { useGetListSOColor } from "../_api/use-get-list-so-color";
-// import { useStopSOColor } from "../_api/use-stop-so-color";
-// import { useConfirm } from "@/hooks/use-confirm";
 
 export const Client = () => {
-  // const [StopDialog, confirmStop] = useConfirm(
-  //   "Stop Period Stop Opname",
-  //   "This action cannot be undone",
-  //   "destructive"
-  // );
+ 
 
   const { mutate: startSO, isPending: isPendingStartSO } = useStartSOColor();
-  // const { mutate: stopSO, isPending: isPendingStopSO } = useStopSOColor();
 
   const { metaPage, page, setPage, setPagination } = usePagination();
   const { search, searchValue, setSearch } = useSearchQuery();
@@ -56,18 +49,11 @@ export const Client = () => {
       {},
       {
         onSuccess: ({ data }) => {
-          window.location.href = `/inventory/stop-opname/color/${data.data.resource.id}`;
+          window.location.href = `/inventory/stock-opname/color/${data.data.resource.id}`;
         },
       }
     );
   };
-  // const handleStop = async () => {
-  //   const ok = await confirmStop();
-
-  //   if (!ok) return;
-
-  //   stopSO({});
-  // };
 
   useEffect(() => {
     if (data && isSuccess) {
@@ -95,7 +81,6 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      {/* <StopDialog /> */}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -104,13 +89,13 @@ export const Client = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>Inventory</BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Stop Opname</BreadcrumbItem>
+          <BreadcrumbItem>Stock Opname</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>Color</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Stop Opname Color</h2>
+        <h2 className="text-xl font-bold">List Stock Opname Color</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -133,18 +118,7 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
               <div className="ml-auto flex gap-2 items-center">
-                {/* <Button
-                  className="items-center flex-none h-9 bg-red-400/80 hover:bg-red-400 text-black disabled:hover:bg-red-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                  onClick={handleStop}
-                  disabled={
-                    dataList.length > 0 && dataList[0].type !== "process"
-                  }
-                >
-                  <SquareIcon className={"w-4 h-4 mr-1"} />
-                  Stop
-                </Button> */}
-                <Button
+              <Button
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                   onClick={handleStart}
