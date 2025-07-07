@@ -17,7 +17,6 @@ export const useDeleteAccount = () => {
       toast.success("User successfully deleted");
       invalidateQuery(queryClient, [
         ["list-account"],
-        ["account-detail", res.data.data.resource.id],
       ]);
     },
     onError: {
