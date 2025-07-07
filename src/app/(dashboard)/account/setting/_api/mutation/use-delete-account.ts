@@ -13,7 +13,7 @@ export const useDeleteAccount = () => {
   const mutation = useMutate<undefined, Params>({
     endpoint: "/users/:id",
     method: "delete",
-    onSuccess: (res) => {
+    onSuccess: () => {
       toast.success("User successfully deleted");
       invalidateQuery(queryClient, [
         ["list-account"],
