@@ -41,7 +41,6 @@ import { DialogUpload, DialogProduct } from "./dialogs";
 import {
   useAddBagB2B,
   useAddProductB2B,
-  useFinishB2B,
   useGetListBagByUser,
   useRemoveBagB2B,
   useRemoveProductB2B,
@@ -50,7 +49,7 @@ import {
 import { useSearch } from "@/lib/search";
 import { useConfirm } from "@/hooks/use-confirm";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { DialogName } from "./dialogs/dialog-name";
 import { DialogListBagEdit } from "./dialogs/dialog-list-bag-edit";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +69,6 @@ const initialValue = {
 export const Client = () => {
   const { b2bId } = useParams();
   const searchRef = useRef<HTMLInputElement | null>(null);
-  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [dialog, setDialog] = useQueryState(
     "dialog",
@@ -89,11 +87,7 @@ export const Client = () => {
     "destructive"
   );
 
-  const [FinishDialog, confirmFinish] = useConfirm(
-    "Finish B2B",
-    "This action cannot be undone",
-    "liquid"
-  );
+
   const [AddBagDialog, confirmAddBag] = useConfirm(
     "Add Bag",
     "Are you sure you want to add a new bag?",
@@ -109,16 +103,13 @@ export const Client = () => {
     useRemoveProductB2B();
   const { mutate: removeBag, isPending: isPendingRemoveBag } =
     useRemoveBagB2B();
-  const { mutate: finishB2B, isPending: isPendingFinishB2B } = useFinishB2B({
-    b2bId,
-  });
   const { mutate: addBag, isPending: isPendingAddBag } = useAddBagB2B();
   const { mutate: updateB2B } = useUpdateB2B();
 
   const { search, searchValue, setSearch } = useSearch();
   const { data, isPending, isSuccess, refetch, isRefetching, error, isError } =
     useGetListBagByUser({ b2bId, ids: selectedBagId });
-  const isLoading = isPending || isRefetching || isPendingFinishB2B;
+  const isLoading = isPending || isRefetching;
 
   const listDataBulkySale: any[] = useMemo(() => {
     return data?.data.data.resource?.bag_product?.bulky_sales ?? [];
@@ -167,21 +158,6 @@ export const Client = () => {
       {
         onSuccess: () => {
           refetch();
-        },
-      }
-    );
-  };
-
-  const handleFinish = async () => {
-    const ok = await confirmFinish();
-
-    if (!ok) return;
-
-    finishB2B(
-      {},
-      {
-        onSuccess: () => {
-          router.push("/outbond/b2b");
         },
       }
     );
@@ -298,7 +274,6 @@ export const Client = () => {
     <div className="flex flex-col justify-center bg-gray-100 w-full relative px-4 gap-4 py-4">
       <RemoveDialog />
       <RemoveBagDialog />
-      <FinishDialog />
       <AddBagDialog />
       <DialogProduct
         open={dialog === "product"}
@@ -406,10 +381,6 @@ export const Client = () => {
                 <Button onClick={handleUpdateB2B} variant={"liquid"}>
                   <SaveIcon />
                   Update
-                </Button>
-                <Button onClick={handleFinish} variant={"liquid"}>
-                  <SaveIcon />
-                  Finish
                 </Button>
               </div>
             </div>

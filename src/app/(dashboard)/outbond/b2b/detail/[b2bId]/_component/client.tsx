@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   useExportDetailDataB2B,
+  useFinishB2B,
   useGetDetailB2B,
   useRemoveBagB2B,
 } from "../_api";
@@ -23,6 +24,7 @@ import {
   Printer,
   ReceiptText,
   RefreshCw,
+  SaveIcon,
   Trash2,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -55,6 +57,12 @@ export const Client = () => {
     "destructive"
   );
 
+  const [FinishDialog, confirmFinish] = useConfirm(
+    "Finish B2B",
+    "This action cannot be undone",
+    "liquid"
+  );
+
   const [idBagB2B, setIdBagB2B] = useQueryState("bagId", { defaultValue: "" });
 
   const { data, refetch, isRefetching, error, isError } = useGetDetailB2B({
@@ -65,7 +73,9 @@ export const Client = () => {
     useExportDetailDataB2B();
   const { mutate: removeBag, isPending: isPendingRemoveBag } =
     useRemoveBagB2B();
-
+  const { mutate: finishB2B, isPending: isPendingFinishB2B } = useFinishB2B({
+    b2bId,
+  });
   // memo data detail
   const dataListDetail: any = useMemo(() => {
     return data?.data.data.resource;
@@ -98,6 +108,21 @@ export const Client = () => {
 
     removeBag(
       { id },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+  };
+
+  const handleFinish = async () => {
+    const ok = await confirmFinish();
+
+    if (!ok) return;
+
+    finishB2B(
+      {},
       {
         onSuccess: () => {
           refetch();
@@ -239,6 +264,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <RemoveDialog />
+      <FinishDialog />
       <DialogDetail
         open={openDetail}
         onCloseModal={() => {
@@ -395,6 +421,15 @@ export const Client = () => {
           >
             <FileDown className="size-4 ml-1" />
             Export Data
+          </Button>
+          <Button
+            type="button"
+            onClick={handleFinish}
+            variant={"liquid"}
+            disabled={dataListDetail?.status_bulky === "selesai" || isPendingFinishB2B}
+          >
+            <SaveIcon />
+            Finish
           </Button>
         </div>
         <DataTable
