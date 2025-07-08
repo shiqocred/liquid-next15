@@ -7,13 +7,26 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useExportDetailDataB2B, useGetDetailB2B } from "../_api";
+import {
+  useExportDetailDataB2B,
+  useFinishB2B,
+  useGetDetailB2B,
+  useRemoveBagB2B,
+} from "../_api";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { cn, formatRupiah } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { FileDown, Printer, ReceiptText, RefreshCw } from "lucide-react";
+import {
+  FileDown,
+  Loader2,
+  Printer,
+  ReceiptText,
+  RefreshCw,
+  SaveIcon,
+  Trash2,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
@@ -24,6 +37,7 @@ import Forbidden from "@/components/403";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import dynamic from "next/dynamic";
 import DialogDetail from "./dialog-detail";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const DialogBarcode = dynamic(() => import("./dialog-barcode"), {
   ssr: false,
@@ -37,6 +51,18 @@ export const Client = () => {
     "dialog",
     parseAsBoolean.withDefault(false)
   );
+  const [RemoveDialog, confirmRemove] = useConfirm(
+    "Remove Bag",
+    "This action cannot be undone.",
+    "destructive"
+  );
+
+  const [FinishDialog, confirmFinish] = useConfirm(
+    "Finish B2B",
+    "This action cannot be undone",
+    "liquid"
+  );
+
   const [idBagB2B, setIdBagB2B] = useQueryState("bagId", { defaultValue: "" });
 
   const { data, refetch, isRefetching, error, isError } = useGetDetailB2B({
@@ -45,6 +71,11 @@ export const Client = () => {
 
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportDetailDataB2B();
+  const { mutate: removeBag, isPending: isPendingRemoveBag } =
+    useRemoveBagB2B();
+  const { mutate: finishB2B, isPending: isPendingFinishB2B } = useFinishB2B({
+    b2bId,
+  });
   // memo data detail
   const dataListDetail: any = useMemo(() => {
     return data?.data.data.resource;
@@ -65,6 +96,36 @@ export const Client = () => {
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
+  const handleRemoveBag = async (id: string) => {
+    const ok = await confirmRemove();
+
+    if (!ok) return;
+
+    removeBag(
+      { id },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+  };
+
+  const handleFinish = async () => {
+    const ok = await confirmFinish();
+
+    if (!ok) return;
+
+    finishB2B(
+      {},
+      {
+        onSuccess: () => {
+          refetch();
         },
       }
     );
@@ -160,6 +221,23 @@ export const Client = () => {
               <Printer className="w-4 h-4" />
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete Bag</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingRemoveBag}
+              onClick={(e) => {
+                e.preventDefault();
+                handleRemoveBag(row.original.id);
+              }}
+            >
+              {isPendingRemoveBag ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}{" "}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -185,6 +263,8 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <RemoveDialog />
+      <FinishDialog />
       <DialogDetail
         open={openDetail}
         onCloseModal={() => {
@@ -341,6 +421,15 @@ export const Client = () => {
           >
             <FileDown className="size-4 ml-1" />
             Export Data
+          </Button>
+          <Button
+            type="button"
+            onClick={handleFinish}
+            variant={"liquid"}
+            disabled={dataListDetail?.status_bulky === "selesai" || isPendingFinishB2B}
+          >
+            <SaveIcon />
+            Finish
           </Button>
         </div>
         <DataTable
