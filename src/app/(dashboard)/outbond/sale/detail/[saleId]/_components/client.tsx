@@ -51,7 +51,6 @@ import { useExport } from "../_api/use-export";
 import { useExportExcel } from "../_api/use-export-excel";
 import { format } from "date-fns";
 import { useUpdateOnlinePayment } from "../_api/use-update-online-payment";
-import DialogOnlinePayment from "./dialog-online-payment";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -71,6 +70,12 @@ const DialogExportData = dynamic(() => import("./dialog-export-data"), {
 const DialogExportProduct = dynamic(() => import("./dialog-export-product"), {
   ssr: false,
 });
+const DialogOnlinePayment = dynamic(() => import("./dialog-online-payment"), {
+  ssr: false,
+});
+const DialogQrCode = dynamic(() => import("./dialog-qr-code"), {
+  ssr: false,
+});
 
 export const Client = () => {
   const { saleId } = useParams();
@@ -82,6 +87,7 @@ export const Client = () => {
   const [isExportData, setIsExportData] = useState(false);
   const [isExportProduct, setIsExportProduct] = useState(false);
   const [isOnlinePayment, setisOnlinePayment] = useState(false);
+  const [isShowQrDialog, setIsShowQrDialog] = useState(false);
 
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -273,6 +279,7 @@ export const Client = () => {
       {
         onSuccess: () => {
           handleCloseUpdateOnlinePayment();
+          setIsShowQrDialog(true);
         },
       }
     );
@@ -686,6 +693,15 @@ export const Client = () => {
         }}
         data={inputEdit.price}
         handleSubmit={handleUpdatePrice}
+      />
+      <DialogQrCode
+        open={isShowQrDialog}
+        onCloseModal={() => {
+          if (isShowQrDialog) {
+            setIsShowQrDialog(false);
+            setisOnlinePayment(false);
+          }
+        }}
       />
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
