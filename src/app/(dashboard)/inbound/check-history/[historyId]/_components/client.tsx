@@ -742,7 +742,7 @@ export const Client = () => {
             <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 justify-center h-36 gap-4 flex-col">
               <p className="text-sm font-light text-gray-500">
                 Total{" "}
-                <span className="font-semibold underline">Price Good Data</span>
+                <span className="font-semibold underline">Price Good Display</span>
               </p>
               <div className="flex flex-col gap-1">
                 <h3 className="text-gray-700 font-bold text-xl">
