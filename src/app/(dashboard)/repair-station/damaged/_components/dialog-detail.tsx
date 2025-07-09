@@ -22,7 +22,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import {
   PopoverPortal,
@@ -37,6 +37,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useGetPriceProductPA } from "../_api/use-get-price-product-pa";
 
 const DialogDetail = ({
   open,
@@ -73,6 +75,30 @@ const DialogDetail = ({
       return filteredEntries?.[0] ?? "";
     }
   };
+
+  const priceValue = useDebounce(input.oldPrice, 500);
+  const { data: dataPrice } = useGetPriceProductPA({
+    price: priceValue,
+  });
+
+  const color = dataPrice?.data?.data?.resource?.warna;
+  const isColorPrice = !!color;
+
+  useEffect(() => {
+    if (isColorPrice && color?.name_color) {
+      setInput((prev: any) => ({
+        ...prev,
+        new_tag_product: color.name_color,
+        category: null,
+        price: color.fixed_price_color?.toString() ?? "",
+      }));
+    } else {
+      setInput((prev: any) => ({
+        ...prev,
+        new_tag_product: "",
+      }));
+    }
+  }, [isColorPrice, color, setInput]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -192,7 +218,11 @@ const DialogDetail = ({
                         <Input
                           id="priceOld"
                           className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent "
-                          value={Math.round(parseFloat(input.oldPrice))}
+                          value={
+                            isNaN(parseFloat(input.oldPrice))
+                              ? "0"
+                              : String(Math.round(parseFloat(input.oldPrice)))
+                          }
                           onChange={(e) =>
                             setInput((prev: any) => ({
                               ...prev,
@@ -261,8 +291,15 @@ const DialogDetail = ({
                         <Input
                           id="priceNew"
                           className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent "
-                          value={Math.round(parseFloat(input.price))}
+                          value={
+                            isColorPrice
+                              ? color?.fixed_price_color ?? ""
+                              : isNaN(parseFloat(input.price))
+                              ? ""
+                              : String(Math.round(parseFloat(input.price)))
+                          }
                           onChange={(e) =>
+                            !isColorPrice &&
                             setInput((prev: any) => ({
                               ...prev,
                               price: e.target.value.startsWith("0")
@@ -270,6 +307,7 @@ const DialogDetail = ({
                                 : e.target.value,
                             }))
                           }
+                          disabled={isColorPrice}
                           placeholder="Custom Barcode..."
                         />
                       </div>
@@ -318,107 +356,120 @@ const DialogDetail = ({
                         </div>
                       </div>
                     </div>
-                    {!data?.new_tag_product && (
-                      <div className="flex flex-col gap-1 ">
-                        <Label className="text-xs font-semibold">
-                          Category
-                        </Label>
-                        <PopoverPortal
-                          open={isOpenCategory}
-                          onOpenChange={setIsOpenCategory}
-                        >
-                          <PopoverPortalTrigger asChild>
-                            <Button
-                              type="button"
-                              className="border-0 border-b  rounded-none justify-between border-sky-400/80 focus:border-sky-400 focus-visible:ring-transparent focus:ring-1 hover:bg-sky-50 focus:bg-sky-50 shadow-none"
-                              variant={"outline"}
-                            >
-                              <p>
-                                {input.category ??
-                                  data?.new_category_product ?? (
-                                    <span className="italic underline">
-                                      No Category yet.
-                                    </span>
-                                  )}
-                              </p>
-                              <ChevronDown />
-                            </Button>
-                          </PopoverPortalTrigger>
-                          <PopoverPortalContent
-                            className="p-0"
-                            style={{
-                              width: "var(--radix-popover-trigger-width)",
-                            }}
+                    <div className="flex flex-col gap-1 ">
+                      <Label className="text-xs font-semibold">Category</Label>
+                      <PopoverPortal
+                        open={!isColorPrice && isOpenCategory}
+                        onOpenChange={setIsOpenCategory}
+                      >
+                        <PopoverPortalTrigger asChild>
+                          <Button
+                            type="button"
+                            className="border-0 border-b  rounded-none justify-between border-sky-400/80 focus:border-sky-400 focus-visible:ring-transparent focus:ring-1 hover:bg-sky-50 focus:bg-sky-50 shadow-none"
+                            variant={"outline"}
                           >
-                            <Command>
-                              <CommandInput />
-                              <CommandList className="p-1">
-                                <CommandGroup>
-                                  <CommandEmpty>No Data Found.</CommandEmpty>
-                                  {categories.map((item: any) => (
-                                    <CommandItem
-                                      key={item.id}
-                                      className={cn(
-                                        "my-2 first:mt-0 last:mb-0 flex gap-2 items-center border",
-                                        input.category === item.name_category
-                                          ? "border-gray-500"
-                                          : "border-gray-300"
-                                      )}
-                                      onSelect={() => {
-                                        setInput((prev: any) => ({
-                                          ...prev,
-                                          category: item?.name_category ?? "",
-                                          price: (
-                                            data?.old_price_product -
-                                            (data?.old_price_product / 100) *
-                                              parseFloat(
-                                                item?.discount_category ?? "0"
-                                              )
+                            <p>
+                              {isColorPrice ? (
+                                <span className="italic underline">
+                                  No Category (color)
+                                </span>
+                              ) : (
+                                input.category ??
+                                data?.new_category_product ?? (
+                                  <span className="italic underline">
+                                    No Category yet.
+                                  </span>
+                                )
+                              )}
+                            </p>
+                            <ChevronDown />
+                          </Button>
+                        </PopoverPortalTrigger>
+                        <PopoverPortalContent
+                          className="p-0"
+                          style={{
+                            width: "var(--radix-popover-trigger-width)",
+                          }}
+                        >
+                          <Command>
+                            <CommandInput />
+                            <CommandList className="p-1">
+                              <CommandGroup>
+                                <CommandEmpty>No Data Found.</CommandEmpty>
+                                {categories.map((item: any) => (
+                                  <CommandItem
+                                    key={item.id}
+                                    className={cn(
+                                      "my-2 first:mt-0 last:mb-0 flex gap-2 items-center border",
+                                      input.category === item.name_category
+                                        ? "border-gray-500"
+                                        : "border-gray-300"
+                                    )}
+                                    onSelect={() => {
+                                      const discount = parseFloat(
+                                        item?.discount_category ?? "0"
+                                      );
+                                      const maxPrice = parseFloat(
+                                        item?.max_price_category ?? "0"
+                                      );
+                                      const oldPrice = parseFloat(
+                                        input.oldPrice
+                                      );
+
+                                      let calculatedPrice =
+                                        oldPrice - (oldPrice * discount) / 100;
+
+                                      if (calculatedPrice > maxPrice) {
+                                        calculatedPrice = oldPrice - maxPrice;
+                                      }
+
+                                      setInput((prev: any) => ({
+                                        ...prev,
+                                        category: item?.name_category ?? "",
+                                        price:
+                                          Math.round(
+                                            calculatedPrice
                                           ).toString(),
-                                        }));
-                                        setIsOpenCategory(false);
-                                      }}
-                                    >
-                                      <div className="size-4 rounded-full border border-gray-500 flex-none flex items-center justify-center">
-                                        {input.category ===
-                                          item.name_category && (
-                                          <Circle className="fill-black !size-2.5" />
+                                      }));
+                                      setIsOpenCategory(false);
+                                    }}
+                                  >
+                                    <div className="size-4 rounded-full border border-gray-500 flex-none flex items-center justify-center">
+                                      {input.category ===
+                                        item.name_category && (
+                                        <Circle className="fill-black !size-2.5" />
+                                      )}
+                                    </div>
+                                    <div className="flex flex-col gap-1.5">
+                                      <p
+                                        className={cn(
+                                          "font-bold border-b pb-1.5 whitespace-nowrap text-ellipsis overflow-hidden w-full",
+                                          input.category === item.name_category
+                                            ? "border-gray-500"
+                                            : "border-gray-300"
                                         )}
-                                      </div>
-                                      <div className="flex flex-col gap-1.5">
-                                        <p
-                                          className={cn(
-                                            "font-bold border-b pb-1.5 whitespace-nowrap text-ellipsis overflow-hidden w-full",
-                                            input.category ===
-                                              item.name_category
-                                              ? "border-gray-500"
-                                              : "border-gray-300"
+                                      >
+                                        {item.name_category}
+                                      </p>
+                                      <p className="text-xs font-light flex items-center gap-1">
+                                        <span>{item.discount_category}%</span>
+                                        <span>-</span>
+                                        <span>
+                                          Max.{" "}
+                                          {formatRupiah(
+                                            parseFloat(item.max_price_category)
                                           )}
-                                        >
-                                          {item.name_category}
-                                        </p>
-                                        <p className="text-xs font-light flex items-center gap-1">
-                                          <span>{item.discount_category}%</span>
-                                          <span>-</span>
-                                          <span>
-                                            Max.{" "}
-                                            {formatRupiah(
-                                              parseFloat(
-                                                item.max_price_category
-                                              )
-                                            )}
-                                          </span>
-                                        </p>
-                                      </div>
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverPortalContent>
-                        </PopoverPortal>
-                      </div>
-                    )}
+                                        </span>
+                                      </p>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverPortalContent>
+                      </PopoverPortal>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -437,10 +488,10 @@ const DialogDetail = ({
             <div className="w-fit flex flex-none flex-col gap-4">
               {!dataColor ? (
                 <BarcodePrinted
-                  barcode={input.barcode}
+                  barcode={input.oldBarcode}
                   newPrice={input.price}
                   oldPrice={input.oldPrice}
-                  category={input.category}
+                  category={isColorPrice ? color?.name_color : input.category}
                 />
               ) : (
                 <div className="w-auto">
