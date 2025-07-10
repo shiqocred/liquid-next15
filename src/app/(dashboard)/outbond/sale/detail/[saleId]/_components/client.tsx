@@ -50,6 +50,7 @@ import { useParams } from "next/navigation";
 import { useExport } from "../_api/use-export";
 import { useExportExcel } from "../_api/use-export-excel";
 import { format } from "date-fns";
+import { useUpdateOnlinePayment } from "../_api/use-update-online-payment";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -69,6 +70,12 @@ const DialogExportData = dynamic(() => import("./dialog-export-data"), {
 const DialogExportProduct = dynamic(() => import("./dialog-export-product"), {
   ssr: false,
 });
+const DialogOnlinePayment = dynamic(() => import("./dialog-online-payment"), {
+  ssr: false,
+});
+const DialogQrCode = dynamic(() => import("./dialog-qr-code"), {
+  ssr: false,
+});
 
 export const Client = () => {
   const { saleId } = useParams();
@@ -79,6 +86,8 @@ export const Client = () => {
   const [isProduct, setIsProduct] = useState(false);
   const [isExportData, setIsExportData] = useState(false);
   const [isExportProduct, setIsExportProduct] = useState(false);
+  const [isOnlinePayment, setisOnlinePayment] = useState(false);
+  const [isShowQrDialog, setIsShowQrDialog] = useState(false);
 
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -87,6 +96,10 @@ export const Client = () => {
   const [inputProceed, setInputProceed] = useState({
     qty: "0",
     unit: "0",
+  });
+  const [inputOnlinePayment, setInputOnlinePayment] = useState({
+    email: "",
+    payment_type: "",
   });
   const [dataExport, setDataExport] = useState<any>(null);
 
@@ -133,6 +146,10 @@ export const Client = () => {
   const { mutate: mutateExport, isPending: isPendingExport } = useExport();
   const { mutate: mutateExportExcel, isPending: isPendingExportExcel } =
     useExportExcel();
+  const {
+    mutate: mutateUpdateOnlinePayment,
+    isPending: isPendingOnlinePayment,
+  } = useUpdateOnlinePayment();
 
   // mutate end ----------------------------------------------------------------
 
@@ -250,6 +267,24 @@ export const Client = () => {
     );
   };
 
+  const handleUpdateOnlinePayment = async () => {
+    mutateUpdateOnlinePayment(
+      {
+        id: saleId,
+        body: {
+          email: inputOnlinePayment.email,
+          payment_type: inputOnlinePayment.payment_type,
+        },
+      },
+      {
+        onSuccess: () => {
+          handleCloseUpdateOnlinePayment();
+          setIsShowQrDialog(true);
+        },
+      }
+    );
+  };
+
   const handleExport = async (type: "data" | "product") => {
     mutateExport(
       { barcode: dataRes?.code_document_sale },
@@ -317,6 +352,13 @@ export const Client = () => {
     setInputProceed({
       qty: "0",
       unit: "0",
+    });
+  };
+
+  const handleCloseUpdateOnlinePayment = () => {
+    setInputOnlinePayment({
+      email: "",
+      payment_type: "",
     });
   };
 
@@ -604,6 +646,17 @@ export const Client = () => {
         setInput={setInputProceed}
         handleSubmit={handleUpdateCarton}
       />
+      <DialogOnlinePayment
+        open={isOnlinePayment}
+        onCloseModal={() => {
+          if (isOnlinePayment) {
+            setisOnlinePayment(false);
+          }
+        }}
+        input={inputOnlinePayment}
+        setInput={setInputOnlinePayment}
+        handleSubmit={handleUpdateOnlinePayment}
+      />
       <DialogProduct
         open={isProduct}
         onCloseModal={() => {
@@ -640,6 +693,15 @@ export const Client = () => {
         }}
         data={inputEdit.price}
         handleSubmit={handleUpdatePrice}
+      />
+      <DialogQrCode
+        open={isShowQrDialog}
+        onCloseModal={() => {
+          if (isShowQrDialog) {
+            setIsShowQrDialog(false);
+            setisOnlinePayment(false);
+          }
+        }}
       />
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
@@ -879,6 +941,24 @@ export const Client = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <Button
+              type="button"
+              onClick={() => setisOnlinePayment(true)}
+              disabled={isPendingOnlinePayment}
+              className="bg-white text-black hover:bg-sky-50"
+            >
+              <Landmark className="size-4 ml-1" />
+              Online Payment
+            </Button>
+            <Button
+              type="button"
+              onClick={handleExportExcel}
+              disabled={isPendingExportExcel}
+              className="bg-white text-black hover:bg-sky-50"
+            >
+              <FileSpreadsheet className="size-4 ml-1" />
+              Export Excel
+            </Button>
             <Button
               type="button"
               onClick={handleExportExcel}

@@ -61,6 +61,7 @@ export const Client = () => {
     qty: "1",
     oldQty: "1",
     category: "",
+    new_tag_product: "",
   });
 
   // data search, page
@@ -152,6 +153,7 @@ export const Client = () => {
         oldPrice: dataResponse?.old_price_product ?? "0",
         oldQty: dataResponse?.new_quantity_product ?? "1",
         category: dataResponse?.new_category_product ?? "",
+        new_tag_product: dataResponse?.new_tag_product ?? "",
       });
     }
   }, [dataDetail]);
@@ -230,6 +232,7 @@ export const Client = () => {
       new_price_product: input.price,
       new_quantity_product: input.qty,
       new_category_product: input.category ?? null,
+      new_tag_product: input.new_tag_product ?? null,
     };
     mutateToDisplay(
       { id: dataResDetail?.id, body },
@@ -401,6 +404,7 @@ export const Client = () => {
               qty: "1",
               oldQty: "1",
               category: "",
+              new_tag_product: "",
             });
           }
         }}
