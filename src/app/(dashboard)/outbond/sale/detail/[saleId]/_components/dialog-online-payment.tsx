@@ -71,7 +71,7 @@ const DialogOnlinePayment = ({
               >
                 <option value="">Pilih tipe pembayaran</option>
                 <option value="single_payment">Single Payment</option>
-                <option value="split_payment">Split Payment</option>
+                {/* <option value="split_payment">Split Payment</option> */}
               </select>
             </div>
             <div className="flex w-full gap-2">
