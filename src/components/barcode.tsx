@@ -12,6 +12,7 @@ interface BarcodePrint {
   category: string;
   discount?: string;
   isBundle?: boolean;
+  colorHex?: string;
   cancel?: () => void;
 }
 
@@ -22,6 +23,7 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
   category,
   discount,
   isBundle,
+  colorHex,
   cancel,
 }) => {
   const componentRef = useRef<HTMLDivElement>(null);
@@ -52,6 +54,19 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
               )}
               <div className="border w-[80] py-1 px-2 text-center border-black">
                 <p className="font-bold text-[10px] leading-3 break-all">
+                  {colorHex && (
+                    <span
+                      className="inline-block mr-1"
+                      style={{
+                        display: "inline-block",
+                        width: "12px",
+                        height: "12px",
+                        backgroundColor: colorHex,
+                        borderRadius: "50%",
+                        border: "1px solid #000",
+                      }}
+                    />
+                  )}
                   {category}{" "}
                   {discount && (
                     <span className="whitespace-nowrap">({discount}%)</span>

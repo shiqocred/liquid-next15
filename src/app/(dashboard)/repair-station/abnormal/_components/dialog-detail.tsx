@@ -493,6 +493,7 @@ const DialogDetail = ({
                   newPrice={input.price}
                   oldPrice={input.oldPrice}
                   category={isColorPrice ? color?.name_color : input.category}
+                  colorHex={isColorPrice ? color?.hexa_code_color : undefined}
                 />
               ) : (
                 <div className="w-auto">
