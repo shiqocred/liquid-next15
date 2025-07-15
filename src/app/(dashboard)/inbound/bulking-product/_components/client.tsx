@@ -4,7 +4,9 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronDown,
+  FileDown,
   FileSpreadsheet,
+  Loader2,
   RefreshCcw,
   Save,
 } from "lucide-react";
@@ -30,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { parseAsBoolean, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useUploadBulking } from "../_api/use-upload-bulking";
 import Loading from "@/app/(dashboard)/loading";
+import { useExportTemplate } from "../_api/use-export-template";
 
 interface UploadedFileProps {
   file: File;
@@ -53,6 +56,8 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
   const { mutate } = useUploadBulking();
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportTemplate();
 
   // state data
   const [selectedFile, setSelectedFile] = useState<UploadedFileProps | null>(
@@ -115,6 +120,19 @@ export const Client = () => {
     maxFiles: 1, // Limit file upload to only one
   });
 
+  // handle export
+  const handleExport = async () => {
+    mutateExport(undefined, {
+      onSuccess: (res: any) => {
+        const link = document.createElement("a");
+        link.href = res.data.data.resource;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
+    });
+  };
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -161,8 +179,20 @@ export const Client = () => {
           {!selectedFile ? (
             <>
               <div className="w-full flex items-center justify-between mb-4">
-                <div className="flex gap-3 items-center">
-                  <h2 className="text-xl font-bold">Bulking Product</h2>
+                <div className="w-full flex items-center justify-between mb-4">
+                  <div className="flex gap-3 items-center">
+                    <h2 className="text-xl font-bold">Bulking Product</h2>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={"liquid"}
+                    className="font-semibold flex items-center gap-2"
+                    onClick={() => handleExport()}
+                    disabled={isPendingExport}
+                  >
+                    <FileDown className="w-4 h-4" />
+                    Export Template
+                  </Button>
                 </div>
               </div>
               <div
@@ -260,6 +290,7 @@ export const Client = () => {
                     </Button>
                   )}
                 </div>
+
                 <div className="flex items-center gap-3">
                   <button
                     className="flex text-sm items-center text-gray-500 hover:underline"
