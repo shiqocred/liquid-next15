@@ -183,14 +183,19 @@ export const Client = () => {
                   <div className="flex gap-3 items-center">
                     <h2 className="text-xl font-bold">Bulking Product</h2>
                   </div>
+
                   <Button
                     type="button"
                     variant={"liquid"}
                     className="font-semibold flex items-center gap-2"
-                    onClick={() => handleExport()}
+                    onClick={handleExport}
                     disabled={isPendingExport}
                   >
-                    <FileDown className="w-4 h-4" />
+                    {isPendingExport ? (
+                      <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+                    ) : (
+                      <FileDown className="w-4 h-4" />
+                    )}
                     Export Template
                   </Button>
                 </div>
