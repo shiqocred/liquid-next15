@@ -463,7 +463,7 @@ export const Client = () => {
         : "0"
     );
     body.append("total_product_palet", dataList?.length.toString());
-    body.append("category_id", input.category.id);
+    body.append("category_palet_id", input.category.id);
     body.append("category_palet", input.category.name);
     body.append("description", input.description);
     body.append("is_active", "1");
@@ -472,14 +472,9 @@ export const Client = () => {
     body.append("product_status_id", input.status.id);
     body.append("discount", input.discount);
     body.append("is_sale", "0");
-    body.append(
-      "product_brand_ids",
-      `${
-        input.brand.length > 0
-          ? input.brand.map((item) => item.id.toString()).join(",")
-          : ""
-      }`
-    );
+    input.brand.forEach((item) => {
+      body.append("product_brand_ids[]", item.id.toString());
+    });
     body.append("_method", "PUT");
     mutateUpdate(
       { id: paletId, body },
@@ -1133,9 +1128,7 @@ export const Client = () => {
                       setIsOpenCondition(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.title}
-                      </div>
+                      <div className="w-full font-medium">{item.title}</div>
                     )}
                   />
                 </div>
@@ -1161,9 +1154,7 @@ export const Client = () => {
                       setIsOpenStatus(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.status}
-                      </div>
+                      <div className="w-full font-medium">{item.status}</div>
                     )}
                   />
                 </div>
