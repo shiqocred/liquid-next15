@@ -2,14 +2,12 @@
 
 import {
   ArrowLeft,
-  ArrowRightCircle,
   ArrowUpRightFromSquare,
   ChevronDown,
   ChevronDownCircle,
   Circle,
   Edit3,
   FileDown,
-  ListFilter,
   Loader2,
   Percent,
   Plus,
@@ -66,7 +64,6 @@ import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdate } from "../_api/use-update";
 import { Badge } from "@/components/ui/badge";
-import { useGetSelect } from "../_api/use-get-select";
 import {
   Dialog,
   DialogContent,
@@ -88,8 +85,6 @@ import {
 import { useExportPaletExcel } from "../_api/use-export-palet-excel";
 import { RichInput } from "@/components/ui/rich-input";
 import { parseAsString, useQueryState } from "nuqs";
-import { DialogFiltered } from "./dialog-filtered";
-import { useAddProductFilterToBulky } from "../_api/use-add-product-filter-to-bulky";
 import { useGetCategoryBulky } from "../_api/use-get-category-bulky";
 import { useGetWarehouseBulky } from "../_api/use-get-warehouse-bulky";
 import { useGetBrandsBulky } from "../_api/use-get-brands-bulky";
@@ -185,10 +180,6 @@ export const Client = () => {
 
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
-  const {
-    mutate: mutateAddProductFilterToBulky,
-    isPending: isPendingAddProductFilterToBulky,
-  } = useAddProductFilterToBulky();
 
   const {
     mutate: mutateDeleteImage,
@@ -221,12 +212,6 @@ export const Client = () => {
     isError: isErrorProduct,
     isSuccess: isSuccessProduct,
   } = useGetListProduct({ p: pageProduct, q: searchProductValue });
-
-  const {
-    data: dataSelect,
-    error: errorSelect,
-    isError: isErrorSelect,
-  } = useGetSelect();
 
   const {
     data: dataSelectCategories,
@@ -371,19 +356,6 @@ export const Client = () => {
     if (!ok) return;
 
     mutateRemoveProduct(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["list-detail-palet", paletId],
-          });
-        },
-      }
-    );
-  };
-
-  const handleAddFilterProductBulky = async (id: any) => {
-    mutateAddProductFilterToBulky(
       { id },
       {
         onSuccess: () => {
@@ -685,26 +657,6 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
-
-          <TooltipProviderPage value={"Filter"}>
-            <Button
-              className="w-9 px-0 items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
-              variant={"outline"}
-              type="button"
-              disabled={
-                isPendingRemoveProduct || isPendingAddProductFilterToBulky
-              }
-              onClick={() => {
-                handleAddFilterProductBulky(row.original.id);
-              }}
-            >
-              {isPendingAddProductFilterToBulky ? (
-                <Loader2 className="w-4 h-4" />
-              ) : (
-                <ListFilter className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
         </div>
       ),
     },
@@ -791,21 +743,6 @@ export const Client = () => {
         }}
         open={isOpen === "pdf"}
         file={input.pdf}
-      />
-      <DialogFiltered
-        open={isOpen === "filtered"}
-        onOpenChange={() => {
-          if (isOpen === "filtered") {
-            setIsOpen("");
-          }
-        }}
-        paletId={
-          typeof paletId === "string"
-            ? paletId
-            : Array.isArray(paletId)
-            ? paletId[0] ?? ""
-            : ""
-        }
       />
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
@@ -1439,13 +1376,6 @@ export const Client = () => {
               >
                 <Plus className="size-4 mr-1" />
                 Add Product
-              </Button>
-              <Button
-                onClick={() => setIsOpen("filtered")}
-                className="bg-sky-400 hover:bg-sky-400/80 text-black"
-              >
-                Filtered Products
-                <ArrowRightCircle className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>

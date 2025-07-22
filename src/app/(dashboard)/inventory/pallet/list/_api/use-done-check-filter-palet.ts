@@ -7,14 +7,14 @@ import { getCookie } from "cookies-next/client";
 
 type Error = AxiosError;
 
-export const useDoneCheckProductStaging = () => {
+export const useDoneCheckFilterPalet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, any>({
     mutationFn: async () => {
       const res = await axios.post(
-        `${baseUrl}/staging_products`,
+        `${baseUrl}/bulky-filter-to-approve`,
         {},
         {
           headers: {
@@ -25,17 +25,17 @@ export const useDoneCheckProductStaging = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully checked all");
+      toast.success("Palet successfully checked all");
       queryClient.invalidateQueries({
-        queryKey: ["list-filter-staging-product"],
+        queryKey: ["list-filter-to-bulky"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to check all`);
-        console.log("ERROR_DONE_CHECK_AL_PRODUCT_INPUT:", err);
+        toast.error(`ERROR ${err?.status}: Palet failed to check all`);
+        console.log("ERROR_DONE_CHECK_ALL_PALET_INPUT:", err);
       }
     },
   });

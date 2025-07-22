@@ -12,6 +12,7 @@ import { ArrowUpRight, CheckCircle2, Loader2, XCircle } from "lucide-react";
 
 interface ColumnNotificationProps {
   metaPage: MetaPageProps;
+  setUserId: (value: string | null) => Promise<URLSearchParams>;
   setSaleId: (value: string | null) => Promise<URLSearchParams>;
   setOpenDialog: (value: string | null) => Promise<URLSearchParams>;
   isLoading: boolean;
@@ -23,13 +24,34 @@ interface ColumnSalesProps {
   handleRejectProduct: (id: string) => void;
 }
 
-const BadgeStatus = ({ item, setSaleId, setOpenDialog, isLoading }: any) => {
+const BadgeStatus = ({
+  item,
+  setSaleId,
+  setUserId,
+  setOpenDialog,
+  isLoading,
+}: any) => {
   if (item.external_id && item.approved === "0") {
     return (
       <Button
         onClick={(e) => {
           e.preventDefault();
           setSaleId(item.external_id);
+          setOpenDialog(item.status);
+        }}
+        disabled={isLoading}
+        className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1"
+      >
+        <p className="text-xs">Check</p>
+        {isLoading ? <Loader2 className="animate-spin" /> : <ArrowUpRight />}
+      </Button>
+    );
+  } else if (item.user_id && item.approved === "0" && item.status === "palet") {
+    return (
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          setUserId(item.user_id);
           setOpenDialog(item.status);
         }}
         disabled={isLoading}
@@ -59,6 +81,7 @@ const BadgeStatus = ({ item, setSaleId, setOpenDialog, isLoading }: any) => {
 export const columnNotification = ({
   metaPage,
   setSaleId,
+  setUserId,
   setOpenDialog,
   isLoading,
 }: ColumnNotificationProps): ColumnDef<any>[] => [
@@ -90,7 +113,9 @@ export const columnNotification = ({
             row.original.status.toLowerCase() === "inventory" &&
               "bg-amber-700 hover:bg-amber-700 text-white",
             row.original.status.toLowerCase() === "staging" &&
-              "bg-rose-300 hover:bg-rose-300"
+              "bg-rose-300 hover:bg-rose-300",
+            row.original.status.toLowerCase() === "palet" &&
+              "bg-purple-500 hover:bg-purple-500 text-white"
           )}
         >
           {row.original.status}
@@ -119,6 +144,7 @@ export const columnNotification = ({
         <BadgeStatus
           item={row.original}
           setSaleId={setSaleId}
+          setUserId={setUserId}
           setOpenDialog={setOpenDialog}
           isLoading={isLoading}
         />
@@ -150,7 +176,7 @@ export const columnSales = ({
     header: "Product Name",
     cell: ({ row }) => (
       <div className="max-w-[500px] break-all">
-        {row.original.product_name_sale}
+        {row.original?.product_name_sale}
       </div>
     ),
   },
@@ -208,6 +234,50 @@ export const columnSales = ({
             </Badge>
           </div>
         )}
+      </div>
+    ),
+  },
+];
+
+export const columnPalet = ({
+}: ColumnSalesProps): ColumnDef<any>[] => [
+  {
+    header: () => <div className="text-center">No</div>,
+    id: "id",
+    cell: ({ row }) => (
+      <div className="text-center tabular-nums">
+        {(1 + row.index).toLocaleString()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "palet_barcode",
+    header: "Barcode",
+  },
+  {
+    accessorKey: "name_palet",
+    header: "Palet Name",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">
+        {row.original?.name_palet}
+      </div>
+    ),
+  },
+   {
+    accessorKey: "total_product_palet",
+    header: "Total Product",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">
+        {row.original?.total_product_palet}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "total_price_palet",
+    header: "Total Price",
+    cell: ({ row }) => (
+      <div className="tabular-nums">
+        {formatRupiah(row.original.total_price_palet)}
       </div>
     ),
   },

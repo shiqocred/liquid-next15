@@ -16,17 +16,15 @@ import { useConfirm } from "@/hooks/use-confirm";
 import Pagination from "@/components/pagination";
 import { usePagination } from "@/lib/pagination";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { useDoneCheckProductStaging } from "../_api/use-done-check-product-staging";
-import { useGetListFilterProductToBulky } from "../_api/use-get-list-filter-product-to-bulky";
-import { columnFilteredProductToBulky } from "./columns";
-import { useRemoveFilterProductBulky } from "../_api/use-remove-filter-product-bulky";
+import { columnFilteredToBulky } from "./columns";
+import { useGetListFilterToBulky } from "../_api/use-get-list-filter-to-bulky";
+import { useRemoveFilterBulky } from "../_api/use-remove-filter-bulky";
+import { useDoneCheckFilterPalet } from "../_api/use-done-check-filter-palet";
 
 export const DialogFiltered = ({
-  paletId,
   open,
   onOpenChange,
 }: {
-  paletId: string;
   open: boolean;
   onOpenChange: () => void;
 }) => {
@@ -36,15 +34,14 @@ export const DialogFiltered = ({
     "liquid"
   );
   const { mutate: mutateRemoveFilter, isPending: isPendingRemoveFilter } =
-    useRemoveFilterProductBulky();
+    useRemoveFilterBulky();
   const { mutate: mutateDoneCheckAll, isPending: isPendingDoneCheckAll } =
-    useDoneCheckProductStaging();
+    useDoneCheckFilterPalet();
 
   const { page, metaPage, setPage, setPagination } = usePagination("pFilter");
 
   const { data, refetch, error, isError, isSuccess, isRefetching, isPending } =
-    useGetListFilterProductToBulky({
-      id: paletId,
+    useGetListFilterToBulky({
       p: page,
     });
 
@@ -57,10 +54,6 @@ export const DialogFiltered = ({
 
   const dataTotalOldPrice: any = useMemo(() => {
     return data?.data.data.resource?.oldPrice;
-  }, [data]);
-
-const dataTotalNewPrice: any = useMemo(() => {
-    return data?.data.data.resource?.newPrice;
   }, [data]);
 
   useEffect(() => {
@@ -111,12 +104,6 @@ const dataTotalNewPrice: any = useMemo(() => {
                 {formatRupiah(dataTotalOldPrice)}
               </span>
             </div>
-            <div className="h-9 px-4 flex-none flex items-center text-sm rounded-md justify-center border gap-1 border-sky-500 bg-sky-100">
-              Total New Price:{" "}
-              <span className="font-semibold">
-                {formatRupiah(dataTotalNewPrice)}
-              </span>
-            </div>
             <TooltipProviderPage value={"Reload Data"}>
               <Button
                 onClick={() => refetch()}
@@ -147,7 +134,7 @@ const dataTotalNewPrice: any = useMemo(() => {
           </div>
           <DataTable
             isSticky
-            columns={columnFilteredProductToBulky({
+            columns={columnFilteredToBulky({
               metaPage,
               isLoading,
               handleRemoveFilter,

@@ -1,17 +1,8 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
-import {
-  Drill,
-  Loader2,
-  LucideIcon,
-  PlusCircle,
-  ReceiptText,
-  XCircle,
-} from "lucide-react";
+import { Loader2, LucideIcon, XCircle } from "lucide-react";
 import { MouseEvent } from "react";
 
 const ButtonAction = ({
@@ -56,8 +47,7 @@ const ButtonAction = ({
   );
 };
 
-export const columnFilteredProductToBulky = ({
-  metaPage,
+export const columnFilteredToBulky = ({
   isLoading,
   handleRemoveFilter,
 }: any): ColumnDef<any>[] => [
@@ -66,42 +56,52 @@ export const columnFilteredProductToBulky = ({
     id: "id",
     cell: ({ row }) => (
       <div className="text-center tabular-nums">
-          {(1 + row.index).toLocaleString()}
+        {(1 + row.index).toLocaleString()}
       </div>
     ),
   },
   {
-    accessorKey: "new_barcode_product||old_barcode_product",
+    accessorKey: "palet_barcod",
     header: "Barcode",
-    cell: ({ row }) =>
-      row.original.new_barcode_product ??
-      row.original.old_barcode_product ??
-      "-",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">
+        {row.original.palet_barcode}
+      </div>
+    ),
   },
   {
-    accessorKey: "new_name_product",
+    accessorKey: "name_palet",
     header: "Product Name",
     cell: ({ row }) => (
       <div className="max-w-[500px] break-all">
-        {row.original.new_name_product}
+        {row.original.name_palet}
+      </div>
+    ),
+  },
+    {
+    accessorKey: "category_palet",
+    header: "Category",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">
+        {row.original.category_palet}
       </div>
     ),
   },
    {
-    accessorKey: "old_price_product",
-    header: "Old Price",
+    accessorKey: "total_product_palet",
+    header: "Total Product",
     cell: ({ row }) => (
       <div className="max-w-[500px] break-all">
-        {formatRupiah(row.original.old_price_product)}
+        {row.original.total_product_palet}
       </div>
     ),
   },
-   {
-    accessorKey: "new_price_product",
-    header: "New Price",
+  {
+    accessorKey: "total_price_palet",
+    header: "Total Price",
     cell: ({ row }) => (
       <div className="max-w-[500px] break-all">
-        {formatRupiah(row.original.new_price_product)}
+        {formatRupiah(row.original.total_price_palet)}
       </div>
     ),
   },

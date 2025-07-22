@@ -6,20 +6,19 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: any;
+  id: string;
 };
 
 type Error = AxiosError;
 
-export const useAddProductFilterToBulky = () => {
+export const useRemoveFilterBulky = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.post(
-        `${baseUrl}/palet-product/filter-to-bulky/${id}`,
-        {},
+      const res = await axios.delete(
+        `${baseUrl}/bulky-filter-palet/${id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -29,17 +28,18 @@ export const useAddProductFilterToBulky = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Filter To Bulky successfully");
+      toast.success("Product successfully removed to filter");
+      queryClient.invalidateQueries({ queryKey: ["list-palet"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-product-detail-palet"],
+        queryKey: ["list-filter-to-bulky"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Filter failed to create`);
-        console.log("ERROR_CREATE_FILTER:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to remove to filter`);
+        console.log("ERROR_REMOVE_FILTER_PRODUCT:", err);
       }
     },
   });

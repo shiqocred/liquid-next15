@@ -42,6 +42,8 @@ import { useGetDetailApprove } from "../_api/use-get-detail-approve";
 import { useGetListNotification } from "../_api/use-get-list-notification";
 import { usePagination } from "@/lib/pagination";
 import { DialogDetailProduct } from "./dialogs/dialog-detail-product";
+import { DialogDetailPalet } from "./dialogs/dialog-detail-palet";
+import { useGetDetailApprovePalet } from "../_api/use-get-detail-approve-palet";
 
 export const Client = () => {
   const [isStatus, setIsStatus] = useState(false);
@@ -61,6 +63,11 @@ export const Client = () => {
     parseAsString.withDefault("")
   );
 
+  const [userId, setUserId] = useQueryState(
+    "userId",
+    parseAsString.withDefault("")
+  );
+
   const { page, setPage, metaPage, setPagination } = usePagination();
 
   // get data utama
@@ -68,6 +75,7 @@ export const Client = () => {
     useGetListNotification({ p: page, q: status });
 
   const dataDetail = useGetDetailApprove({ id: saleId, status: openDialog });
+  const dataDetailPalet = useGetDetailApprovePalet({ id: userId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -143,6 +151,19 @@ export const Client = () => {
         openDialog={openDialog}
         setOpenDialog={setOpenDialog}
       />
+      <DialogDetailPalet
+        open={openDialog === "palet"}
+        onCloseModal={() => {
+          if (openDialog === "palet") {
+            setOpenDialog("");
+            setUserId("");
+          }
+        }}
+        userId={userId}
+        baseData={dataDetailPalet}
+        openDialog={openDialog}
+        setOpenDialog={setOpenDialog}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -195,7 +216,9 @@ export const Client = () => {
                             status === "inventory" &&
                               "bg-amber-700 hover:bg-amber-700 text-white",
                             status === "staging" &&
-                              "bg-rose-300 hover:bg-rose-300"
+                              "bg-rose-300 hover:bg-rose-300",
+                            status === "palet" &&
+                              "bg-purple-500 hover:bg-purple-500 text-white"
                           )}
                         >
                           {status}
@@ -287,7 +310,7 @@ export const Client = () => {
                             />
                             Inventory
                           </CommandItem>
-                           <CommandItem
+                          <CommandItem
                             onSelect={() => {
                               setStatus("staging");
                               setIsStatus(false);
@@ -302,6 +325,22 @@ export const Client = () => {
                               }}
                             />
                             Staging
+                          </CommandItem>
+                          <CommandItem
+                            onSelect={() => {
+                              setStatus("palet");
+                              setIsStatus(false);
+                            }}
+                          >
+                            <Checkbox
+                              className="w-4 h-4 mr-2"
+                              checked={status === "palet"}
+                              onCheckedChange={() => {
+                                setStatus("palet");
+                                setIsStatus(false);
+                              }}
+                            />
+                            Palet
                           </CommandItem>
                         </CommandList>
                       </CommandGroup>
@@ -326,6 +365,7 @@ export const Client = () => {
               metaPage,
               setSaleId,
               setOpenDialog,
+              setUserId,
               isLoading: dataDetail.isLoading,
             })}
             data={dataList ?? []}
