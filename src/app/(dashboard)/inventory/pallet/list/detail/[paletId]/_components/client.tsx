@@ -64,7 +64,6 @@ import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdate } from "../_api/use-update";
 import { Badge } from "@/components/ui/badge";
-import { useGetSelect } from "../_api/use-get-select";
 import {
   Dialog,
   DialogContent,
@@ -85,6 +84,12 @@ import {
 } from "@/components/ui/popover";
 import { useExportPaletExcel } from "../_api/use-export-palet-excel";
 import { RichInput } from "@/components/ui/rich-input";
+import { parseAsString, useQueryState } from "nuqs";
+import { useGetCategoryBulky } from "../_api/use-get-category-bulky";
+import { useGetWarehouseBulky } from "../_api/use-get-warehouse-bulky";
+import { useGetBrandsBulky } from "../_api/use-get-brands-bulky";
+import { useGetConditionsBulky } from "../_api/use-get-conditions-bulky";
+import { useGetStatusBulky } from "../_api/use-get-statuses-bulky";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -107,15 +112,18 @@ export const Client = () => {
 
   const queryClient = useQueryClient();
 
+  const [isOpen, setIsOpen] = useQueryState(
+    "dialog",
+    parseAsString.withDefault("")
+  );
+
   const [isOpenCategory, setIsOpenCategory] = useState(false);
   const [isOpenWarehouse, setIsOpenWarehouse] = useState(false);
   const [isOpenStatus, setIsOpenStatus] = useState(false);
   const [isOpenCondition, setIsOpenCondition] = useState(false);
   const [isOpenBrand, setIsOpenBrand] = useState(false);
-  const [isProduct, setIsProduct] = useState(false);
   const [isOpenImage, setIsOpenImage] = useState(false);
   const [isOpenUpload, setIsOpenUpload] = useState(false);
-  const [isOpenPDF, setIsOpenPDF] = useState(false);
 
   const [urlDialog, setUrlDialog] = useState("/images/liquid8_og_800x800.png");
   const [input, setInput] = useState({
@@ -132,9 +140,7 @@ export const Client = () => {
     discount: "0",
     totalNewPrice: "0",
   });
-  const [barcodeOpen, setBarcodeOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState("Select file type");
 
   // search, debounce, paginate strat ----------------------------------------------------------------
@@ -208,10 +214,34 @@ export const Client = () => {
   } = useGetListProduct({ p: pageProduct, q: searchProductValue });
 
   const {
-    data: dataSelect,
-    error: errorSelect,
-    isError: isErrorSelect,
-  } = useGetSelect();
+    data: dataSelectCategories,
+    error: errorSelectCategories,
+    isError: isErrorSelectCategories,
+  } = useGetCategoryBulky();
+
+  const {
+    data: dataSelectWarehouses,
+    error: errorSelectWarehouses,
+    isError: isErrorSelectWarehouses,
+  } = useGetWarehouseBulky();
+
+  const {
+    data: dataSelectBrands,
+    error: errorSelectBrands,
+    isError: isErrorSelectBrands,
+  } = useGetBrandsBulky();
+
+  const {
+    data: dataSelectConditions,
+    error: errorSelectConditions,
+    isError: isErrorSelectConditions,
+  } = useGetConditionsBulky();
+
+  const {
+    data: dataSelectStatus,
+    error: errorSelectStatus,
+    isError: isErrorSelectStatus,
+  } = useGetStatusBulky();
 
   // query end ----------------------------------------------------------------
 
@@ -222,24 +252,24 @@ export const Client = () => {
   }, [data]);
 
   const dataListCategories: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.categories ?? [];
-  }, [dataSelect]);
+    return dataSelectCategories?.data.data ?? [];
+  }, [dataSelectCategories]);
 
   const dataListWarehouses: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.warehouses ?? [];
-  }, [dataSelect]);
+    return dataSelectWarehouses?.data.data ?? [];
+  }, [dataSelectWarehouses]);
 
   const dataListProductBrands: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.product_brands ?? [];
-  }, [dataSelect]);
+    return dataSelectBrands?.data.data ?? [];
+  }, [dataSelectBrands]);
 
   const dataListProductConditions: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.product_conditions ?? [];
-  }, [dataSelect]);
+    return dataSelectConditions?.data.data ?? [];
+  }, [dataSelectConditions]);
 
   const dataListProductStatus: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.product_status ?? [];
-  }, [dataSelect]);
+    return dataSelectStatus?.data.data ?? [];
+  }, [dataSelectStatus]);
 
   const dataListProduct: any[] = useMemo(() => {
     return dataProduct?.data.data.resource.data;
@@ -274,9 +304,9 @@ export const Client = () => {
         name: dataResource?.product_status_name ?? "",
       },
       brand:
-        dataResource?.palet_brands.map((i: any) => ({
-          id: i.brand_id.toString() ?? "",
-          name: i.palet_brand_name ?? "",
+        dataResource?.brands?.map((i: any) => ({
+          id: i.id?.toString() ?? "",
+          name: i.brand_name ?? "",
         })) ?? [],
       description: dataResource?.description ?? "",
       total: Math.round(dataResource?.total_harga_lama).toString() ?? "0",
@@ -405,7 +435,7 @@ export const Client = () => {
         : "0"
     );
     body.append("total_product_palet", dataList?.length.toString());
-    body.append("category_id", input.category.id);
+    body.append("category_palet_id", input.category.id);
     body.append("category_palet", input.category.name);
     body.append("description", input.description);
     body.append("is_active", "1");
@@ -414,14 +444,9 @@ export const Client = () => {
     body.append("product_status_id", input.status.id);
     body.append("discount", input.discount);
     body.append("is_sale", "0");
-    body.append(
-      "product_brand_ids",
-      `${
-        input.brand.length > 0
-          ? input.brand.map((item) => item.id.toString()).join(",")
-          : ""
-      }`
-    );
+    input.brand.forEach((item) => {
+      body.append("product_brand_ids[]", item.id.toString());
+    });
     body.append("_method", "PUT");
     mutateUpdate(
       { id: paletId, body },
@@ -482,22 +507,6 @@ export const Client = () => {
 
   // handling action end ----------------------------------------------------------------
 
-  // handling close strat ----------------------------------------------------------------
-
-  const handleCloseProduct = () => {
-    setIsProduct(false);
-    setProductSearch("");
-    setPageProduct(1);
-    setMetaPageProduct({
-      from: 0,
-      last: 0,
-      perPage: 0,
-      total: 0,
-    });
-  };
-
-  // handling close end ----------------------------------------------------------------
-
   useEffect(() => {
     alertError({
       isError,
@@ -521,13 +530,53 @@ export const Client = () => {
 
   useEffect(() => {
     alertError({
-      isError: isErrorSelect,
-      error: errorSelect as AxiosError,
-      data: "Select Palet",
+      isError: isErrorSelectCategories,
+      error: errorSelectCategories as AxiosError,
+      data: "Select Categories",
       action: "get data",
       method: "GET",
     });
-  }, [isErrorSelect, errorSelect]);
+  }, [isErrorSelectCategories, errorSelectCategories]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectWarehouses,
+      error: errorSelectWarehouses as AxiosError,
+      data: "Select Warehouses",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectWarehouses, errorSelectWarehouses]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectConditions,
+      error: errorSelectConditions as AxiosError,
+      data: "Select Conditions",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectConditions, errorSelectConditions]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectStatus,
+      error: errorSelectStatus as AxiosError,
+      data: "Select Status",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectStatus, errorSelectStatus]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectBrands,
+      error: errorSelectBrands as AxiosError,
+      data: "Select Brands",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectBrands, errorSelectBrands]);
 
   useEffect(() => {
     if (isNaN(parseFloat(input.discount))) {
@@ -639,28 +688,28 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
       <DialogBarcode
         onCloseModal={() => {
-          if (barcodeOpen) {
-            setBarcodeOpen(false);
+          if (isOpen === "barcode") {
+            setIsOpen("");
           }
         }}
-        open={barcodeOpen}
+        open={isOpen === "barcode"}
         oldPrice={input.total ?? "0"}
         barcode={data?.data.data.resource.palet_barcode ?? ""}
         category={input.name ?? ""}
         newPrice={input.totalNew ?? "0"}
         handleCancel={() => {
-          setBarcodeOpen(false);
+          setIsOpen("");
         }}
       />
       <DeleteImageDialog />
       <DeleteProductDialog />
       <DialogProduct
-        open={isProduct}
         onCloseModal={() => {
-          if (isProduct) {
-            handleCloseProduct();
+          if (isOpen === "product") {
+            setIsOpen("");
           }
         }}
+        open={isOpen === "product"}
         search={productSearch}
         setSearch={setProductSearch}
         refetch={refetchProduct}
@@ -687,12 +736,12 @@ export const Client = () => {
         isSuccess={isSuccessUpdateImage}
       />
       <DialogPDF
-        open={isOpenPDF}
         onCloseModal={() => {
-          if (isOpenPDF) {
-            setIsOpenPDF(false);
+          if (isOpen === "pdf") {
+            setIsOpen("");
           }
         }}
+        open={isOpen === "pdf"}
         file={input.pdf}
       />
       <div className="flex flex-col gap-4 w-full">
@@ -746,13 +795,18 @@ export const Client = () => {
                     <FileDown className="size-4 mr-1" />
                     {fileType.toUpperCase()}{" "}
                   </div>
-                  <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
+                  <Popover
+                    open={isOpen === "export"}
+                    onOpenChange={(open) => setIsOpen(open ? "export" : "")}
+                    modal={false}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         className="flex-none border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 rounded text-blue-500"
                         variant={"outline"}
                         size={"icon"}
                         disabled={isPendingExportExcel}
+                        onClick={() => setIsOpen("export")}
                       >
                         <ChevronDown className="size-4" />
                       </Button>
@@ -764,7 +818,7 @@ export const Client = () => {
                             <CommandItem
                               onSelect={() => {
                                 setFileType("excel");
-                                setIsOpen(false);
+                                setIsOpen("");
                               }}
                             >
                               Excel
@@ -772,7 +826,7 @@ export const Client = () => {
                             <CommandItem
                               onSelect={() => {
                                 setFileType("pdf");
-                                setIsOpen(false);
+                                setIsOpen("");
                               }}
                             >
                               PDF
@@ -787,7 +841,7 @@ export const Client = () => {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    setBarcodeOpen(true);
+                    setIsOpen("barcode");
                   }}
                   className="bg-sky-300 hover:bg-sky-400 text-black"
                 >
@@ -937,15 +991,13 @@ export const Client = () => {
                         ...prev,
                         category: {
                           id: item.id,
-                          name: item.name_category,
+                          name: item.name,
                         },
                       }));
                       setIsOpenCategory(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.name_category}
-                      </div>
+                      <div className="w-full font-medium">{item.name}</div>
                     )}
                   />
                 </div>
@@ -967,7 +1019,7 @@ export const Client = () => {
                         ...prev,
                         warehouse: {
                           id: item.id,
-                          name: item.nama,
+                          name: item.name,
                         },
                       }));
                       setIsOpenWarehouse(false);
@@ -975,17 +1027,15 @@ export const Client = () => {
                     itemSelect={(item: any) => (
                       <div className="w-full flex flex-col gap-1">
                         <div className="w-full font-medium capitalize">
-                          {item.nama}
+                          {item.name}
                         </div>
                         <Separator className="bg-gray-500" />
                         <p className="text-xs text-start w-full text-gray-500">
-                          Lat. {item.latitude} | Long. {item.longitude}
+                          {item.address}
                         </p>
                         <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {item.alamat}
-                        </p>
-                        <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {item.kecamatan}, {item.kabupaten}, {item.provinsi}
+                          {item.location.sub_district}, {item.location.district}
+                          , {item.location.city}, {item.location.province}{" "}
                         </p>
                       </div>
                     )}
@@ -1009,15 +1059,13 @@ export const Client = () => {
                         ...prev,
                         condition: {
                           id: item.id,
-                          name: item.condition_name,
+                          name: item.title,
                         },
                       }));
                       setIsOpenCondition(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.condition_name}
-                      </div>
+                      <div className="w-full font-medium">{item.title}</div>
                     )}
                   />
                 </div>
@@ -1037,15 +1085,13 @@ export const Client = () => {
                         ...prev,
                         status: {
                           id: item.id,
-                          name: item.status_name,
+                          name: item.status,
                         },
                       }));
                       setIsOpenStatus(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.status_name}
-                      </div>
+                      <div className="w-full font-medium">{item.status}</div>
                     )}
                   />
                 </div>
@@ -1053,7 +1099,7 @@ export const Client = () => {
                   <Label>File PDF</Label>
                   <Button
                     type="button"
-                    onClick={() => setIsOpenPDF(true)}
+                    onClick={() => setIsOpen("pdf")}
                     className="flex pl-4 items-center justify-start [&_svg]:size-3 w-full hover:bg-transparent hover:underline hover:underline-offset-2 disabled:opacity-100 disabled:pointer-events-auto border border-sky-400/80 hover:border-sky-400"
                     variant={"ghost"}
                   >
@@ -1184,7 +1230,7 @@ export const Client = () => {
                                           ...prev.brand,
                                           {
                                             id: item.id,
-                                            name: item.brand_name,
+                                            name: item.name,
                                           },
                                         ],
                                       }));
@@ -1195,7 +1241,7 @@ export const Client = () => {
                                       <Circle className="fill-black size-2.5 group-hover:flex hidden" />
                                     </div>
                                     <div className="w-full font-medium">
-                                      {item.brand_name}
+                                      {item.name}
                                     </div>
                                   </CommandItem>
                                 ))
@@ -1325,7 +1371,7 @@ export const Client = () => {
                 disabled={
                   isPendingUpdate || isPendingAddProduct || isPendingExport
                 }
-                onClick={() => setIsProduct(true)}
+                onClick={() => setIsOpen("product")}
                 className="z-10"
               >
                 <Plus className="size-4 mr-1" />

@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ArrowRightCircle,
+  ListFilter,
   Loader2,
   PackageOpen,
   PlusCircle,
@@ -18,7 +20,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
@@ -33,9 +35,18 @@ import Link from "next/link";
 import { useUnbundlePalet } from "../_api/use-unbundle-palet";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDeletePalet } from "../_api/use-delete-palet";
+import { useQueryClient } from "@tanstack/react-query";
+import { DialogFiltered } from "./dialog-filtered";
+import { useAddFilterToBulky } from "../_api/use-add-filter-to-bulky";
 
 export const Client = () => {
   // data search, page
+  const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useQueryState(
+    "dialog",
+    parseAsString.withDefault("")
+  );
+
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -60,6 +71,11 @@ export const Client = () => {
   const { mutate: mutateUnbundle, isPending: isPendingUnbundle } =
     useUnbundlePalet();
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeletePalet();
+ 
+  const {
+    mutate: mutateAddFilterToBulky,
+    isPending: isPendingAddFilterToBulky,
+  } = useAddFilterToBulky();
 
   // get data utama
   const {
@@ -116,6 +132,19 @@ export const Client = () => {
     if (!ok) return;
 
     mutateDelete({ id });
+  };
+
+  const handleAddFilterBulky = async (id: any) => {
+    mutateAddFilterToBulky(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["list-palet"],
+          });
+        },
+      }
+    );
   };
 
   // column data
@@ -210,6 +239,25 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={"Filter"}>
+            <Button
+              className="w-9 px-0 items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
+              variant={"outline"}
+              type="button"
+              disabled={
+                isPendingAddFilterToBulky
+              }
+              onClick={() => {
+                handleAddFilterBulky(row.original.id);
+              }}
+            >
+              {isPendingAddFilterToBulky ? (
+                <Loader2 className="w-4 h-4" />
+              ) : (
+                <ListFilter className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -238,6 +286,14 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <UnbundleDialog />
       <DeleteDialog />
+      <DialogFiltered
+        open={isOpen === "filtered"}
+        onOpenChange={() => {
+          if (isOpen === "filtered") {
+            setIsOpen("");
+          }
+        }}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -282,6 +338,13 @@ export const Client = () => {
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                     Add Palet
                   </Link>
+                </Button>
+                <Button
+                  onClick={() => setIsOpen("filtered")}
+                  className="bg-sky-400 hover:bg-sky-400/80 text-black"
+                >
+                  Filtered Products
+                  <ArrowRightCircle className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </div>
