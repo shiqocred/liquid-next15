@@ -36,7 +36,6 @@ export const DialogDetailPalet = ({
   openDialog,
   setOpenDialog,
 }: DialogDetailPaletProps) => {
-  const id = userId;
   const queryClient = useQueryClient();
   const [AprvDocumentDialog, confirmAprvDocument] = useConfirm(
     "Approve Document",
