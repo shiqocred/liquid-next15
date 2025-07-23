@@ -22,12 +22,12 @@ import {
 import React, { useEffect, useMemo } from "react";
 import { columnSales } from "../columns";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useApproveDocument } from "../../_api/use-approve-document";
 import { useApproveProduct } from "../../_api/use-approve-product";
-import { useRejectDocument } from "../../_api/use-reject-document";
 import { useRejectProduct } from "../../_api/use-reject-product";
 import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useRejectDocument } from "../../_api/use-reject-document";
+import { useApproveDocument } from "../../_api/use-approve-document";
 
 interface DialogDetailSaleProps {
   open: boolean;

@@ -11,15 +11,15 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useRejectDocument = () => {
+export const useRejectDocumentPalet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.put(
-        `${baseUrl}/reject-document/${id}`,
-        {},
+      const res = await axios.post(
+        `${baseUrl}/rejectSyncPalet`,
+        { user_id: id },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -29,7 +29,7 @@ export const useRejectDocument = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Document successfully rejected");
+      toast.success("berhasil mereject");
       queryClient.invalidateQueries({ queryKey: ["list-list-notif"] });
     },
     onError: (err) => {

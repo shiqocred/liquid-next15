@@ -10,22 +10,14 @@ import {
 } from "@/components/ui/dialog";
 import { alertError, cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import {
-  CheckCircle2,
-  Loader,
-  RefreshCw,
-  X,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Loader, RefreshCw, X, XCircle } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import { columnPalet } from "../columns";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useApproveDocument } from "../../_api/use-approve-document";
-import { useApproveProduct } from "../../_api/use-approve-product";
-import { useRejectDocument } from "../../_api/use-reject-document";
-import { useRejectProduct } from "../../_api/use-reject-product";
 import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useApproveDocumentPalet } from "../../_api/use-approve-document-palet";
+import { useRejectDocumentPalet } from "../../_api/use-reject-document-palet";
 
 interface DialogDetailPaletProps {
   open: boolean;
@@ -44,14 +36,10 @@ export const DialogDetailPalet = ({
   openDialog,
   setOpenDialog,
 }: DialogDetailPaletProps) => {
+  const id = userId;
   const queryClient = useQueryClient();
   const [AprvDocumentDialog, confirmAprvDocument] = useConfirm(
     "Approve Document",
-    "This action cannot be undone",
-    "liquid"
-  );
-  const [AprvProductDialog, confirmAprvProduct] = useConfirm(
-    "Approve Product",
     "This action cannot be undone",
     "liquid"
   );
@@ -60,30 +48,17 @@ export const DialogDetailPalet = ({
     "This action cannot be undone",
     "destructive"
   );
-  const [RjctProductDialog, confirmRjctProduct] = useConfirm(
-    "Reject Product",
-    "This action cannot be undone",
-    "destructive"
-  );
 
   const { mutate: mutateAprvDocument, isPending: isPendingAprvDocument } =
-    useApproveDocument();
-  const { mutate: mutateAprvProduct, isPending: isPendingAprvProduct } =
-    useApproveProduct();
+    useApproveDocumentPalet();
   const { mutate: mutateRjctDocument, isPending: isPendingRjctDocument } =
-    useRejectDocument();
-  const { mutate: mutateRjctProduct, isPending: isPendingRjctProduct } =
-    useRejectProduct();
+    useRejectDocumentPalet();
 
   // get data detail
   const { data, refetch, isLoading, isRefetching, error, isError } = baseData;
 
   const isLoadingButton =
-    isPendingAprvDocument ||
-    isPendingAprvProduct ||
-    isPendingRjctDocument ||
-    isPendingRjctProduct ||
-    isRefetching;
+    isPendingAprvDocument || isPendingRjctDocument || isRefetching;
 
   // memo data detail
   const dataListDetail: any[] = useMemo(() => {
@@ -109,35 +84,19 @@ export const DialogDetailPalet = ({
     const ok = await confirmAprvDocument();
 
     if (!ok) return;
-
     mutateAprvDocument(
       { id },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { userId, openDialog }],
+            queryKey: ["detail-palet-approve", { id, openDialog }],
           });
           setOpenDialog("");
         },
       }
     );
   };
-  const handleApproveProduct = async (id: any) => {
-    const ok = await confirmAprvProduct();
 
-    if (!ok) return;
-
-    mutateAprvProduct(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { userId, openDialog }],
-          });
-        },
-      }
-    );
-  };
   const handleRejectDocument = async (id: any) => {
     const ok = await confirmRjctDocument();
 
@@ -148,25 +107,9 @@ export const DialogDetailPalet = ({
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { userId, openDialog }],
+            queryKey: ["detail-palet-approve", { userId, openDialog }],
           });
           setOpenDialog("");
-        },
-      }
-    );
-  };
-  const handleRejectProduct = async (id: any) => {
-    const ok = await confirmRjctProduct();
-
-    if (!ok) return;
-
-    mutateRjctProduct(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { userId, openDialog }],
-          });
         },
       }
     );
@@ -175,9 +118,7 @@ export const DialogDetailPalet = ({
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <AprvDocumentDialog />
-      <AprvProductDialog />
       <RjctDocumentDialog />
-      <RjctProductDialog />
       <DialogContent
         onClose={false}
         className="min-w-[75vw]"
@@ -227,7 +168,7 @@ export const DialogDetailPalet = ({
                     disabled={isLoadingButton}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleApproveDocument(dataResDetail?.id);
+                      handleApproveDocument(userId);
                     }}
                   >
                     <CheckCircle2 className="size-4 mr-1" />
@@ -240,7 +181,7 @@ export const DialogDetailPalet = ({
                     disabled={isLoadingButton}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleRejectDocument(dataResDetail?.id);
+                      handleRejectDocument(userId);
                     }}
                   >
                     <XCircle className="size-4 mr-1" />
@@ -278,8 +219,6 @@ export const DialogDetailPalet = ({
               isLoading={isRefetching}
               columns={columnPalet({
                 isPending: isLoadingButton,
-                handleApproveProduct,
-                handleRejectProduct,
               })}
               data={dataListDetail ?? []}
             />

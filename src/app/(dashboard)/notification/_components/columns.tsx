@@ -24,6 +24,10 @@ interface ColumnSalesProps {
   handleRejectProduct: (id: string) => void;
 }
 
+interface ColumnPaletProps {
+  isPending: boolean;
+}
+
 const BadgeStatus = ({
   item,
   setSaleId,
@@ -31,22 +35,7 @@ const BadgeStatus = ({
   setOpenDialog,
   isLoading,
 }: any) => {
-  if (item.external_id && item.approved === "0") {
-    return (
-      <Button
-        onClick={(e) => {
-          e.preventDefault();
-          setSaleId(item.external_id);
-          setOpenDialog(item.status);
-        }}
-        disabled={isLoading}
-        className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1"
-      >
-        <p className="text-xs">Check</p>
-        {isLoading ? <Loader2 className="animate-spin" /> : <ArrowUpRight />}
-      </Button>
-    );
-  } else if (item.user_id && item.approved === "0" && item.status === "palet") {
+  if (item.user_id && item.approved === "0" && item.status === "palet") {
     return (
       <Button
         onClick={(e) => {
@@ -61,13 +50,28 @@ const BadgeStatus = ({
         {isLoading ? <Loader2 className="animate-spin" /> : <ArrowUpRight />}
       </Button>
     );
-  } else if (item.external_id && item.approved === "1") {
+  } else if (item.approved === "0") {
+    return (
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          setSaleId(item.external_id);
+          setOpenDialog(item.status);
+        }}
+        disabled={isLoading}
+        className="text-black bg-sky-400/80 hover:bg-sky-400 h-7 px-3 [&_svg]:size-3 gap-1"
+      >
+        <p className="text-xs">Check</p>
+        {isLoading ? <Loader2 className="animate-spin" /> : <ArrowUpRight />}
+      </Button>
+    );
+  } else if (item.approved === "1") {
     return (
       <Badge className="bg-red-300 hover:bg-red-300 font-normal text-black h-7 px-3 cursor-default">
         Rejected
       </Badge>
     );
-  } else if (item.external_id && item.approved === "2") {
+  } else if (item.approved === "2") {
     return (
       <Badge className="bg-green-300 hover:bg-green-300 font-normal text-black h-7 px-3 cursor-default">
         Approved
@@ -239,8 +243,7 @@ export const columnSales = ({
   },
 ];
 
-export const columnPalet = ({
-}: ColumnSalesProps): ColumnDef<any>[] => [
+export const columnPalet = ({}: ColumnPaletProps): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
     id: "id",
@@ -258,12 +261,10 @@ export const columnPalet = ({
     accessorKey: "name_palet",
     header: "Palet Name",
     cell: ({ row }) => (
-      <div className="max-w-[500px] break-all">
-        {row.original?.name_palet}
-      </div>
+      <div className="max-w-[500px] break-all">{row.original?.name_palet}</div>
     ),
   },
-   {
+  {
     accessorKey: "total_product_palet",
     header: "Total Product",
     cell: ({ row }) => (
