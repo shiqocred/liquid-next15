@@ -11,15 +11,15 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useRejectDocument = () => {
+export const useApproveDocumentPalet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.put(
-        `${baseUrl}/reject-document/${id}`,
-        {},
+      const res = await axios.post(
+        `${baseUrl}/approveSyncPalet`,
+        { user_id: id },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -29,15 +29,15 @@ export const useRejectDocument = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Document successfully rejected");
+      toast.success("berhasil mensinkronkan");
       queryClient.invalidateQueries({ queryKey: ["list-list-notif"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Document failed to reject`);
-        console.log("ERROR_REJECT_DOCUMENT:", err);
+        toast.error(`ERROR ${err?.status}: Document failed to approve`);
+        console.log("ERROR_APPROVE_DOCUMENT:", err);
       }
     },
   });

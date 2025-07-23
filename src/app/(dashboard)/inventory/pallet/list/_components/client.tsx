@@ -38,6 +38,7 @@ import { useDeletePalet } from "../_api/use-delete-palet";
 import { useQueryClient } from "@tanstack/react-query";
 import { DialogFiltered } from "./dialog-filtered";
 import { useAddFilterToBulky } from "../_api/use-add-filter-to-bulky";
+import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
   // data search, page
@@ -71,7 +72,7 @@ export const Client = () => {
   const { mutate: mutateUnbundle, isPending: isPendingUnbundle } =
     useUnbundlePalet();
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeletePalet();
- 
+
   const {
     mutate: mutateAddFilterToBulky,
     isPending: isPendingAddFilterToBulky,
@@ -188,6 +189,27 @@ export const Client = () => {
       cell: ({ row }) => formatRupiah(row.original.total_price_palet),
     },
     {
+      accessorKey: "is_bulky",
+      header: "Bulky",
+      cell: ({ row }) => {
+        return (
+          <Badge
+            className={cn(
+              "font-normal capitalize text-black shadow-none",
+              row.original.is_bulky === "waiting_list" &&
+                "bg-yellow-300 hover:bg-yellow-300",
+              row.original.is_bulky === "done" &&
+                "bg-green-400 hover:bg-green-400",
+              row.original.is_bulky === "waiting_approve" &&
+                "bg-indigo-400 hover:bg-indigo-400 text-white"
+            )}
+          >
+            {row.original.is_bulky}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -241,12 +263,10 @@ export const Client = () => {
           </TooltipProviderPage>
           <TooltipProviderPage value={"Filter"}>
             <Button
-              className="w-9 px-0 items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
+              className="w-9 px-0 items-center border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50"
               variant={"outline"}
               type="button"
-              disabled={
-                isPendingAddFilterToBulky
-              }
+              disabled={isPendingAddFilterToBulky}
               onClick={() => {
                 handleAddFilterBulky(row.original.id);
               }}
