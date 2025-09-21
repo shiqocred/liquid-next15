@@ -1,6 +1,5 @@
 "use client";
 
-import OnlyBarcodePrinted from "@/components/barcode-print";
 import OnlyQRPrinted from "@/components/qr-print";
 import {
   Dialog,
@@ -27,10 +26,6 @@ const DialogBarcode = ({
         <DialogHeader>
           <DialogTitle>QR Printered</DialogTitle>
         </DialogHeader>
-        {/* <OnlyBarcodePrinted
-          barcode={barcode ?? ""}
-          cancel={handleCancel}
-        /> */}
         <OnlyQRPrinted qr={barcode ?? ""} cancel={handleCancel} />
       </DialogContent>
     </Dialog>
