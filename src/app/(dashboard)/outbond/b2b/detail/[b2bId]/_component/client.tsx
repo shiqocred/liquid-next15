@@ -47,6 +47,8 @@ export const Client = () => {
   const { b2bId } = useParams();
   const [barcodeOpen, setBarcodeOpen] = useState(false);
   const [selectedBarcodeBag, setSelectedBarcodeBag] = useState("");
+  const [selectedTotalProductBag, setSelectedTotalProductBag] = useState("");
+
   const [openDetail, setOpenDetail] = useQueryState(
     "dialog",
     parseAsBoolean.withDefault(false)
@@ -215,6 +217,7 @@ export const Client = () => {
               onClick={(e) => {
                 e.preventDefault();
                 setSelectedBarcodeBag(row.original.barcode_bag);
+                setSelectedTotalProductBag(row.original.total_product);
                 setBarcodeOpen(true);
               }}
             >
@@ -283,6 +286,7 @@ export const Client = () => {
         }}
         open={barcodeOpen}
         barcode={selectedBarcodeBag}
+        qty={selectedTotalProductBag}
         handleCancel={() => {
           setBarcodeOpen(false);
         }}
@@ -426,7 +430,9 @@ export const Client = () => {
             type="button"
             onClick={handleFinish}
             variant={"liquid"}
-            disabled={dataListDetail?.status_bulky === "selesai" || isPendingFinishB2B}
+            disabled={
+              dataListDetail?.status_bulky === "selesai" || isPendingFinishB2B
+            }
           >
             <SaveIcon />
             Finish

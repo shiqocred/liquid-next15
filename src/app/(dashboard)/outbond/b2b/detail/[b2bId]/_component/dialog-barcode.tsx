@@ -13,11 +13,13 @@ const DialogBarcode = ({
   open,
   onCloseModal,
   barcode,
+  qty,
   handleCancel,
 }: {
   open: boolean;
   onCloseModal: () => void;
   barcode: any;
+  qty: any;
   handleCancel: () => void;
 }) => {
   return (
@@ -26,7 +28,7 @@ const DialogBarcode = ({
         <DialogHeader>
           <DialogTitle>QR Printered</DialogTitle>
         </DialogHeader>
-        <OnlyQRPrinted qr={barcode ?? ""} cancel={handleCancel} />
+        <OnlyQRPrinted qr={barcode ?? ""} qty={qty ?? ""} cancel={handleCancel} />
       </DialogContent>
     </Dialog>
   );

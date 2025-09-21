@@ -6,15 +6,18 @@ import { useReactToPrint } from "react-to-print";
 
 interface OnlyQRPrint {
   qr: string;
+  qty: string;
   cancel?: () => void;
 }
 
-const OnlyQRPrinted: React.FC<OnlyQRPrint> = ({ qr, cancel }) => {
+const OnlyQRPrinted: React.FC<OnlyQRPrint> = ({ qr, qty, cancel }) => {
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
   });
+
+  const qrValue = qty !== undefined ? `barcode: ${qr} Qty: ${qty}` : qr;
 
   return (
     <div>
@@ -24,8 +27,11 @@ const OnlyQRPrinted: React.FC<OnlyQRPrint> = ({ qr, cancel }) => {
           ref={componentRef}
         >
           <div className="w-full flex flex-col justify-center items-center">
-            {qr && <QRCode value={qr} size={128} level="H" />}
+            {qr && <QRCode value={qrValue} size={100} level="H" />}
             <div className="mt-2 text-center text-sm font-semibold">{qr}</div>
+            <div className="mt-2 text-center text-sm font-semibold">
+              Qty: {qty}
+            </div>
           </div>
         </div>
       </div>
