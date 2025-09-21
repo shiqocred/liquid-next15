@@ -451,7 +451,7 @@ const DialogExportData = ({
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">
                           <span>
-                            {data?.buyer_loyalty?.total_disc_rank ?? "0"}
+                            {data?.buyer_loyalty?.total_disc_rank ?? "-"}
                           </span>
                         </p>
                       </div>
