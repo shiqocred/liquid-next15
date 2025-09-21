@@ -55,7 +55,6 @@ import { Badge } from "@/components/ui/badge";
 import { useGetListBuyer } from "../_api/use-get-list-buyer";
 import dynamic from "next/dynamic";
 import { useGetListProduct } from "../_api/use-get-list-product";
-import { useGaborProduct } from "../_api/use-gabor-product";
 import { useUpdatePriceProduct } from "../_api/use-update-price-product";
 import {
   Sheet,
@@ -81,14 +80,12 @@ import { useCreatePPN } from "../_api/use-create-ppn";
 import { useUpdatePPN } from "../_api/use-update-ppn";
 import { useDeletePPN } from "../_api/use-delete-ppn";
 import { useGetDetailPPN } from "../_api/use-get-detail-ppn";
+import { useRouter } from "next/navigation";
 
 const DialogBuyer = dynamic(() => import("./dialog-buyer"), {
   ssr: false,
 });
 const DialogProduct = dynamic(() => import("./dialog-product"), {
-  ssr: false,
-});
-const DialogGabor = dynamic(() => import("./dialog-gabor"), {
   ssr: false,
 });
 const DialogUpdatePrice = dynamic(() => import("./dialog-update-price"), {
@@ -120,6 +117,7 @@ const variants = {
 };
 
 export const Client = () => {
+  const router = useRouter();
   const [isComplete, setIsComplete] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -127,7 +125,6 @@ export const Client = () => {
   const [isOpenDiscount, setIsOpenDiscount] = useState(false);
   const [isOpenVoucher, setIsOpenVoucher] = useState(false);
   const [isUpdatePrice, setIsUpdatePrice] = useState(false);
-  const [isGabor, setIsGabor] = useState(false);
   const [isBuyer, setIsBuyer] = useState(false);
   const [isProduct, setIsProduct] = useState(false);
   const [isOpenPPN, setIsOpenPPN] = useState(false);
@@ -231,8 +228,6 @@ export const Client = () => {
     useRemoveProduct();
 
   const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
-
-  const { mutate: mutateGabor, isPending: isPendingGabor } = useGaborProduct();
   const { mutate: mutateCreatePPN, isPending: isPendingCreatePPN } =
     useCreatePPN();
   const { mutate: mutateUpdatePPN, isPending: isPendingUpdatePPN } =
@@ -410,17 +405,6 @@ export const Client = () => {
     mutateRemoveProduct({ id });
   };
 
-  const handleGabor = async (price: any) => {
-    mutateGabor(
-      { id: inputEdit.id, body: { product_price_sale: price } },
-      {
-        onSuccess: () => {
-          handleCloseGabor();
-        },
-      }
-    );
-  };
-
   const handleUpdatePrice = async (price: any) => {
     mutateUpdatePrice(
       { id: inputEdit.id, body: { update_price_sale: price } },
@@ -451,7 +435,17 @@ export const Client = () => {
         (isTax ? (totalPriceBeforeTax / 100) * input.ppnActive : 0),
     };
 
-    mutateSubmit({ body });
+    mutateSubmit(
+      { body },
+      {
+        onSuccess: (res: any) => {
+          console.log("res", res);
+          // Pastikan id sesuai dengan struktur response Anda
+          const id = res?.data?.data?.resource?.id;
+          router.push(`/outbond/sale/detail/${id}`);
+        },
+      }
+    );
   };
 
   const handleDeletePPN = async (id: any) => {
@@ -530,14 +524,6 @@ export const Client = () => {
       last: 0,
       perPage: 0,
       total: 0,
-    });
-  };
-
-  const handleCloseGabor = () => {
-    setIsGabor(false);
-    setInputEdit({
-      id: "",
-      price: "0",
     });
   };
 
@@ -659,6 +645,24 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "product_category_sale",
+      header: "Category",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.product_category_sale}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "product_qty_sale",
+      header: "Qty",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.product_qty_sale}
+        </div>
+      ),
+    },
+    {
       accessorKey: "product_price_sale",
       header: "Price",
       cell: ({ row }) => (
@@ -691,26 +695,6 @@ export const Client = () => {
               <CircleDollarSign className="w-4 h-4 mr-1" />
             )}
             <div>Update Price</div>
-          </Button>
-          <Button
-            className="items-center border-violet-400 text-violet-700 hover:text-violet-700 hover:bg-violet-50"
-            variant={"outline"}
-            type="button"
-            disabled={isPendingGabor || isPendingSubmit}
-            onClick={() => {
-              setIsGabor(true);
-              setInputEdit({
-                id: row.original.id,
-                price: row.original.product_price_sale,
-              });
-            }}
-          >
-            {isPendingGabor ? (
-              <Loader2 className="w-4 h-4 mr-1" />
-            ) : (
-              <PercentCircle className="w-4 h-4 mr-1" />
-            )}
-            <div>Gabor</div>
           </Button>
           <Button
             className="items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
@@ -835,6 +819,7 @@ export const Client = () => {
                 handleAddProduct(row.original.barcode);
               }}
               type="button"
+              disabled={isPendingAddProduct}
             >
               {isPendingAddProduct ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1101,16 +1086,6 @@ export const Client = () => {
         page={pageProduct}
         metaPage={metaPageProduct}
         setPage={setPageProduct}
-      />
-      <DialogGabor
-        open={isGabor}
-        onCloseModal={() => {
-          if (isGabor) {
-            handleCloseGabor();
-          }
-        }}
-        data={inputEdit.price}
-        handleSubmit={handleGabor}
       />
       <DialogUpdatePrice
         open={isUpdatePrice}

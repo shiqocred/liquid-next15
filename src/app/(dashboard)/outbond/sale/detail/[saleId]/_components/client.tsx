@@ -10,7 +10,6 @@ import {
   Landmark,
   Loader2,
   Package,
-  PercentCircle,
   Plus,
   PlusCircle,
   Printer,
@@ -44,7 +43,6 @@ import { useUpdateCartonBox } from "../_api/use-update-carton-box";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useGetListProduct } from "../_api/use-get-list-product";
-import { useGaborProduct } from "../_api/use-gabor-product";
 import { useUpdatePriceProduct } from "../_api/use-update-price-product";
 import { useParams } from "next/navigation";
 import { useExport } from "../_api/use-export";
@@ -53,9 +51,6 @@ import { format } from "date-fns";
 import { useUpdateOnlinePayment } from "../_api/use-update-online-payment";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
-  ssr: false,
-});
-const DialogGabor = dynamic(() => import("./dialog-gabor"), {
   ssr: false,
 });
 const DialogUpdatePrice = dynamic(() => import("./dialog-update-price"), {
@@ -81,7 +76,6 @@ export const Client = () => {
   const { saleId } = useParams();
 
   const [isUpdatePrice, setIsUpdatePrice] = useState(false);
-  const [isGabor, setIsGabor] = useState(false);
   const [isCarton, setIsCarton] = useState(false);
   const [isProduct, setIsProduct] = useState(false);
   const [isExportData, setIsExportData] = useState(false);
@@ -137,8 +131,6 @@ export const Client = () => {
 
   const { mutate: mutateUpdateCarton, isPending: isPendingCarton } =
     useUpdateCartonBox();
-
-  const { mutate: mutateGabor, isPending: isPendingGabor } = useGaborProduct();
 
   const { mutate: mutateUpdatePrice, isPending: isPendingUpdatePrice } =
     useUpdatePriceProduct();
@@ -226,17 +218,6 @@ export const Client = () => {
     if (!ok) return;
 
     mutateRemoveProduct({ idProduct, idDocument: dataRes.id });
-  };
-
-  const handleGabor = async (price: any) => {
-    mutateGabor(
-      { id: inputEdit.id, body: { product_price_sale: price } },
-      {
-        onSuccess: () => {
-          handleCloseGabor();
-        },
-      }
-    );
   };
 
   const handleUpdatePrice = async (price: any) => {
@@ -332,14 +313,6 @@ export const Client = () => {
     });
   };
 
-  const handleCloseGabor = () => {
-    setIsGabor(false);
-    setInputEdit({
-      id: "",
-      price: "0",
-    });
-  };
-
   const handleCloseUpdatePrice = () => {
     setIsUpdatePrice(false);
     setInputEdit({
@@ -424,6 +397,24 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "product_category_sale",
+      header: "Category",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.product_category_sale}
+        </div>
+      ),
+    },
+     {
+      accessorKey: "product_qty_sale",
+      header: "Qty",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.product_qty_sale}
+        </div>
+      ),
+    },
+    {
       accessorKey: "product_price_sale",
       header: "Price",
       cell: ({ row }) => (
@@ -456,26 +447,6 @@ export const Client = () => {
               <CircleDollarSign className="w-4 h-4 mr-1" />
             )}
             <div>Update Price</div>
-          </Button>
-          <Button
-            className="items-center border-violet-400 text-violet-700 hover:text-violet-700 hover:bg-violet-50"
-            variant={"outline"}
-            type="button"
-            disabled={isPendingGabor}
-            onClick={() => {
-              setIsGabor(true);
-              setInputEdit({
-                id: row.original.id,
-                price: row.original.product_price_sale,
-              });
-            }}
-          >
-            {isPendingGabor ? (
-              <Loader2 className="w-4 h-4 mr-1" />
-            ) : (
-              <PercentCircle className="w-4 h-4 mr-1" />
-            )}
-            <div>Gabor</div>
           </Button>
           <Button
             className="items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
@@ -673,16 +644,6 @@ export const Client = () => {
         page={pageProduct}
         metaPage={metaPageProduct}
         setPage={setPageProduct}
-      />
-      <DialogGabor
-        open={isGabor}
-        onCloseModal={() => {
-          if (isGabor) {
-            handleCloseGabor();
-          }
-        }}
-        data={inputEdit.price}
-        handleSubmit={handleGabor}
       />
       <DialogUpdatePrice
         open={isUpdatePrice}
@@ -949,15 +910,6 @@ export const Client = () => {
             >
               <Landmark className="size-4 ml-1" />
               Online Payment
-            </Button>
-            <Button
-              type="button"
-              onClick={handleExportExcel}
-              disabled={isPendingExportExcel}
-              className="bg-white text-black hover:bg-sky-50"
-            >
-              <FileSpreadsheet className="size-4 ml-1" />
-              Export Excel
             </Button>
             <Button
               type="button"
