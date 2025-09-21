@@ -10,7 +10,6 @@ import {
   Landmark,
   Loader2,
   Package,
-  PercentCircle,
   Plus,
   PlusCircle,
   Printer,
