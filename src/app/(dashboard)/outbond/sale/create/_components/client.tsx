@@ -81,6 +81,7 @@ import { useCreatePPN } from "../_api/use-create-ppn";
 import { useUpdatePPN } from "../_api/use-update-ppn";
 import { useDeletePPN } from "../_api/use-delete-ppn";
 import { useGetDetailPPN } from "../_api/use-get-detail-ppn";
+import { useRouter } from "next/navigation";
 
 const DialogBuyer = dynamic(() => import("./dialog-buyer"), {
   ssr: false,
@@ -120,6 +121,7 @@ const variants = {
 };
 
 export const Client = () => {
+  const router = useRouter();
   const [isComplete, setIsComplete] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -451,7 +453,17 @@ export const Client = () => {
         (isTax ? (totalPriceBeforeTax / 100) * input.ppnActive : 0),
     };
 
-    mutateSubmit({ body });
+    mutateSubmit(
+      { body },
+      {
+        onSuccess: (res: any) => {
+          console.log("res", res);
+          // Pastikan id sesuai dengan struktur response Anda
+          const id = res?.data?.data?.resource?.id;
+          router.push(`/outbond/sale/detail/${id}`);
+        },
+      }
+    );
   };
 
   const handleDeletePPN = async (id: any) => {
