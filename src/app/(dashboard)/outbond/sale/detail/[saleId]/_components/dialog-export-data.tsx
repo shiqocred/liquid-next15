@@ -444,6 +444,18 @@ const DialogExportData = ({
                         </p>
                       </div>
                     </div>
+                     <div className="w-full flex border-t border-black">
+                      <div className="flex w-full">
+                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
+                          Total Diskon Kelas
+                        </p>
+                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                          <span>
+                            {data?.buyer_loyalty?.total_disc_rank ?? "0"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
                   </div>
                   <p className="my-3 text-justify indent-5">
                     Bahwa yang bersangkutan di atas telah melakukan pemilihan
