@@ -405,7 +405,7 @@ export const Client = () => {
         </div>
       ),
     },
-     {
+    {
       accessorKey: "product_qty_sale",
       header: "Qty",
       cell: ({ row }) => (
@@ -767,12 +767,6 @@ export const Client = () => {
                   <p>{dataRes?.buyer?.next_rank || "-"}</p>
                 </div>
               </div>
-              <div className="flex flex-col">
-                <p className="text-sm">Current Transaction to Upgrade Class</p>
-                <p className="font-semibold">
-                  {dataRes?.buyer?.current_transaction}
-                </p>
-              </div>
             </div>
             <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
@@ -798,6 +792,18 @@ export const Client = () => {
                 </p>
               </div>
               <div className="flex flex-col">
+                <p className="text-sm">Discount class</p>
+                <p className="font-semibold">
+                  {Math.round(dataRes?.buyer?.percentage_discount)}%
+                </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Current Transaction to Upgrade Class</p>
+                <p className="font-semibold">
+                  {dataRes?.buyer?.current_transaction}
+                </p>
+              </div>
+              {/* <div className="flex flex-col">
                 <p className="text-sm">Points Awarded</p>
                 <p className="font-semibold">
                   {dataRes?.buyer_point_document_sale}
@@ -806,15 +812,24 @@ export const Client = () => {
               <div className="flex flex-col">
                 <p className="text-sm">Total Point</p>
                 <p className="font-semibold">{dataRes?.buyer?.point_buyer}</p>
-              </div>
+              </div> */}
             </div>
           </div>
           <div className="border-t border-gray-500 w-full pt-3 mt-5">
-            <div className="flex flex-col">
-              <p className="text-sm">Total Product Price</p>
-              <p className="font-semibold">
-                {formatRupiah(dataRes?.total_price_document_sale)}
-              </p>
+            <div className="flex flex-row items-center gap-x-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Total Product Price</p>
+                <p className="font-semibold">
+                  {formatRupiah(dataRes?.total_display_document_sale)}
+                </p>
+              </div>
+              <div className="text-lg font-bold">→</div>
+              <div className="flex flex-col">
+                <p className="text-sm">After Rank Discount</p>
+                <p className="font-semibold">
+                  {formatRupiah(dataRes?.total_price_document_sale)}
+                </p>
+              </div>
             </div>
           </div>
         </div>
