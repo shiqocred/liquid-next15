@@ -389,20 +389,6 @@ const DialogExportProduct = ({
                         </p>
                       </div>
                     </div>
-                    <div className="w-full flex border-t border-black">
-                      <div className="flex w-full">
-                        <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
-                          Total Diskon Kelas
-                        </p>
-                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
-                          <span>
-                            {formatRupiah(
-                              data?.buyer_loyalty?.total_disc_rank ?? "0"
-                            )}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
                   </div>
                   <p className="my-3 text-justify indent-5">
                     Bahwa yang bersangkutan di atas telah melakukan pemilihan
@@ -499,7 +485,7 @@ const DialogExportProduct = ({
                       </p>
                     </div>
                     <div className="flex border-t border-black pt-1 mt-1 pl-10 border-dashed">
-                      <p className="px-3">Rank</p>
+                      <p className="px-3">Discount Rank</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">
                         -{" "}
