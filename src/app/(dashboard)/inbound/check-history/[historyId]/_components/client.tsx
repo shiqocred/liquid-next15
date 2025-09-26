@@ -14,7 +14,7 @@ import {
   ArrowLeftRight,
   FileDown,
   FileText,
-  Gem,
+  // Gem,
   Loader2,
   RefreshCw,
 } from "lucide-react";
@@ -123,16 +123,16 @@ export const Client = () => {
   }, [dataDetail]);
 
   const {
-    data: dataRefresh,
+    // data: dataRefresh,
     refetch: refetchRefresh,
     isLoading: isLoadingRefresh,
   } = useGetRefreshHistoryDocument({
     code_document: dataDetailCH?.code_document,
   });
 
-  const dataDetailCHAfterRefresh = useMemo(() => {
-    return dataRefresh?.data.data.resource;
-  }, [dataRefresh]);
+  // const dataDetailCHAfterRefresh = useMemo(() => {
+  //   return dataRefresh?.data.data.resource;
+  // }, [dataRefresh]);
 
   const loadingDetail =
     isPendingDetail ||
