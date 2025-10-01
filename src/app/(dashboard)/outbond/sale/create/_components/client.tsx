@@ -1366,10 +1366,10 @@ export const Client = () => {
                   <p>{input.nextBuyerRank ? input.nextBuyerRank : "-"}</p>
                 </div>
               </div>
-              <div className="flex flex-col">
+              {/* <div className="flex flex-col">
                 <p className="text-sm">Discount Class</p>
                 <p className="font-semibold">{input.percentage_discount}%</p>
-              </div>
+              </div> */}
             </div>
             <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
@@ -1424,7 +1424,7 @@ export const Client = () => {
                   {formatRupiah(dataRes?.total_sale)}
                 </p>
               </div>
-              <div className="text-lg font-bold">→</div>
+              {/* <div className="text-lg font-bold">→</div>
               <div className="flex flex-col">
                 <p className="text-sm">After Rank Discount</p>
                 <p className="font-semibold">
@@ -1437,7 +1437,7 @@ export const Client = () => {
                     )
                   )}
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -1565,13 +1565,13 @@ export const Client = () => {
               <p className="font-semibold">Grand Total</p>
             </div>
             <p className="font-semibold w-full text-center">
-              {/* {formatRupiah(
+              {formatRupiah(
                 parseFloat(dataRes?.total_sale) +
                   parseFloat(input.cartonQty) * parseFloat(input.cartonUnit) -
                   parseFloat(input.voucher) +
                   (isTax ? (totalPriceBeforeTax / 100) * input.ppnActive : 0)
-              )} */}
-              {formatRupiah(
+              )}
+              {/* {formatRupiah(
                 Math.round(
                   parseFloat(dataRes?.total_sale ?? "0") -
                     (parseFloat(dataRes?.total_sale ?? "0") *
@@ -1591,7 +1591,7 @@ export const Client = () => {
                         input.ppnActive
                       : 0)
                 )
-              )}
+              )} */}
             </p>
           </div>
           <Button
