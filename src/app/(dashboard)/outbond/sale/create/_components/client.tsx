@@ -156,6 +156,7 @@ export const Client = () => {
     nextBuyerRank: "",
     nextTransactionBuyerRank: "",
     currentTransactionBuyerRank: "",
+    percentage_discount: "0",
   });
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -332,6 +333,9 @@ export const Client = () => {
       nextBuyerRank: data?.data.data.resource.next_rank,
       nextTransactionBuyerRank: data?.data.data.resource.transaction_next,
       currentTransactionBuyerRank: data?.data.data.resource.current_transaction,
+      percentage_discount: Math.round(
+        data?.data.data.resource.percentage_discount ?? "0"
+      ).toString(),
     }));
   }, [data]);
   useEffect(() => {
@@ -1362,6 +1366,10 @@ export const Client = () => {
                   <p>{input.nextBuyerRank ? input.nextBuyerRank : "-"}</p>
                 </div>
               </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Discount Class</p>
+                <p className="font-semibold">{input.percentage_discount}%</p>
+              </div>
             </div>
             <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
@@ -1409,11 +1417,27 @@ export const Client = () => {
             </div>
           </div>
           <div className="border-t border-gray-500 w-full pt-3 mt-5">
-            <div className="flex flex-col">
-              <p className="text-sm">Total Product Price</p>
-              <p className="font-semibold">
-                {formatRupiah(dataRes?.total_sale)}
-              </p>
+            <div className="flex flex-row items-center gap-x-4">
+              <div className="flex flex-col">
+                <p className="text-sm">Total Product Price</p>
+                <p className="font-semibold">
+                  {formatRupiah(dataRes?.total_sale)}
+                </p>
+              </div>
+              <div className="text-lg font-bold">→</div>
+              <div className="flex flex-col">
+                <p className="text-sm">After Rank Discount</p>
+                <p className="font-semibold">
+                  {formatRupiah(
+                    Math.round(
+                      parseFloat(dataRes?.total_sale ?? "0") -
+                        (parseFloat(dataRes?.total_sale ?? "0") *
+                          parseFloat(input.percentage_discount ?? "0")) /
+                          100
+                    )
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1547,6 +1571,27 @@ export const Client = () => {
                   parseFloat(input.voucher) +
                   (isTax ? (totalPriceBeforeTax / 100) * input.ppnActive : 0)
               )}
+              {/* {formatRupiah(
+                Math.round(
+                  parseFloat(dataRes?.total_sale ?? "0") -
+                    (parseFloat(dataRes?.total_sale ?? "0") *
+                      parseFloat(input.percentage_discount ?? "0")) /
+                      100 +
+                    parseFloat(input.cartonQty) * parseFloat(input.cartonUnit) -
+                    parseFloat(input.voucher) +
+                    (isTax
+                      ? ((parseFloat(dataRes?.total_sale ?? "0") -
+                          (parseFloat(dataRes?.total_sale ?? "0") *
+                            parseFloat(input.percentage_discount ?? "0")) /
+                            100 +
+                          parseFloat(input.cartonQty) *
+                            parseFloat(input.cartonUnit) -
+                          parseFloat(input.voucher)) /
+                          100) *
+                        input.ppnActive
+                      : 0)
+                )
+              )} */}
             </p>
           </div>
           <Button
