@@ -15,6 +15,7 @@ export const useGetRefreshHistoryDocument = ({ code_document }: any) => {
       });
       return res;
     },
+    enabled: !!code_document,
   });
   return query;
 };

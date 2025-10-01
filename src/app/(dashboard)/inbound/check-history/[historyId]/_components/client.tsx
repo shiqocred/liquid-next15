@@ -123,16 +123,16 @@ export const Client = () => {
   }, [dataDetail]);
 
   const {
-    // data: dataRefresh,
+    data: dataRefresh,
     refetch: refetchRefresh,
     isLoading: isLoadingRefresh,
   } = useGetRefreshHistoryDocument({
     code_document: dataDetailCH?.code_document,
   });
 
-  // const dataDetailCHAfterRefresh = useMemo(() => {
-  //   return dataRefresh?.data.data.resource;
-  // }, [dataRefresh]);
+  const dataDetailCHAfterRefresh = useMemo(() => {
+    return dataRefresh?.data.data.resource;
+  }, [dataRefresh]);
 
   const loadingDetail =
     isPendingDetail ||
@@ -361,9 +361,7 @@ export const Client = () => {
             <div className="w-9 h-9 rounded-full border-[1.5px] border-sky-500 text-sky-500 flex items-center justify-center">
               <FileText className="w-5 h-5" />
             </div>
-            <h3 className="text-xl font-semibold text-black">
-              Details
-            </h3>
+            <h3 className="text-xl font-semibold text-black">Details</h3>
             <Button
               onClick={() =>
                 refetchRefresh().then((res) => {
@@ -385,9 +383,7 @@ export const Client = () => {
             </Button>
           </div>
           <div className="flex flex-row gap-6 w-full">
-            {/* Kiri: MASTER DATA & Detail */}
             <div className="flex flex-col gap-4 w-2/3">
-              {/* MASTER DATA */}
               <div className="bg-white rounded-md p-4">
                 <h2 className="text-2xl font-bold text-center mb-2">
                   MASTER DATA
@@ -413,19 +409,17 @@ export const Client = () => {
                     <tr className="text-left">
                       <td>Inbound</td>
                       <td>
-                        {(dataDetailCH?.total_data_in ?? 0).toLocaleString()}
+                        {(
+                          dataDetailCHAfterRefresh?.["all data"] ??
+                          dataDetailCH?.total_data_in ??
+                          0
+                        ).toLocaleString()}{" "}
                       </td>
                       <td>
                         {formatRupiah(dataDetailCH?.total_price_in) ?? "-"}
                       </td>
                       <td>
-                        {dataDetailCH?.total_data && dataDetailCH?.total_data_in
-                          ? (
-                              (dataDetailCH?.total_data_in /
-                                dataDetailCH?.total_data) *
-                              100
-                            ).toFixed(2) + "%"
-                          : "-"}
+                        {(dataDetailCH?.percentage_in ?? 0).toLocaleString()} %
                       </td>
                     </tr>
                     <tr className="text-left">
@@ -439,14 +433,10 @@ export const Client = () => {
                         {formatRupiah(dataDetailCH?.priceDiscrepancy) ?? "-"}
                       </td>
                       <td>
-                        {dataDetailCH?.total_data &&
-                        dataDetailCH?.total_discrepancy
-                          ? (
-                              (dataDetailCH?.total_discrepancy /
-                                dataDetailCH?.total_data) *
-                              100
-                            ).toFixed(2) + "%"
-                          : "-"}
+                        {(
+                          dataDetailCH?.percentage_discrepancy ?? 0
+                        ).toLocaleString()}{" "}
+                        %
                       </td>
                     </tr>
                   </tbody>
@@ -460,7 +450,9 @@ export const Client = () => {
                     <span>
                       Total:{" "}
                       {(
-                        dataDetailCH?.total_data_abnormal ?? 0
+                        dataDetailCHAfterRefresh?.abnormal ??
+                        dataDetailCH?.total_data_abnormal ??
+                        0
                       ).toLocaleString()}
                     </span>
                     <span>
@@ -470,14 +462,10 @@ export const Client = () => {
                     </span>
                     <span>
                       Percentage:{" "}
-                      {dataDetailCH?.total_data &&
-                      dataDetailCH?.total_data_abnormal
-                        ? (
-                            (dataDetailCH?.total_data_abnormal /
-                              dataDetailCH?.total_data) *
-                            100
-                          ).toFixed(2) + " %"
-                        : "-"}
+                      {(
+                        dataDetailCH?.percentage_abnormal ?? 0
+                      ).toLocaleString()}{" "}
+                      %
                     </span>
                   </div>
                 </div>
@@ -486,7 +474,11 @@ export const Client = () => {
                   <div className="flex flex-col gap-1 text-left">
                     <span>
                       Total:{" "}
-                      {(dataDetailCH?.total_data_damaged ?? 0).toLocaleString()}
+                      {(
+                        dataDetailCHAfterRefresh?.damaged ??
+                        dataDetailCH?.total_data_damaged ??
+                        0
+                      ).toLocaleString()}
                     </span>
                     <span>
                       Value:{" "}
@@ -495,14 +487,8 @@ export const Client = () => {
                     </span>
                     <span>
                       Percentage:{" "}
-                      {dataDetailCH?.total_data &&
-                      dataDetailCH?.total_data_damaged
-                        ? (
-                            (dataDetailCH?.total_data_damaged /
-                              dataDetailCH?.total_data) *
-                            100
-                          ).toFixed(2) + " %"
-                        : "-"}
+                      {(dataDetailCH?.percentage_damaged ?? 0).toLocaleString()}{" "}
+                      %
                     </span>
                   </div>
                 </div>
@@ -527,14 +513,10 @@ export const Client = () => {
                         ).toLocaleString()}
                       </td>
                       <td>
-                        {dataDetailCH?.total_data &&
-                        dataDetailCH?.total_data_abnormal
-                          ? (
-                              (dataDetailCH?.total_data_abnormal /
-                                dataDetailCH?.total_data) *
-                              100
-                            ).toFixed(2) + " %"
-                          : "-"}
+                        {(
+                          dataDetailCH?.percentage_abnormal ?? 0
+                        ).toLocaleString()}{" "}
+                        %
                       </td>
                     </tr>
                     <tr className="text-left">
@@ -545,30 +527,24 @@ export const Client = () => {
                         ).toLocaleString()}
                       </td>
                       <td>
-                        {dataDetailCH?.total_data &&
-                        dataDetailCH?.total_data_damaged
-                          ? (
-                              (dataDetailCH?.total_data_damaged /
-                                dataDetailCH?.total_data) *
-                              100
-                            ).toFixed(2) + " %"
-                          : "-"}
+                        {(
+                          dataDetailCH?.percentage_damaged ?? 0
+                        ).toLocaleString()}{" "}
+                        %
                       </td>
                     </tr>
                     <tr className="text-left">
                       <td>Normal</td>
                       <td>
-                        {(dataDetailCH?.total_data_lolos ?? 0).toLocaleString()}
+                        {(
+                          dataDetailCHAfterRefresh?.lolos ??
+                          dataDetailCH?.total_data_lolos ??
+                          0
+                        ).toLocaleString()}
                       </td>
                       <td>
-                        {dataDetailCH?.total_data &&
-                        dataDetailCH?.total_data_lolos
-                          ? (
-                              (dataDetailCH?.total_data_lolos /
-                                dataDetailCH?.total_data) *
-                              100
-                            ).toFixed(2) + " %"
-                          : "-"}
+                        {(dataDetailCH?.percentage_lolos ?? 0).toLocaleString()}{" "}
+                        %
                       </td>
                     </tr>
                     <tr className="text-left">
@@ -577,13 +553,7 @@ export const Client = () => {
                         {(dataDetailCH?.total_data_in ?? 0).toLocaleString()}
                       </td>
                       <td>
-                        {dataDetailCH?.total_data && dataDetailCH?.total_data_in
-                          ? (
-                              (dataDetailCH?.total_data_in /
-                                dataDetailCH?.total_data) *
-                              100
-                            ).toFixed(2) + " %"
-                          : "-"}
+                        {(dataDetailCH?.percentage_in ?? 0).toLocaleString()} %
                       </td>
                     </tr>
                     <tr className="text-left font-bold bg-sky-200">
@@ -601,24 +571,18 @@ export const Client = () => {
                         ).toLocaleString()}
                       </td>
                       <td>
-                        {dataDetailCH?.total_data &&
-                        dataDetailCH?.total_discrepancy
-                          ? (
-                              (dataDetailCH?.total_discrepancy /
-                                dataDetailCH?.total_data) *
-                              100
-                            ).toFixed(2) + " %"
-                          : "-"}
+                        {(
+                          dataDetailCH?.percentage_discrepancy ?? 0
+                        ).toLocaleString()}{" "}
+                        %
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
-            {/* Kanan: Chart & Total Value */}
             <div className="flex flex-col gap-4 w-1/3 items-center">
               <div className="bg-white border border-gray-400 rounded-md p-4 w-full flex flex-col items-center">
-                {/* Pie Chart */}
                 <div className="w-full flex justify-center">
                   <ChartContainer
                     config={chartConfig}
@@ -674,7 +638,6 @@ export const Client = () => {
                   </ChartContainer>
                 </div>
               </div>
-              {/* Total Value */}
               <div className="bg-sky-200 rounded-md p-4 w-full flex flex-col items-center">
                 <h3 className="text-xl font-bold text-center mb-2">
                   Total Value
