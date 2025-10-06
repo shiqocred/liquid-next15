@@ -38,7 +38,6 @@ import { useDeletePalet } from "../_api/use-delete-palet";
 import { useQueryClient } from "@tanstack/react-query";
 import { DialogFiltered } from "./dialog-filtered";
 import { useAddFilterToBulky } from "../_api/use-add-filter-to-bulky";
-import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
   // data search, page
