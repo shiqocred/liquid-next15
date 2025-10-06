@@ -7,36 +7,42 @@ import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: any;
-  body: any;
 };
 
 type Error = AxiosError;
 
-export const useGaborProduct = () => {
+export const useAddFilterToBulky = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/sales/gabor/${id}`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ id }) => {
+      const res = await axios.post(
+        `${baseUrl}/bulky-filter-palet/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("Gabor successfully Applied");
+      toast.success("Filter To Bulky successfully");
       queryClient.invalidateQueries({
-        queryKey: ["list-data-cashier"],
+        queryKey: ["list-palet"],
+      });
+        queryClient.invalidateQueries({
+        queryKey: ["list-filter-to-bulky"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Gabor failed to apply`);
-        console.log("ERROR_APPLY_GABOR:", err);
+        toast.error(`ERROR ${err?.status}: Filter failed to create`);
+        console.log("ERROR_CREATE_FILTER:", err);
       }
     },
   });

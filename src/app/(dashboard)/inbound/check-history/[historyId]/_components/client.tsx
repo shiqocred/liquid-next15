@@ -14,7 +14,7 @@ import {
   ArrowLeftRight,
   FileDown,
   FileText,
-  Gem,
+  // Gem,
   Loader2,
   RefreshCw,
 } from "lucide-react";
@@ -356,7 +356,300 @@ export const Client = () => {
             {dataDetailCH?.code_document}
           </Badge>
         </div>
-        <div className="w-full flex flex-col gap-4 p-3 border border-sky-500 rounded-lg">
+        <div className="w-fullflex flex-col gap-4 p-3 border border-sky-500 rounded-lg">
+          <div className="w-full flex gap-2 items-center py-3">
+            <div className="w-9 h-9 rounded-full border-[1.5px] border-sky-500 text-sky-500 flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-semibold text-black">Details</h3>
+            <Button
+              onClick={() =>
+                refetchRefresh().then((res) => {
+                  if (res?.data?.data?.data?.status === true) {
+                    toast.success("Berhasil refresh data");
+                    refetchDetail();
+                  }
+                })
+              }
+              className="ml-2 w-9 h-9 p-0 flex items-center justify-center border-sky-400 text-black hover:bg-sky-50"
+              variant="outline"
+              disabled={loadingDetail}
+              type="button"
+              aria-label="Refresh Inventory Details"
+            >
+              <RefreshCw
+                className={cn("w-4 h-4", loadingDetail ? "animate-spin" : "")}
+              />
+            </Button>
+          </div>
+          <div className="flex flex-row gap-6 w-full">
+            <div className="flex flex-col gap-4 w-2/3">
+              <div className="bg-white rounded-md p-4">
+                <h2 className="text-2xl font-bold text-center mb-2">
+                  MASTER DATA
+                </h2>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="font-bold text-left">
+                      <th>Data</th>
+                      <th>Total</th>
+                      <th>Value</th>
+                      <th>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="text-left">
+                      <td>List</td>
+                      <td>
+                        {(dataDetailCH?.total_data ?? 0).toLocaleString()}
+                      </td>
+                      <td>{formatRupiah(dataDetailCH?.total_price) ?? "-"}</td>
+                      <td>100%</td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Inbound</td>
+                      <td>
+                        {(
+                          dataDetailCHAfterRefresh?.["all data"] ??
+                          dataDetailCH?.total_data_in ??
+                          0
+                        ).toLocaleString()}{" "}
+                      </td>
+                      <td>
+                        {formatRupiah(dataDetailCH?.total_price_in) ?? "-"}
+                      </td>
+                      <td>
+                        {(dataDetailCH?.percentage_in ?? 0).toLocaleString()} %
+                      </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Discrepancy</td>
+                      <td>
+                        {(
+                          dataDetailCH?.total_discrepancy ?? 0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {formatRupiah(dataDetailCH?.priceDiscrepancy) ?? "-"}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_discrepancy ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              {/* ABNORMAL & DAMAGED */}
+              <div className="flex gap-4">
+                <div className="bg-sky-200 rounded-md p-4 w-1/2">
+                  <h3 className="font-bold text-center mb-2">ABNORMAL</h3>
+                  <div className="flex flex-col gap-1 text-left">
+                    <span>
+                      Total:{" "}
+                      {(
+                        dataDetailCHAfterRefresh?.abnormal ??
+                        dataDetailCH?.total_data_abnormal ??
+                        0
+                      ).toLocaleString()}
+                    </span>
+                    <span>
+                      Value:{" "}
+                      {formatRupiah(dataDetailCH?.abnormal?.total_old_price) ??
+                        "-"}
+                    </span>
+                    <span>
+                      Percentage:{" "}
+                      {(
+                        dataDetailCH?.percentage_abnormal ?? 0
+                      ).toLocaleString()}{" "}
+                      %
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-sky-200 rounded-md p-4 w-1/2">
+                  <h3 className="font-bold text-center mb-2">DAMAGED</h3>
+                  <div className="flex flex-col gap-1 text-left">
+                    <span>
+                      Total:{" "}
+                      {(
+                        dataDetailCHAfterRefresh?.damaged ??
+                        dataDetailCH?.total_data_damaged ??
+                        0
+                      ).toLocaleString()}
+                    </span>
+                    <span>
+                      Value:{" "}
+                      {formatRupiah(dataDetailCH?.damaged?.total_old_price) ??
+                        "-"}
+                    </span>
+                    <span>
+                      Percentage:{" "}
+                      {(dataDetailCH?.percentage_damaged ?? 0).toLocaleString()}{" "}
+                      %
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* SUMMARY */}
+              <div className="bg-white rounded-md p-4 mt-2">
+                <h2 className="text-2xl font-bold text-center mb-2">SUMMARY</h2>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="font-bold text-left">
+                      <th>Data</th>
+                      <th>Total</th>
+                      <th>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="text-left">
+                      <td>Abnormal</td>
+                      <td>
+                        {(
+                          dataDetailCH?.total_data_abnormal ?? 0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_abnormal ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Damaged</td>
+                      <td>
+                        {(
+                          dataDetailCH?.total_data_damaged ?? 0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_damaged ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Normal</td>
+                      <td>
+                        {(
+                          dataDetailCHAfterRefresh?.lolos ??
+                          dataDetailCH?.total_data_lolos ??
+                          0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {(dataDetailCH?.percentage_lolos ?? 0).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Inbound</td>
+                      <td>
+                        {(dataDetailCH?.total_data_in ?? 0).toLocaleString()}
+                      </td>
+                      <td>
+                        {(dataDetailCH?.percentage_in ?? 0).toLocaleString()} %
+                      </td>
+                    </tr>
+                    <tr className="text-left font-bold bg-sky-200">
+                      <td>Target Inbound</td>
+                      <td>
+                        {(dataDetailCH?.total_data ?? 0).toLocaleString()}
+                      </td>
+                      <td>100 %</td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Discrepancy</td>
+                      <td>
+                        {(
+                          dataDetailCH?.total_discrepancy ?? 0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_discrepancy ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="flex flex-col gap-4 w-1/3 items-center">
+              <div className="bg-white border border-gray-400 rounded-md p-4 w-full flex flex-col items-center">
+                <div className="w-full flex justify-center">
+                  <ChartContainer
+                    config={chartConfig}
+                    className="aspect-square h-56"
+                  >
+                    <PieChart className="flex gap-2">
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <Pie
+                        data={chartData}
+                        dataKey="values"
+                        nameKey="dataType"
+                        innerRadius={35}
+                        stroke="2"
+                      >
+                        <Label
+                          content={({ viewBox }) => {
+                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                              return (
+                                <text
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                >
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={(viewBox.cy ?? 0) - 15}
+                                    className="fill-muted-foreground text-xs"
+                                  >
+                                    Total
+                                  </tspan>
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={(viewBox.cy ?? 0) + 10}
+                                    className="fill-foreground text-sm font-bold"
+                                  >
+                                    {totalVisitors.toLocaleString()}
+                                  </tspan>
+                                </text>
+                              );
+                            }
+                          }}
+                        />
+                      </Pie>
+                      <ChartLegend
+                        content={<ChartLegendContent nameKey="dataType" />}
+                        className="-translate-y-2 w-3/4 mx-auto flex-wrap gap-y-1 gap-x-4 [&>*]:basis-1/4 [&>*]:justify-center "
+                      />
+                    </PieChart>
+                  </ChartContainer>
+                </div>
+              </div>
+              <div className="bg-sky-200 rounded-md p-4 w-full flex flex-col items-center">
+                <h3 className="text-xl font-bold text-center mb-2">
+                  Total Value
+                </h3>
+                <span className="text-2xl font-bold">
+                  {formatRupiah(dataDetailCH?.total_price) ?? "-"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* <div className="w-full flex flex-col gap-4 p-3 border border-sky-500 rounded-lg">
           <div className="w-full flex gap-2 items-center py-3">
             <div className="w-9 h-9 rounded-full border-[1.5px] border-sky-500 text-sky-500 flex items-center justify-center">
               <FileText className="w-5 h-5" />
@@ -618,8 +911,8 @@ export const Client = () => {
               </div>
             </div>
           </div>
-        </div>
-        <div className="w-full flex flex-col gap-4 p-3 border border-sky-500 rounded-lg">
+        </div> */}
+        {/* <div className="w-full flex flex-col gap-4 p-3 border border-sky-500 rounded-lg">
           <div className="w-full flex gap-2 items-center py-3">
             <div className="w-9 h-9 rounded-full border-[1.5px] border-sky-500 text-sky-500 flex items-center justify-center">
               <Gem className="w-5 h-5" />
@@ -832,7 +1125,7 @@ export const Client = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold capitalize">

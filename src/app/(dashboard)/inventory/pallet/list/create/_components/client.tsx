@@ -59,7 +59,6 @@ import {
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
-import { useGetSelect } from "../_api/use-get-select";
 import {
   Dialog,
   DialogContent,
@@ -71,6 +70,11 @@ import {
 import { useProceeedImage } from "../_api/use-proceed-image";
 import PopoverWithTrigger from "./popover-with-trigger";
 import { RichInput } from "@/components/ui/rich-input";
+import { useGetCategoryBulky } from "../_api/use-get-category-bulky";
+import { useGetWarehouseBulky } from "../_api/use-get-warehouse-bulky";
+import { useGetBrandsBulky } from "../_api/use-get-brands-bulky";
+import { useGetConditionsBulky } from "../_api/use-get-conditions-bulky";
+import { useGetStatusBulky } from "../_api/use-get-statuses-bulky";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -174,10 +178,34 @@ export const Client = () => {
   } = useGetListProduct({ p: pageProduct, q: searchProductValue });
 
   const {
-    data: dataSelect,
-    error: errorSelect,
-    isError: isErrorSelect,
-  } = useGetSelect();
+    data: dataSelectCategories,
+    error: errorSelectCategories,
+    isError: isErrorSelectCategories,
+  } = useGetCategoryBulky();
+
+  const {
+    data: dataSelectWarehouses,
+    error: errorSelectWarehouses,
+    isError: isErrorSelectWarehouses,
+  } = useGetWarehouseBulky();
+
+  const {
+    data: dataSelectBrands,
+    error: errorSelectBrands,
+    isError: isErrorSelectBrands,
+  } = useGetBrandsBulky();
+
+  const {
+    data: dataSelectConditions,
+    error: errorSelectConditions,
+    isError: isErrorSelectConditions,
+  } = useGetConditionsBulky();
+
+  const {
+    data: dataSelectStatus,
+    error: errorSelectStatus,
+    isError: isErrorSelectStatus,
+  } = useGetStatusBulky();
 
   // query end ----------------------------------------------------------------
 
@@ -187,25 +215,25 @@ export const Client = () => {
     return data?.data.data.resource.data.data;
   }, [data]);
 
-  const dataListCategories: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.categories ?? [];
-  }, [dataSelect]);
+  const dataListCategoriesBulky: any[] = useMemo(() => {
+    return dataSelectCategories?.data.data ?? [];
+  }, [dataSelectCategories]);
 
   const dataListWarehouses: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.warehouses ?? [];
-  }, [dataSelect]);
+    return dataSelectWarehouses?.data.data ?? [];
+  }, [dataSelectWarehouses]);
 
   const dataListProductBrands: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.product_brands ?? [];
-  }, [dataSelect]);
+    return dataSelectBrands?.data.data ?? [];
+  }, [dataSelectBrands]);
 
   const dataListProductConditions: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.product_conditions ?? [];
-  }, [dataSelect]);
+    return dataSelectConditions?.data.data ?? [];
+  }, [dataSelectConditions]);
 
   const dataListProductStatus: any[] = useMemo(() => {
-    return dataSelect?.data.data.resource.product_status ?? [];
-  }, [dataSelect]);
+    return dataSelectStatus?.data.data ?? [];
+  }, [dataSelectStatus]);
 
   const dataListProduct: any[] = useMemo(() => {
     return dataProduct?.data.data.resource.data;
@@ -358,13 +386,53 @@ export const Client = () => {
 
   useEffect(() => {
     alertError({
-      isError: isErrorSelect,
-      error: errorSelect as AxiosError,
-      data: "Select Palet",
+      isError: isErrorSelectCategories,
+      error: errorSelectCategories as AxiosError,
+      data: "Select Categories",
       action: "get data",
       method: "GET",
     });
-  }, [isErrorSelect, errorSelect]);
+  }, [isErrorSelectCategories, errorSelectCategories]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectWarehouses,
+      error: errorSelectWarehouses as AxiosError,
+      data: "Select Warehouses",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectWarehouses, errorSelectWarehouses]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectConditions,
+      error: errorSelectConditions as AxiosError,
+      data: "Select Conditions",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectConditions, errorSelectConditions]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectStatus,
+      error: errorSelectStatus as AxiosError,
+      data: "Select Status",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectStatus, errorSelectStatus]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorSelectBrands,
+      error: errorSelectBrands as AxiosError,
+      data: "Select Brands",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorSelectBrands, errorSelectBrands]);
 
   useEffect(() => {
     if (isNaN(parseFloat(input.discount))) {
@@ -611,7 +679,7 @@ export const Client = () => {
                   <PopoverWithTrigger
                     open={isOpenCategory}
                     setIsOpen={setIsOpenCategory}
-                    data={dataListCategories}
+                    data={dataListCategoriesBulky}
                     dataId={input.category.id}
                     trigger={
                       input.category.name
@@ -623,15 +691,13 @@ export const Client = () => {
                         ...prev,
                         category: {
                           id: item.id,
-                          name: item.name_category,
+                          name: item.name,
                         },
                       }));
                       setIsOpenCategory(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.name_category}
-                      </div>
+                      <div className="w-full font-medium">{item.name}</div>
                     )}
                   />
                 </div>
@@ -652,7 +718,7 @@ export const Client = () => {
                         ...prev,
                         warehouse: {
                           id: item.id,
-                          name: item.nama,
+                          name: item.name,
                         },
                       }));
                       setIsOpenWarehouse(false);
@@ -660,17 +726,15 @@ export const Client = () => {
                     itemSelect={(item: any) => (
                       <div className="w-full flex flex-col gap-1">
                         <div className="w-full font-medium capitalize">
-                          {item.nama}
+                          {item.name}
                         </div>
                         <Separator className="bg-gray-500" />
-                        <p className="text-xs text-start w-full text-gray-500">
-                          Lat. {item.latitude} | Long. {item.longitude}
+                        <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                          {item.address}
                         </p>
                         <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {item.alamat}
-                        </p>
-                        <p className="text-xs text-start w-full text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {item.kecamatan}, {item.kabupaten}, {item.provinsi}
+                          {item.location.sub_district}, {item.location.district}
+                          , {item.location.city}, {item.location.province}
                         </p>
                       </div>
                     )}
@@ -693,14 +757,14 @@ export const Client = () => {
                         ...prev,
                         condition: {
                           id: item.id,
-                          name: item.condition_name,
+                          name: item.title,
                         },
                       }));
                       setIsOpenCondition(false);
                     }}
                     itemSelect={(item: any) => (
                       <div className="w-full font-medium">
-                        {item.condition_name}
+                        {item.title}
                       </div>
                     )}
                   />
@@ -720,14 +784,14 @@ export const Client = () => {
                         ...prev,
                         status: {
                           id: item.id,
-                          name: item.status_name,
+                          name: item.status,
                         },
                       }));
                       setIsOpenStatus(false);
                     }}
                     itemSelect={(item: any) => (
                       <div className="w-full font-medium">
-                        {item.status_name}
+                        {item.status}
                       </div>
                     )}
                   />
@@ -843,7 +907,7 @@ export const Client = () => {
                                           ...prev.brand,
                                           {
                                             id: item.id,
-                                            name: item.brand_name,
+                                            name: item.name,
                                           },
                                         ],
                                       }));
@@ -854,7 +918,7 @@ export const Client = () => {
                                       <Circle className="fill-black size-2.5 group-hover:flex hidden" />
                                     </div>
                                     <div className="w-full font-medium">
-                                      {item.brand_name}
+                                      {item.name}
                                     </div>
                                   </CommandItem>
                                 ))

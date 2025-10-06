@@ -8,54 +8,37 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { alertError, cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import {
-  CheckCircle2,
-  Loader,
-  RefreshCw,
-  ScanBarcode,
-  X,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Loader, RefreshCw, X, XCircle } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
-import { columnSales } from "../columns";
+import { columnPalet } from "../columns";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useApproveProduct } from "../../_api/use-approve-product";
-import { useRejectProduct } from "../../_api/use-reject-product";
 import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useRejectDocument } from "../../_api/use-reject-document";
-import { useApproveDocument } from "../../_api/use-approve-document";
+import { useApproveDocumentPalet } from "../../_api/use-approve-document-palet";
+import { useRejectDocumentPalet } from "../../_api/use-reject-document-palet";
 
-interface DialogDetailSaleProps {
+interface DialogDetailPaletProps {
   open: boolean;
   onCloseModal: () => void;
   baseData: any;
-  saleId: string;
+  userId: string;
   openDialog: string;
-  setSaleId: (value: string | null) => Promise<URLSearchParams>;
   setOpenDialog: (value: string | null) => Promise<URLSearchParams>;
 }
 
-export const DialogDetailSale = ({
+export const DialogDetailPalet = ({
   open,
   onCloseModal,
   baseData,
-  saleId,
+  userId,
   openDialog,
-  setSaleId,
   setOpenDialog,
-}: DialogDetailSaleProps) => {
+}: DialogDetailPaletProps) => {
   const queryClient = useQueryClient();
   const [AprvDocumentDialog, confirmAprvDocument] = useConfirm(
     "Approve Document",
-    "This action cannot be undone",
-    "liquid"
-  );
-  const [AprvProductDialog, confirmAprvProduct] = useConfirm(
-    "Approve Product",
     "This action cannot be undone",
     "liquid"
   );
@@ -64,34 +47,21 @@ export const DialogDetailSale = ({
     "This action cannot be undone",
     "destructive"
   );
-  const [RjctProductDialog, confirmRjctProduct] = useConfirm(
-    "Reject Product",
-    "This action cannot be undone",
-    "destructive"
-  );
 
   const { mutate: mutateAprvDocument, isPending: isPendingAprvDocument } =
-    useApproveDocument();
-  const { mutate: mutateAprvProduct, isPending: isPendingAprvProduct } =
-    useApproveProduct();
+    useApproveDocumentPalet();
   const { mutate: mutateRjctDocument, isPending: isPendingRjctDocument } =
-    useRejectDocument();
-  const { mutate: mutateRjctProduct, isPending: isPendingRjctProduct } =
-    useRejectProduct();
+    useRejectDocumentPalet();
 
   // get data detail
   const { data, refetch, isLoading, isRefetching, error, isError } = baseData;
 
   const isLoadingButton =
-    isPendingAprvDocument ||
-    isPendingAprvProduct ||
-    isPendingRjctDocument ||
-    isPendingRjctProduct ||
-    isRefetching;
+    isPendingAprvDocument || isPendingRjctDocument || isRefetching;
 
   // memo data detail
   const dataListDetail: any[] = useMemo(() => {
-    return open ? data?.data.data.resource.sales : [];
+    return open ? data?.data.data.resource.data : [];
   }, [data, open]);
 
   // memo data red detail
@@ -113,36 +83,19 @@ export const DialogDetailSale = ({
     const ok = await confirmAprvDocument();
 
     if (!ok) return;
-
     mutateAprvDocument(
       { id },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { saleId, openDialog }],
+            queryKey: ["detail-palet-approve", { id, openDialog }],
           });
-          setSaleId("");
           setOpenDialog("");
         },
       }
     );
   };
-  const handleApproveProduct = async (id: any) => {
-    const ok = await confirmAprvProduct();
 
-    if (!ok) return;
-
-    mutateAprvProduct(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { saleId, openDialog }],
-          });
-        },
-      }
-    );
-  };
   const handleRejectDocument = async (id: any) => {
     const ok = await confirmRjctDocument();
 
@@ -153,26 +106,9 @@ export const DialogDetailSale = ({
       {
         onSuccess: () => {
           queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { saleId, openDialog }],
+            queryKey: ["detail-palet-approve", { userId, openDialog }],
           });
-          setSaleId("");
           setOpenDialog("");
-        },
-      }
-    );
-  };
-  const handleRejectProduct = async (id: any) => {
-    const ok = await confirmRjctProduct();
-
-    if (!ok) return;
-
-    mutateRjctProduct(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-sale-approve", { saleId, openDialog }],
-          });
         },
       }
     );
@@ -181,9 +117,7 @@ export const DialogDetailSale = ({
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <AprvDocumentDialog />
-      <AprvProductDialog />
       <RjctDocumentDialog />
-      <RjctProductDialog />
       <DialogContent
         onClose={false}
         className="min-w-[75vw]"
@@ -191,7 +125,7 @@ export const DialogDetailSale = ({
       >
         <DialogHeader>
           <DialogTitle className="justify-between flex items-center">
-            Detail Notification
+            Detail Notification Palet
             <TooltipProviderPage value="close" side="left">
               <button
                 onClick={() => onCloseModal()}
@@ -210,14 +144,6 @@ export const DialogDetailSale = ({
           <div className="w-full flex flex-col gap-5">
             <div className="flex w-full rounded-md overflow-hidden border border-sky-400/80 p-3 flex-col">
               <div className="flex items-center justify-between border-b border-sky-400/80 pb-2">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 flex items-center justify-center rounded-full bg-sky-200">
-                    <ScanBarcode className="size-4" />
-                  </div>
-                  <p className="font-bold text-xl">
-                    {dataResDetail?.code_document_sale}
-                  </p>
-                </div>
                 <div className="flex gap-4">
                   <TooltipProviderPage value={"Reload Data"}>
                     <Button
@@ -241,7 +167,7 @@ export const DialogDetailSale = ({
                     disabled={isLoadingButton}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleApproveDocument(dataResDetail?.id);
+                      handleApproveDocument(userId);
                     }}
                   >
                     <CheckCircle2 className="size-4 mr-1" />
@@ -254,7 +180,7 @@ export const DialogDetailSale = ({
                     disabled={isLoadingButton}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleRejectDocument(dataResDetail?.id);
+                      handleRejectDocument(userId);
                     }}
                   >
                     <XCircle className="size-4 mr-1" />
@@ -269,24 +195,6 @@ export const DialogDetailSale = ({
                     {dataResDetail?.total_product_document_sale?.toLocaleString()}{" "}
                     Products
                   </p>
-                </div>
-                <Separator
-                  orientation="vertical"
-                  className="h-12 bg-sky-400/80"
-                />
-                <div className="flex flex-col w-full">
-                  <p className="text-xs">Discount</p>
-                  <p className="font-semibold">
-                    {dataResDetail?.new_discount_sale}%
-                  </p>
-                </div>
-                <Separator
-                  orientation="vertical"
-                  className="h-12 bg-sky-400/80"
-                />
-                <div className="flex flex-col w-full">
-                  <p className="text-xs">Voucher</p>
-                  <p className="font-semibold">{formatRupiah(data?.voucher)}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between border-t pt-3 border-sky-400/80">
@@ -308,10 +216,8 @@ export const DialogDetailSale = ({
               maxHeight="h-[40vh]"
               isSticky
               isLoading={isRefetching}
-              columns={columnSales({
+              columns={columnPalet({
                 isPending: isLoadingButton,
-                handleApproveProduct,
-                handleRejectProduct,
               })}
               data={dataListDetail ?? []}
             />

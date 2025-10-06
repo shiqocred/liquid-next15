@@ -488,7 +488,7 @@ const DialogDetail = ({
             <div className="w-fit flex flex-none flex-col gap-4">
               {!dataColor ? (
                 <BarcodePrinted
-                  barcode={input.oldBarcode}
+                  barcode={input.barcode}
                   newPrice={input.price}
                   oldPrice={input.oldPrice}
                   category={isColorPrice ? color?.name_color : input.category}

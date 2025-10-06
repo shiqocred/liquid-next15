@@ -5,20 +5,16 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
-type RequestType = {
-  id: string;
-};
-
 type Error = AxiosError;
 
-export const useRejectDocument = () => {
+export const useDoneCheckFilterPalet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.put(
-        `${baseUrl}/reject-document/${id}`,
+  const mutation = useMutation<AxiosResponse, Error, any>({
+    mutationFn: async () => {
+      const res = await axios.post(
+        `${baseUrl}/bulky-filter-to-approve`,
         {},
         {
           headers: {
@@ -29,15 +25,17 @@ export const useRejectDocument = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Document successfully rejected");
-      queryClient.invalidateQueries({ queryKey: ["list-list-notif"] });
+      toast.success("Palet successfully checked all");
+      queryClient.invalidateQueries({
+        queryKey: ["list-filter-to-bulky"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Document failed to reject`);
-        console.log("ERROR_REJECT_DOCUMENT:", err);
+        toast.error(`ERROR ${err?.status}: Palet failed to check all`);
+        console.log("ERROR_DONE_CHECK_ALL_PALET_INPUT:", err);
       }
     },
   });

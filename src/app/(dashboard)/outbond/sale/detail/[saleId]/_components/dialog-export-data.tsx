@@ -429,7 +429,7 @@ const DialogExportData = ({
                         </p>
                         <p className="w-full px-3 py-0.5 flex items-center gap-3">
                           <span>
-                            {data?.buyer_loyalty?.transaction_next ?? "-"}
+                            {data?.buyer_loyalty?.current_transaction ?? "-"}
                           </span>
                         </p>
                       </div>
@@ -447,8 +447,9 @@ const DialogExportData = ({
                   </div>
                   <p className="my-3 text-justify indent-5">
                     Bahwa yang bersangkutan di atas telah melakukan pemilihan
-                    dan pemilahan atas barang yang berada di area Bulky dan sepakat untuk melakukan pembelian sebagaimana
-                    detail barang & harga berlaku di bawah:
+                    dan pemilahan atas barang yang berada di area Bulky dan
+                    sepakat untuk melakukan pembelian sebagaimana detail barang
+                    & harga berlaku di bawah:
                   </p>
                   <h3 className="font-bold my-3">
                     B. Informasi Harga Jual & Diskon berlaku
@@ -532,6 +533,15 @@ const DialogExportData = ({
                       </p>
                     </div>
                     <div className="flex border-t border-black pt-1 mt-1 pl-10 border-dashed">
+                      <p className="px-3">Discount Rank</p>
+                      <p className="w-12 flex-none" />
+                      <p className="w-32 flex-none pr-3 text-end tabular-nums">
+                        -{" "}
+                        {formatRupiah(data?.buyer_loyalty?.total_disc_rank) ??
+                          "Rp 0"}
+                      </p>
+                    </div>
+                    <div className="flex pt-1 pl-10 mb-1">
                       <p className="px-3">DPP</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">

@@ -11,15 +11,14 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useRejectDocument = () => {
+export const useRemoveFilterBulky = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.put(
-        `${baseUrl}/reject-document/${id}`,
-        {},
+      const res = await axios.delete(
+        `${baseUrl}/bulky-filter-palet/${id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -29,15 +28,18 @@ export const useRejectDocument = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Document successfully rejected");
-      queryClient.invalidateQueries({ queryKey: ["list-list-notif"] });
+      toast.success("Product successfully removed to filter");
+      queryClient.invalidateQueries({ queryKey: ["list-palet"] });
+      queryClient.invalidateQueries({
+        queryKey: ["list-filter-to-bulky"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Document failed to reject`);
-        console.log("ERROR_REJECT_DOCUMENT:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to remove to filter`);
+        console.log("ERROR_REMOVE_FILTER_PRODUCT:", err);
       }
     },
   });

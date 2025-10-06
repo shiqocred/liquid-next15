@@ -6,37 +6,38 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: any;
-  body: any;
+  id: string;
 };
 
 type Error = AxiosError;
 
-export const useGaborProduct = () => {
+export const useRejectDocumentPalet = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.put(`${baseUrl}/sales/gabor/${id}`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ id }) => {
+      const res = await axios.post(
+        `${baseUrl}/rejectSyncPalet`,
+        { user_id: id },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("Gabor successfully Applied");
-      queryClient.invalidateQueries({
-        queryKey: ["list-data-cashier"],
-      });
+      toast.success("berhasil mereject");
+      queryClient.invalidateQueries({ queryKey: ["list-list-notif"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Gabor failed to apply`);
-        console.log("ERROR_APPLY_GABOR:", err);
+        toast.error(`ERROR ${err?.status}: Document failed to reject`);
+        console.log("ERROR_REJECT_DOCUMENT:", err);
       }
     },
   });
