@@ -9,7 +9,7 @@ export const useGetCategoryBulky = () => {
     queryKey: ["list-categories-create-palet"],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrlApiBulky}/products/filter/categories1`,
+        `${baseUrlApiBulky}/products/filter/categories`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
