@@ -85,6 +85,15 @@ export const columnProductB2B = ({
       </div>
     ),
   },
+    {
+    accessorKey: "product_category_bulky_sale",
+    header: "Category",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">
+        {row.original.product_category_bulky_sale}
+      </div>
+    ),
+  },
   {
     accessorKey: "old_price_bulky_sale",
     header: "Price",
