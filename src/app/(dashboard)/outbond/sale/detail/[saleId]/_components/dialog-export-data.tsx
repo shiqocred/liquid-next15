@@ -411,15 +411,6 @@ const DialogExportData = ({
                           </span>
                         </p>
                       </div>
-                      <div className="flex w-1/3 flex-none">
-                        <p className="w-1/3 flex-none px-3 py-0.5 border-x border-black font-bold">
-                          Kelas Berikutnya
-                        </p>
-                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
-                          <RankIcon rank={data?.buyer_loyalty?.next_rank} />
-                          <span>{data?.buyer_loyalty?.next_rank ?? "-"}</span>
-                        </p>
-                      </div>
                     </div>
 
                     <div className="w-full flex border-t border-black">

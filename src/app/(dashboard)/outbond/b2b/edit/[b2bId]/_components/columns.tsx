@@ -85,13 +85,20 @@ export const columnProductB2B = ({
       </div>
     ),
   },
-    {
+  {
     accessorKey: "product_category_bulky_sale",
     header: "Category",
     cell: ({ row }) => (
       <div className="max-w-[500px] break-all">
         {row.original.product_category_bulky_sale}
       </div>
+    ),
+  },
+  {
+    accessorKey: "qty",
+    header: "Qty",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">{row.original.qty ?? 1}</div>
     ),
   },
   {
@@ -175,7 +182,11 @@ export const columnProducts = ({
   },
 ];
 
-export const columnEditListBag = ({ onClose, onSelectBag, selectedBagId }: any): ColumnDef<any>[] => [
+export const columnEditListBag = ({
+  onClose,
+  onSelectBag,
+  selectedBagId,
+}: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
     id: "id",
