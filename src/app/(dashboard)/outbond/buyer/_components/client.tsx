@@ -1,6 +1,12 @@
 "use client";
 
-import { Edit3, Loader2, PlusCircle, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Edit3,
+  Loader2,
+  PlusCircle,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
@@ -29,6 +35,7 @@ import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 import { useSearchQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
+import Link from "next/link";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
@@ -226,7 +233,11 @@ export const Client = () => {
     },
     {
       accessorKey: "name_buyer",
-      header: "Buyer Name",
+      header: "Name Buyer",
+    },
+     {
+      accessorKey: "email",
+      header: "Email",
     },
     {
       accessorKey: "phone_buyer",
@@ -265,21 +276,30 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
           <TooltipProviderPage value={<p>Edit</p>}>
-            <Button
+            {/* <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
               disabled={isLoadingBuyer || isPendingUpdate || isPendingCreate}
-              onClick={(e) => {
-                e.preventDefault();
-                setBuyerId(row.original.id);
-                setOpenCreateEdit(true);
-              }}
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   setBuyerId(row.original.id);
+              //   setOpenCreateEdit(true);
+              // }}
             >
               {isLoadingBuyer || isPendingUpdate || isPendingCreate ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Edit3 className="w-4 h-4" />
               )}
+            </Button> */}
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              asChild
+            >
+              <Link href={`/outbond/buyer/edit/${row.original.id}`}>
+                <Edit3 className="w-4 h-4" />
+              </Link>
             </Button>
           </TooltipProviderPage>
           <TooltipProviderPage value={<p>Delete</p>}>
