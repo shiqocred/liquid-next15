@@ -262,11 +262,11 @@ export const Client = () => {
       cell: ({ row }) => formatRupiah(row.original.amount_purchase_buyer),
     },
     {
-      accessorKey: "point_buyer",
-      header: () => <div className="text-center">Total Point</div>,
+      accessorKey: "rank",
+      header: () => <div className="text-center">Rank</div>,
       cell: ({ row }) => (
         <div className="text-center">
-          {row.original.point_buyer.toLocaleString()}
+          {row.original.rank}
         </div>
       ),
     },
@@ -276,22 +276,6 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
           <TooltipProviderPage value={<p>Edit</p>}>
-            {/* <Button
-              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={isLoadingBuyer || isPendingUpdate || isPendingCreate}
-              // onClick={(e) => {
-              //   e.preventDefault();
-              //   setBuyerId(row.original.id);
-              //   setOpenCreateEdit(true);
-              // }}
-            >
-              {isLoadingBuyer || isPendingUpdate || isPendingCreate ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Edit3 className="w-4 h-4" />
-              )}
-            </Button> */}
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}

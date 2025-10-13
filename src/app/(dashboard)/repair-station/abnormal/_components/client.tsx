@@ -128,7 +128,6 @@ export const Client = () => {
   const dataResDetail: any = useMemo(() => {
     return dataDetail?.data.data.resource;
   }, [dataDetail]);
-  console.log("dataResDetail", dataDetail);
 
   // memo data detail
   const dataResColorDetail: any = useMemo(() => {
