@@ -63,7 +63,6 @@ export const Client = () => {
     isPending,
   } = useGetDetailBuyer({ id: buyerId, p: page, q: searchValue });
 
-  console.log("dataBuyer", dataBuyer);
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return dataBuyer?.data.data.resource.documents?.data;
