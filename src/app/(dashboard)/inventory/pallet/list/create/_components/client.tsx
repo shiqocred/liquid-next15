@@ -396,8 +396,6 @@ export const Client = () => {
     metaPage?.total,
   ]);
 
-  console.log("input.description:", input.description);
-
   useEffect(() => {
     alertError({
       isError,
