@@ -207,7 +207,7 @@ export const Client = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
-        <Link href="/inventory/moving-product/bundle">
+        <Link href="/outbond/buyer">
           <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
             <ArrowLeft className="w-5 h-5 text-black" />
           </Button>
