@@ -494,7 +494,7 @@ export const Client = () => {
                   <thead>
                     <tr className="font-bold text-left">
                       <th>Data</th>
-                      <th>Total</th>
+                      <th>Value</th>
                       <th>Percentage</th>
                     </tr>
                   </thead>
@@ -502,13 +502,13 @@ export const Client = () => {
                     <tr className="text-left">
                       <td>Abnormal</td>
                       <td>
-                        {(
-                          dataDetailCH?.total_data_abnormal ?? 0
-                        ).toLocaleString()}
+                        {formatRupiah(
+                          dataDetailCH?.abnormal?.total_old_price
+                        ) ?? "-"}
                       </td>
                       <td>
                         {(
-                          dataDetailCH?.percentage_abnormal ?? 0
+                          dataDetailCH?.abnormal.price_percentage ?? 0
                         ).toLocaleString()}{" "}
                         %
                       </td>
@@ -516,13 +516,12 @@ export const Client = () => {
                     <tr className="text-left">
                       <td>Damaged</td>
                       <td>
-                        {(
-                          dataDetailCH?.total_data_damaged ?? 0
-                        ).toLocaleString()}
+                        {formatRupiah(dataDetailCH?.damaged?.total_old_price) ??
+                          "-"}
                       </td>
                       <td>
                         {(
-                          dataDetailCH?.percentage_damaged ?? 0
+                          dataDetailCH?.damaged.price_percentage ?? 0
                         ).toLocaleString()}{" "}
                         %
                       </td>
@@ -530,44 +529,34 @@ export const Client = () => {
                     <tr className="text-left">
                       <td>Normal</td>
                       <td>
-                        {(
-                          dataDetailCHAfterRefresh?.lolos ??
-                          dataDetailCH?.total_data_lolos ??
-                          0
-                        ).toLocaleString()}
+                        {formatRupiah(dataDetailCH?.lolos?.total_old_price) ??
+                          "-"}
                       </td>
                       <td>
-                        {(dataDetailCH?.percentage_lolos ?? 0).toLocaleString()}{" "}
+                        {(
+                          dataDetailCH?.lolos.price_percentage ?? 0
+                        ).toLocaleString()}{" "}
                         %
                       </td>
                     </tr>
                     <tr className="text-left">
                       <td>Inbound</td>
-                      <td>
-                        {(dataDetailCH?.total_data_in ?? 0).toLocaleString()}
-                      </td>
-                      <td>
-                        {(dataDetailCH?.percentage_in ?? 0).toLocaleString()} %
-                      </td>
+                      <td>{formatRupiah(dataDetailCH?.total_price) ?? "-"} </td>
+                      <td>100 % </td>
                     </tr>
                     <tr className="text-left font-bold bg-sky-200">
                       <td>Target Inbound</td>
-                      <td>
-                        {(dataDetailCH?.total_data ?? 0).toLocaleString()}
-                      </td>
+                      <td>{formatRupiah(dataDetailCH?.total_price) ?? "-"} </td>
+
                       <td>100 %</td>
                     </tr>
                     <tr className="text-left">
                       <td>Discrepancy</td>
                       <td>
-                        {(
-                          dataDetailCH?.total_discrepancy ?? 0
-                        ).toLocaleString()}
+                        {formatRupiah(dataDetailCH?.priceDiscrepancy) ?? "-"}
                       </td>
                       <td>
-                        {(
-                          dataDetailCH?.percentage_discrepancy ?? 0
-                        ).toLocaleString()}{" "}
+                        {(dataDetailCH?.price_percentage ?? 0).toLocaleString()}{" "}
                         %
                       </td>
                     </tr>
