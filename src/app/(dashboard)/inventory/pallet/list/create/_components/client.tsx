@@ -364,6 +364,39 @@ export const Client = () => {
   // handling close end ----------------------------------------------------------------
 
   useEffect(() => {
+    const brandsStr =
+      input.brand?.length > 0
+        ? input.brand.map((b: any) => b.name).join(", ")
+        : "various brands";
+
+    const desc = `Palet "${input.name || "Unnamed"}" - Category: ${
+      input.category?.name || "Not selected"
+    }, Warehouse: ${input.warehouse?.name || "Not selected"}, Condition: ${
+      input.condition?.name || "Not selected"
+    }, Status: ${
+      input.status?.name || "Not selected"
+    }, Brands: ${brandsStr}. Total products: ${
+      metaPage?.total || 0
+    }, Total price: ${formatRupiah(parseFloat(input.totalNew || "0"))}.`;
+
+    if (input.description !== desc) {
+      setInput((prev: any) => ({
+        ...prev,
+        description: desc,
+      }));
+    }
+  }, [
+    input.name,
+    input.category?.name,
+    input.warehouse?.name,
+    input.condition?.name,
+    input.status?.name,
+    JSON.stringify(input.brand),
+    input.totalNew,
+    metaPage?.total,
+  ]);
+
+  useEffect(() => {
     alertError({
       isError,
       error: error as AxiosError,
@@ -763,9 +796,7 @@ export const Client = () => {
                       setIsOpenCondition(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.title}
-                      </div>
+                      <div className="w-full font-medium">{item.title}</div>
                     )}
                   />
                 </div>
@@ -790,9 +821,7 @@ export const Client = () => {
                       setIsOpenStatus(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.status}
-                      </div>
+                      <div className="w-full font-medium">{item.status}</div>
                     )}
                   />
                 </div>
@@ -800,13 +829,14 @@ export const Client = () => {
               <div className="flex flex-col w-full col-span-2 gap-1.5">
                 <Label>Description</Label>
                 <RichInput
+                  key={input.description}
                   content={input.description}
                   className="min-h-[250px]"
                   editorClassName={"max-h-[235px]"}
-                  onChange={(e) =>
+                  onChange={(desc) =>
                     setInput((prev: any) => ({
                       ...prev,
-                      description: e,
+                      description: desc,
                     }))
                   }
                 />
