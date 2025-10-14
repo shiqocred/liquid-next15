@@ -27,7 +27,7 @@ export const useUpdateProductCategory = () => {
     endpoint: "/new_products/:id",
     method: "put",
     onSuccess: () => {
-      toast.success("Product successfully Deleted");
+      toast.success("Product successfully Updated");
     },
     onError: {
       message: "Product failed to update",
