@@ -172,16 +172,14 @@ export const Client = () => {
         if (searchRef.current) {
           searchRef.current.focus();
         }
-        if (data.data.data.resource?.new_category_product) {
-          setBarcodeOpen(true);
-          setMetaBarcode({
-            barcode: data.data.data.resource.new_barcode_product,
-            newPrice: data.data.data.resource.new_price_product,
-            oldPrice: data.data.data.resource.old_price_product,
-            category: data.data.data.resource.new_category_product,
-            discount: data.data.data.resource.discount_category,
-          });
-        }
+        setBarcodeOpen(true);
+        setMetaBarcode({
+          barcode: data.data.data.resource.new_barcode_product,
+          newPrice: data.data.data.resource.new_price_product,
+          oldPrice: data.data.data.resource.old_price_product,
+          category: data.data.data.resource.new_category_product,
+          discount: data.data.data.resource.discount_category,
+        });
       },
     });
   };
@@ -241,16 +239,6 @@ export const Client = () => {
             category: data.data.data.resource.new_category_product,
             discount: data.data.data.resource.discount_category,
           });
-          // if (data.data.data.resource?.new_category_product) {
-          //   setBarcodeOpen(true);
-          //   setMetaBarcode({
-          //     barcode: data.data.data.resource.new_barcode_product,
-          //     newPrice: data.data.data.resource.new_price_product,
-          //     oldPrice: data.data.data.resource.old_price_product,
-          //     category: data.data.data.resource.new_category_product,
-          //     discount: data.data.data.resource.discount_category,
-          //   });
-          // }
         } else if (!data.data.data.needConfirmation) {
           if (data.data.data.message === "The new barcode already exists") {
             toast.error(data.data.data.message);
