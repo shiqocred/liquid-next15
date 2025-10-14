@@ -43,7 +43,7 @@ export const useDeleteB2B = () => {
           "message" in err.response.data.data
             ? err.response.data.data.message
             : "Bad Request";
-        toast.error(`ERROR ${message}`);
+        toast.error(`ERROR ${err?.status}: ${message}`);
       } else {
         toast.error(`ERROR ${err?.status}: ${err.message}`);
         console.log("ERROR_DELETE_B2B:", err);

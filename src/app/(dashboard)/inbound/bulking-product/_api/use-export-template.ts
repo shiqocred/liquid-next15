@@ -5,8 +5,6 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
-
-
 type Error = AxiosError;
 
 export const useExportTemplate = () => {
@@ -29,12 +27,18 @@ export const useExportTemplate = () => {
       toast.success("File Successfully Exported");
     },
     onError: (err) => {
+      console.log("ERROR_EXPORT_TEMPLATE_BULKING:", err);
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(
-          `ERROR ${err?.status}: Detail B2B failed to export`
-        );
+        const message =
+          err?.response &&
+          err.response.data &&
+          typeof err.response.data === "object" &&
+          "message" in err.response.data
+            ? err.response.data.message
+            : "Detail B2B failed to export";
+        toast.error(`ERROR ${err?.status}: ${message}`);
         console.log("ERROR_EXPORT_DETAIL_B2B:", err);
       }
     },
