@@ -253,7 +253,7 @@ export const DialogUploadExcel = ({
                   Data tidak ditemukan:
                 </p>
                 <ul className="list-disc list-inside max-h-40 overflow-y-auto">
-                  {errorResponse.data.resource.missing_barcodes.map(
+                  {errorResponse?.data?.resource?.missing_barcodes.map(
                     (item: string, i: number) => (
                       <li key={i}>{item}</li>
                     )

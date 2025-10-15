@@ -17,8 +17,6 @@ const OnlyQRPrinted: React.FC<OnlyQRPrint> = ({ qr, qty, cancel }) => {
     contentRef: componentRef,
   });
 
-  const qrValue = qty !== undefined ? `barcode: ${qr} Qty: ${qty}` : qr;
-
   return (
     <div>
       <div className="border rounded-md border-gray-500 p-2 w-fit">
@@ -28,7 +26,7 @@ const OnlyQRPrinted: React.FC<OnlyQRPrint> = ({ qr, qty, cancel }) => {
         >
           <div className="flex flex-row w-full items-start">
             <div className="flex flex-col items-center">
-              {qr && <QRCode value={qrValue} size={80} level="H" />}
+              {qr && <QRCode value={qr} size={80} level="H" />}
               <div className="mt-2 text-left text-sm font-semibold">{qr}</div>
             </div>
             <div className="flex flex-col ml-6 mt-2">
