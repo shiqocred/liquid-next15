@@ -62,6 +62,7 @@ export const DialogUploadExcel = ({
   );
   const [count, setCount] = useState(0);
   const [errorResponse, setErrorResponse] = useState<any>(null);
+  const [successResponse, setSuccessResponse] = useState<any>(null);
 
   const { data, isSuccess, reset, isError, error } = addProductExcelMutate;
   const onDrop = (acceptedFiles: File[]) => {
@@ -75,10 +76,10 @@ export const DialogUploadExcel = ({
     }
   };
   const dataResponse = data?.data ?? null;
+
   useEffect(() => {
     if (isError && (error as any)?.response?.status === 422) {
       const errData = (error as any)?.response?.data;
-      console.log("errData:", errData);
       setErrorResponse(errData);
       setIsNotif("error");
     }
@@ -116,8 +117,13 @@ export const DialogUploadExcel = ({
       } else {
         setIsNotif("success");
         setCount(5);
+        setSuccessResponse(dataResponse);
         reset();
       }
+    }
+
+    if (isNotif === "success" && count === 0) {
+      onOpenChange();
     }
 
     if (!open) {
@@ -126,12 +132,6 @@ export const DialogUploadExcel = ({
       reset();
     }
   }, [open, isSuccess, count]);
-
-  useEffect(() => {
-    if (isNotif === "success" && count === 0) {
-      onOpenChange();
-    }
-  }, [isNotif, count, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -224,10 +224,13 @@ export const DialogUploadExcel = ({
             <div className="size-14 flex justify-center items-center bg-green-500 text-white rounded-full shadow">
               <Check className="size-10" />
             </div>
-            <h5 className="text-xl font-bold">File Successfully Uploaded</h5>
+            <h5 className="text-xl font-bold">
+              {" "}
+              {successResponse?.data?.message ?? "File Successfuly Uploaded"}
+            </h5>
             <p>
               Data Found:{" "}
-              {dataResponse?.resource?.processed_count.toLocaleString()}
+              {successResponse?.data?.resource?.processed_count.toLocaleString()}
             </p>
             <p>Notif will be close in {count} second</p>
           </div>
