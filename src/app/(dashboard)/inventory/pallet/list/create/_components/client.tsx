@@ -302,30 +302,10 @@ export const Client = () => {
     if (file) {
       bodyFile.append("file", file);
     }
-    // bodyFile.append("buyer_id", input.buyer_id);
-    // bodyFile.append(
-    //   "bulky_document_id",
-    //   typeof b2bId === "string"
-    //     ? b2bId
-    //     : Array.isArray(b2bId)
-    //     ? b2bId[0] ?? ""
-    //     : ""
-    // );
 
-    mutateAddProductExcel(
-      { body: type === "product" ? bodyProduct : bodyFile }
-      // {
-      //   onSuccess: () => {
-      //     if (dialog === "product") {
-      //       setDialog("");
-      //     }
-      //     setSearch("");
-      //     if (searchRef.current) {
-      //       searchRef.current.focus();
-      //     }
-      //   },
-      // }
-    );
+    mutateAddProductExcel({
+      body: type === "product" ? bodyProduct : bodyFile,
+    });
   };
 
   const handleRemoveProduct = async (id: any) => {
@@ -1103,13 +1083,6 @@ export const Client = () => {
               List Product Filtered
             </h5>
             <div className="flex gap-4 items-center">
-              <Button
-                variant={"liquid"}
-                onClick={() => setIsOpenUploadExcel(true)}
-              >
-                <Upload />
-                Import File
-              </Button>
               <TooltipProviderPage value={"Reload Data"}>
                 <Button
                   onClick={() => refetch()}
@@ -1125,6 +1098,15 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
+              <Button
+                variant={"liquid"}
+                onClick={() => setIsOpenUploadExcel(true)}
+                disabled={isPendingSubmit || isPendingAddProductExcel}
+                className="z-10"
+              >
+                <Upload />
+                Import File
+              </Button>
               <Button
                 variant={"liquid"}
                 disabled={isPendingSubmit || isPendingAddProduct}
