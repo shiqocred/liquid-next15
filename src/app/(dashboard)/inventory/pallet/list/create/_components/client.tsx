@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Send,
   Trash2,
+  Upload,
   X,
   XCircle,
 } from "lucide-react";
@@ -75,6 +76,8 @@ import { useGetWarehouseBulky } from "../_api/use-get-warehouse-bulky";
 import { useGetBrandsBulky } from "../_api/use-get-brands-bulky";
 import { useGetConditionsBulky } from "../_api/use-get-conditions-bulky";
 import { useGetStatusBulky } from "../_api/use-get-statuses-bulky";
+import { DialogUploadExcel } from "./dialog-upload-excel";
+import { useAddProductExcel } from "../_api/use-add-product-excel";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -95,6 +98,7 @@ export const Client = () => {
   const [isProduct, setIsProduct] = useState(false);
   const [isOpenImage, setIsOpenImage] = useState(false);
   const [isOpenUpload, setIsOpenUpload] = useState(false);
+  const [isOpenUploadExcel, setIsOpenUploadExcel] = useState(false);
 
   const [resProceedImage, setResProceedImage] = useState<string[]>([]);
   const [urlDialog, setUrlDialog] = useState("/images/liquid8_og_800x800.png");
@@ -153,7 +157,9 @@ export const Client = () => {
 
   const { mutate: mutateAddProduct, isPending: isPendingAddProduct } =
     useAddProduct();
-
+  const addProducExcelMutate = useAddProductExcel();
+  const { mutate: mutateAddProductExcel, isPending: isPendingAddProductExcel } =
+    addProducExcelMutate;
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
 
@@ -275,6 +281,31 @@ export const Client = () => {
 
   const handleAddProduct = (id: any) => {
     mutateAddProduct({ id });
+  };
+
+  const handleAddProductExcel = ({
+    type,
+    barcode,
+    file,
+  }: {
+    type: "product" | "file";
+    barcode?: string;
+    file?: File;
+  }) => {
+    const bodyProduct = {
+      barcode_product: barcode,
+      // buyer_id: input.buyer_id,
+      // bulky_document_id: b2bId,
+    };
+
+    const bodyFile = new FormData();
+    if (file) {
+      bodyFile.append("file", file);
+    }
+
+    mutateAddProductExcel({
+      body: type === "product" ? bodyProduct : bodyFile,
+    });
   };
 
   const handleRemoveProduct = async (id: any) => {
@@ -583,6 +614,17 @@ export const Client = () => {
         setUrlDialog={setUrlDialog}
         isPending={isPendingProceed}
         images={resProceedImage.length}
+      />
+      <DialogUploadExcel
+        open={isOpenUploadExcel}
+        onOpenChange={() => {
+          if (isOpenUploadExcel) {
+            setIsOpenUploadExcel(false);
+          }
+        }}
+        handleAddProductExcel={handleAddProductExcel}
+        addProductExcelMutate={addProducExcelMutate}
+        isPendingAddProductExcel={isPendingAddProductExcel}
       />
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
@@ -1056,6 +1098,15 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
+              <Button
+                variant={"liquid"}
+                onClick={() => setIsOpenUploadExcel(true)}
+                disabled={isPendingSubmit || isPendingAddProductExcel}
+                className="z-10"
+              >
+                <Upload />
+                Import File
+              </Button>
               <Button
                 variant={"liquid"}
                 disabled={isPendingSubmit || isPendingAddProduct}
