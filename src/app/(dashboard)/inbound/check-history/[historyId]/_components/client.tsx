@@ -414,7 +414,7 @@ export const Client = () => {
                         ).toLocaleString()}{" "}
                       </td>
                       <td>
-                        {(dataDetailCH?.percentage_in ?? 0).toLocaleString()} %
+                        {(dataDetailCH?.precentage_total_data ?? 0).toLocaleString()} %
                       </td>
                     </tr>
                     <tr className="text-left">
