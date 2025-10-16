@@ -86,7 +86,7 @@ const DialogOnlinePayment = ({
                 className="bg-yellow-400 hover:bg-yellow-400/80 text-black w-full"
                 type="submit"
               >
-                Update
+                Confirm
               </Button>
             </div>
           </form>

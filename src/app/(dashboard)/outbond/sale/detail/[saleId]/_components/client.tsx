@@ -49,7 +49,6 @@ import { useExport } from "../_api/use-export";
 import { useExportExcel } from "../_api/use-export-excel";
 import { format } from "date-fns";
 import { useUpdateOnlinePayment } from "../_api/use-update-online-payment";
-import { toast } from "sonner";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -258,24 +257,6 @@ export const Client = () => {
     );
   };
 
-  // const handleUpdateOnlinePayment = async () => {
-  //   mutateUpdateOnlinePayment(
-  //     {
-  //       id: saleId,
-  //       body: {
-  //         email: inputOnlinePayment.email,
-  //         payment_type: inputOnlinePayment.payment_type,
-  //       },
-  //     },
-  //     {
-  //       onSuccess: () => {
-  //         handleCloseUpdateOnlinePayment();
-  //         setIsShowQrDialog(true);
-  //       },
-  //     }
-  //   );
-  // };
-
   const handleUpdateOnlinePayment = async () => {
     mutateUpdateOnlinePayment(
       {
@@ -291,11 +272,9 @@ export const Client = () => {
           setIsShowQrDialog(true);
         },
         onError: (error: any) => {
-          // contoh deteksi error, bisa disesuaikan dengan struktur error API kamu
-          console.log("error", error);
-          console.log("status", error?.response?.data?.data?.resource?.status);
           if (
-            error?.response?.data?.data?.resource?.status === "email_not_registered"
+            error?.response?.data?.data?.resource?.status ===
+            "email_not_registered"
           ) {
             setisOnlinePayment(false);
             setRegisterEmailData({
@@ -305,7 +284,7 @@ export const Client = () => {
             });
             setIsRegisterEmailDialog(true);
           } else {
-            toast.error("Gagal update payment!");
+            console.log("error", error);
           }
         },
       }
@@ -327,9 +306,6 @@ export const Client = () => {
         onSuccess: () => {
           setIsRegisterEmailDialog(false);
           setIsShowQrDialog(true);
-        },
-        onError: () => {
-          toast.error("Gagal mendaftarkan email, coba lagi.");
         },
       }
     );
