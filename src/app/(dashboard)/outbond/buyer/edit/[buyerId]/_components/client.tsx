@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Edit3,
-  PencilRuler,
-  RefreshCw,
-} from "lucide-react";
+import { ArrowLeft, Edit3, PencilRuler, ReceiptText, RefreshCw } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
@@ -49,7 +44,7 @@ export const Client = () => {
   const { metaPage, page, setPage, setPagination } = usePagination();
 
   // mutate DELETE, UPDATE
-  const { mutate: mutateUpdate} = useUpdateBuyer();
+  const { mutate: mutateUpdate } = useUpdateBuyer();
 
   // get detail data
   const {
@@ -146,31 +141,25 @@ export const Client = () => {
       header: "Total Purchase",
       cell: ({ row }) => formatRupiah(row.original.grand_total),
     },
-    // {
-    //   accessorKey: "action",
-    //   header: () => <div className="text-center">Action</div>,
-    //   cell: ({ row }) => (
-    //     <div className="flex gap-4 justify-center items-center">
-    //       <TooltipProviderPage value={<p>Delete</p>}>
-    //         <Button
-    //           className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-    //           variant={"outline"}
-    //           // disabled={isPendingDelete}
-    //           // onClick={(e) => {
-    //           //   e.preventDefault();
-    //           //   handleDelete(row.original.id);
-    //           // }}
-    //         >
-    //           {/* {isPendingDelete ? (
-    //             <Loader2 className="w-4 h-4 animate-spin" />
-    //           ) : (
-    //             <Trash2 className="w-4 h-4" />
-    //           )} */}
-    //         </Button>
-    //       </TooltipProviderPage>
-    //     </div>
-    //   ),
-    // },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              asChild
+            >
+              <Link href={`/outbond/sale/detail/${row.original.id}`}>
+                <ReceiptText className="w-4 h-4" />
+              </Link>
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
   ];
 
   // loading

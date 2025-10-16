@@ -49,6 +49,7 @@ import { useExport } from "../_api/use-export";
 import { useExportExcel } from "../_api/use-export-excel";
 import { format } from "date-fns";
 import { useUpdateOnlinePayment } from "../_api/use-update-online-payment";
+import { toast } from "sonner";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -71,6 +72,9 @@ const DialogOnlinePayment = dynamic(() => import("./dialog-online-payment"), {
 const DialogQrCode = dynamic(() => import("./dialog-qr-code"), {
   ssr: false,
 });
+const DialogRegisterEmail = dynamic(() => import("./dialog-register-email"), {
+  ssr: false,
+});
 
 export const Client = () => {
   const { saleId } = useParams();
@@ -82,6 +86,12 @@ export const Client = () => {
   const [isExportProduct, setIsExportProduct] = useState(false);
   const [isOnlinePayment, setisOnlinePayment] = useState(false);
   const [isShowQrDialog, setIsShowQrDialog] = useState(false);
+  const [isRegisterEmailDialog, setIsRegisterEmailDialog] = useState(false);
+  const [registerEmailData, setRegisterEmailData] = useState({
+    email: "",
+    payment_type: "",
+    phone_number: "",
+  });
 
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -248,6 +258,24 @@ export const Client = () => {
     );
   };
 
+  // const handleUpdateOnlinePayment = async () => {
+  //   mutateUpdateOnlinePayment(
+  //     {
+  //       id: saleId,
+  //       body: {
+  //         email: inputOnlinePayment.email,
+  //         payment_type: inputOnlinePayment.payment_type,
+  //       },
+  //     },
+  //     {
+  //       onSuccess: () => {
+  //         handleCloseUpdateOnlinePayment();
+  //         setIsShowQrDialog(true);
+  //       },
+  //     }
+  //   );
+  // };
+
   const handleUpdateOnlinePayment = async () => {
     mutateUpdateOnlinePayment(
       {
@@ -261,6 +289,47 @@ export const Client = () => {
         onSuccess: () => {
           handleCloseUpdateOnlinePayment();
           setIsShowQrDialog(true);
+        },
+        onError: (error: any) => {
+          // contoh deteksi error, bisa disesuaikan dengan struktur error API kamu
+          console.log("error", error);
+          console.log("status", error?.response?.data?.data?.resource?.status);
+          if (
+            error?.response?.data?.data?.resource?.status === "email_not_registered"
+          ) {
+            setisOnlinePayment(false);
+            setRegisterEmailData({
+              email: inputOnlinePayment.email,
+              payment_type: inputOnlinePayment.payment_type,
+              phone_number: "",
+            });
+            setIsRegisterEmailDialog(true);
+          } else {
+            toast.error("Gagal update payment!");
+          }
+        },
+      }
+    );
+  };
+
+  const handleRegisterEmail = async () => {
+    mutateUpdateOnlinePayment(
+      {
+        id: saleId,
+        body: {
+          email: registerEmailData.email,
+          payment_type: registerEmailData.payment_type,
+          register_email: true,
+          phone_number: registerEmailData.phone_number,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsRegisterEmailDialog(false);
+          setIsShowQrDialog(true);
+        },
+        onError: () => {
+          toast.error("Gagal mendaftarkan email, coba lagi.");
         },
       }
     );
@@ -664,6 +733,14 @@ export const Client = () => {
           }
         }}
       />
+      <DialogRegisterEmail
+        open={isRegisterEmailDialog}
+        onClose={() => setIsRegisterEmailDialog(false)}
+        input={registerEmailData}
+        setInput={setRegisterEmailData}
+        onSubmit={handleRegisterEmail}
+      />
+
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
           <BreadcrumbList>

@@ -414,7 +414,7 @@ export const Client = () => {
                         ).toLocaleString()}{" "}
                       </td>
                       <td>
-                        {(dataDetailCH?.percentage_in ?? 0).toLocaleString()} %
+                        {(dataDetailCH?.precentage_total_data ?? 0).toLocaleString()} %
                       </td>
                     </tr>
                     <tr className="text-left">
@@ -541,8 +541,16 @@ export const Client = () => {
                     </tr>
                     <tr className="text-left">
                       <td>Inbound</td>
-                      <td>{formatRupiah(dataDetailCH?.total_price) ?? "-"} </td>
-                      <td>100 % </td>
+                      <td>
+                        {formatRupiah(dataDetailCH?.total_price_in) ?? "-"}{" "}
+                      </td>
+                      <td>
+                        {" "}
+                        {(
+                          dataDetailCH?.percentage_in ?? 0
+                        ).toLocaleString()}{" "}
+                        %{" "}
+                      </td>
                     </tr>
                     <tr className="text-left font-bold bg-sky-200">
                       <td>Target Inbound</td>
