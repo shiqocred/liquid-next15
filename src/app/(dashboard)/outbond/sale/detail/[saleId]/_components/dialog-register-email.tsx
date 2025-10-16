@@ -31,7 +31,8 @@ const DialogRegisterEmail = ({
         <DialogHeader>
           <DialogTitle>Register Email Baru</DialogTitle>
           <DialogDescription>
-            Email belum terdaftar, silakan masukkan nomor telepon untuk pendaftaran.
+            Email belum terdaftar, no telepon wajib diisi apabila buyer belum
+            memiliki nomor telepon.{" "}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -64,9 +65,9 @@ const DialogRegisterEmail = ({
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              Batal
+              Cancel
             </Button>
-            <Button type="submit">Daftarkan Email</Button>
+            <Button type="submit">Register Email</Button>
           </div>
         </form>
       </DialogContent>
@@ -75,4 +76,3 @@ const DialogRegisterEmail = ({
 };
 
 export default DialogRegisterEmail;
-
