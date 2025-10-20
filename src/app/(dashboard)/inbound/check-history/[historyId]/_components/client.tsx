@@ -398,11 +398,36 @@ export const Client = () => {
                   </thead>
                   <tbody>
                     <tr className="text-left">
-                      <td>List</td>
+                      <td>Abnormal</td>
                       <td>
-                        {(dataDetailCH?.total_data ?? 0).toLocaleString()}
+                        {(
+                          dataDetailCHAfterRefresh?.abnormal ??
+                          dataDetailCH?.total_data_abnormal ??
+                          0
+                        ).toLocaleString()}
                       </td>
-                      <td>100%</td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_abnormal ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Damaged</td>
+                      <td>
+                        {(
+                          dataDetailCHAfterRefresh?.damaged ??
+                          dataDetailCH?.total_data_damaged ??
+                          0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_damaged ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
                     </tr>
                     <tr className="text-left">
                       <td>Inbound</td>
@@ -414,8 +439,18 @@ export const Client = () => {
                         ).toLocaleString()}{" "}
                       </td>
                       <td>
-                        {(dataDetailCH?.precentage_total_data ?? 0).toLocaleString()} %
+                        {(
+                          dataDetailCH?.precentage_total_data ?? 0
+                        ).toLocaleString()}{" "}
+                        %
                       </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>List</td>
+                      <td>
+                        {(dataDetailCH?.total_data ?? 0).toLocaleString()}
+                      </td>
+                      <td>100%</td>
                     </tr>
                     <tr className="text-left">
                       <td>Discrepancy</td>
@@ -429,32 +464,6 @@ export const Client = () => {
                           dataDetailCH?.percentage_discrepancy ?? 0
                         ).toLocaleString()}{" "}
                         %
-                      </td>
-                    </tr>
-                     <tr className="text-left">
-                      <td>Abnormal</td>
-                      <td>
-                       {(
-                        dataDetailCHAfterRefresh?.abnormal ??
-                        dataDetailCH?.total_data_abnormal ??
-                        0
-                      ).toLocaleString()}
-                      </td>
-                      <td>
-                        {(dataDetailCH?.percentage_abnormal ?? 0).toLocaleString()} %
-                      </td>
-                    </tr>
-                     <tr className="text-left">
-                      <td>Damaged</td>
-                      <td>
-                       {(
-                        dataDetailCHAfterRefresh?.damaged ??
-                        dataDetailCH?.total_data_damaged ??
-                        0
-                      ).toLocaleString()}
-                      </td>
-                      <td>
-                        {(dataDetailCH?.percentage_damaged ?? 0).toLocaleString()} %
                       </td>
                     </tr>
                   </tbody>
@@ -523,8 +532,7 @@ export const Client = () => {
                         {" "}
                         {(
                           dataDetailCH?.percentage_in ?? 0
-                        ).toLocaleString()}{" "}
-                        %{" "}
+                        ).toLocaleString()} %{" "}
                       </td>
                     </tr>
                     <tr className="text-left font-bold bg-sky-200">
