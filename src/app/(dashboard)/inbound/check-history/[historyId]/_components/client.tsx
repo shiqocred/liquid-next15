@@ -384,7 +384,7 @@ export const Client = () => {
           </div>
           <div className="flex flex-row gap-6 w-full">
             <div className="flex flex-col gap-4 w-2/3">
-              <div className="bg-white rounded-md p-4">
+              <div className="bg-sky-200 rounded-md p-4">
                 <h2 className="text-2xl font-bold text-center mb-2">
                   MASTER LIST
                 </h2>
@@ -398,11 +398,36 @@ export const Client = () => {
                   </thead>
                   <tbody>
                     <tr className="text-left">
-                      <td>List</td>
+                      <td>Abnormal</td>
                       <td>
-                        {(dataDetailCH?.total_data ?? 0).toLocaleString()}
+                        {(
+                          dataDetailCHAfterRefresh?.abnormal ??
+                          dataDetailCH?.total_data_abnormal ??
+                          0
+                        ).toLocaleString()}
                       </td>
-                      <td>100%</td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_abnormal ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>Damaged</td>
+                      <td>
+                        {(
+                          dataDetailCHAfterRefresh?.damaged ??
+                          dataDetailCH?.total_data_damaged ??
+                          0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_damaged ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
                     </tr>
                     <tr className="text-left">
                       <td>Inbound</td>
@@ -414,8 +439,18 @@ export const Client = () => {
                         ).toLocaleString()}{" "}
                       </td>
                       <td>
-                        {(dataDetailCH?.precentage_total_data ?? 0).toLocaleString()} %
+                        {(
+                          dataDetailCH?.precentage_total_data ?? 0
+                        ).toLocaleString()}{" "}
+                        %
                       </td>
+                    </tr>
+                    <tr className="text-left">
+                      <td>List</td>
+                      <td>
+                        {(dataDetailCH?.total_data ?? 0).toLocaleString()}
+                      </td>
+                      <td>100%</td>
                     </tr>
                     <tr className="text-left">
                       <td>Discrepancy</td>
@@ -433,57 +468,6 @@ export const Client = () => {
                     </tr>
                   </tbody>
                 </table>
-              </div>
-              {/* ABNORMAL & DAMAGED */}
-              <div className="flex gap-4">
-                <div className="bg-sky-200 rounded-md p-4 w-1/2">
-                  <h3 className="font-bold text-center mb-2">ABNORMAL</h3>
-                  <div className="flex flex-col gap-1 text-left">
-                    <span>
-                      Total:{" "}
-                      {(
-                        dataDetailCHAfterRefresh?.abnormal ??
-                        dataDetailCH?.total_data_abnormal ??
-                        0
-                      ).toLocaleString()}
-                    </span>
-                    <span>
-                      Value:{" "}
-                      {formatRupiah(dataDetailCH?.abnormal?.total_old_price) ??
-                        "-"}
-                    </span>
-                    <span>
-                      Percentage:{" "}
-                      {(
-                        dataDetailCH?.percentage_abnormal ?? 0
-                      ).toLocaleString()}{" "}
-                      %
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-sky-200 rounded-md p-4 w-1/2">
-                  <h3 className="font-bold text-center mb-2">DAMAGED</h3>
-                  <div className="flex flex-col gap-1 text-left">
-                    <span>
-                      Total:{" "}
-                      {(
-                        dataDetailCHAfterRefresh?.damaged ??
-                        dataDetailCH?.total_data_damaged ??
-                        0
-                      ).toLocaleString()}
-                    </span>
-                    <span>
-                      Value:{" "}
-                      {formatRupiah(dataDetailCH?.damaged?.total_old_price) ??
-                        "-"}
-                    </span>
-                    <span>
-                      Percentage:{" "}
-                      {(dataDetailCH?.percentage_damaged ?? 0).toLocaleString()}{" "}
-                      %
-                    </span>
-                  </div>
-                </div>
               </div>
               {/* SUMMARY */}
               <div className="bg-white rounded-md p-4 mt-2">
@@ -548,8 +532,7 @@ export const Client = () => {
                         {" "}
                         {(
                           dataDetailCH?.percentage_in ?? 0
-                        ).toLocaleString()}{" "}
-                        %{" "}
+                        ).toLocaleString()} %{" "}
                       </td>
                     </tr>
                     <tr className="text-left font-bold bg-sky-200">
