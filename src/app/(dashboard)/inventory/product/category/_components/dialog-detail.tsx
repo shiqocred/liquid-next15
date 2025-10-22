@@ -33,7 +33,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 
 export const DialogDetail = ({
   isOpen,
@@ -71,6 +71,26 @@ export const DialogDetail = ({
       return filteredEntries?.[0] ?? "";
     }
   };
+  useEffect(() => {
+    let discount = 0;
+    if (input.category) {
+      const selectedCategory = categories.find(
+        (item: any) => item.name_category === input.category
+      );
+      discount = selectedCategory
+        ? parseFloat(selectedCategory.discount_category ?? "0")
+        : 0;
+    }
+
+    const oldPrice = parseFloat(input.oldPrice) || 0;
+    const newPrice = oldPrice - (oldPrice * discount) / 100;
+
+    setInput((prev: any) => ({
+      ...prev,
+      price: newPrice.toString(),
+    }));
+  }, [input.oldPrice, input.category, categories]);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
