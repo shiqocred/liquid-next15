@@ -35,7 +35,10 @@ export const useAddProduct = () => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to add`);
+        toast.error( `ERROR ${err?.status}: ${
+            (err.response?.data as any).data.message ||
+            "Product failed to add"
+          } `);
         console.log("ERROR_ADD_PRODUCT:", err);
       }
     },
