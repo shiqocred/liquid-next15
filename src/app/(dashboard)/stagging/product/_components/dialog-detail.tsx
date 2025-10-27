@@ -135,6 +135,37 @@ export const DialogDetail = ({
   };
 
   useEffect(() => {
+    let discount = 0;
+    if (input.category) {
+      const selectedCategory = categories.find(
+        (item: any) => item.name_category === input.category
+      );
+      discount = selectedCategory
+        ? parseFloat(selectedCategory.discount_category ?? "0")
+        : 0;
+    }
+
+    const oldPrice = parseFloat(input.oldPrice) || 0;
+    const newPrice = oldPrice - (oldPrice * discount) / 100;
+
+    setInput((prev: any) => ({
+      ...prev,
+      price: newPrice.toString(),
+    }));
+  }, [input.oldPrice, input.category, categories]);
+
+  useEffect(() => {
+    setInput((prev) => ({
+      ...prev,
+      displayPrice: Math.round(
+        parseFloat(input.price ?? "0") -
+          (parseFloat(input.price ?? "0") / 100) *
+            parseFloat(input.discount ?? "0")
+      ).toString(),
+    }));
+  }, [input.discount, input.price]);
+  
+  useEffect(() => {
     alertError({
       isError,
       error: error as AxiosError,
@@ -532,7 +563,7 @@ export const DialogDetail = ({
                   <Input
                     id="priceNew"
                     className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent  disabled:opacity-100"
-                    value={formatRupiah(parseFloat(input.price || "0"))}
+                    value={formatRupiah(parseFloat(input.displayPrice || "0"))}
                     disabled
                   />
                 </div>
