@@ -221,7 +221,7 @@ export const Client = () => {
   );
 
   const [AddProductDialog, confirmAddProduct] = useConfirm(
-    "UNMATCHED PRICE",
+    "Confirm Add Product",
     dynamicMessage,
     "liquid"
   );
@@ -406,13 +406,13 @@ export const Client = () => {
           handleCloseProduct();
         },
         onError: async (err: any) => {
-          // const message =
-          //   (err?.response?.data?.data as any)?.resource ||
-          //   "Data produk tidak sesuai, lanjutkan?";
+          if (err?.status === 404) {
+            setDynamicMessage("Product tidak ada");
+            await confirmAddProduct(); 
+            return; 
+          }
 
           const resource = (err?.response?.data?.data as any)?.resource ?? {};
-
-          // siapkan data dengan fallback default
           const barcodeMsg = resource.barcode ?? "-";
           const systemPrice = resource.price_now
             ? `Rp ${formatRupiah(resource.price_now)}`
@@ -420,11 +420,10 @@ export const Client = () => {
           const ExpectPrice = resource.expected_price
             ? `Rp ${formatRupiah(resource.expected_price)}`
             : "-";
-
-          // format pesan error yang rapi
           const message = `
-          Barcode : ${barcodeMsg}\n
-          Harga sistem : ${systemPrice}\n
+          ⚠️ UNMATCHED PRICE\n
+          Barcode : ${barcodeMsg}
+          Harga sistem : ${systemPrice}
           Harga seharusnya : ${ExpectPrice}`;
 
           setDynamicMessage(message);

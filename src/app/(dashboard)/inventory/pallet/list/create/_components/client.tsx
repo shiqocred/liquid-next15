@@ -768,6 +768,7 @@ export const Client = () => {
                           id: item.id,
                           name: item.name,
                         },
+                        name: `Palet ${item.name}`,
                       }));
                       setIsOpenCategory(false);
                     }}
