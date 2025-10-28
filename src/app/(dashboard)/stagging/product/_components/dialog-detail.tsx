@@ -164,7 +164,7 @@ export const DialogDetail = ({
       ).toString(),
     }));
   }, [input.discount, input.price]);
-  
+
   useEffect(() => {
     alertError({
       isError,
@@ -571,6 +571,7 @@ export const DialogDetail = ({
               <Button
                 disabled={
                   !input.name ||
+                  parseFloat(input.oldPrice) < 100000 || 
                   parseFloat(input.qty) === 0 ||
                   (dataDetail?.old_price_product >= 100000 &&
                     !input.category &&
