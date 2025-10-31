@@ -12,16 +12,22 @@ import { useDebounce } from "@/hooks/use-debounce";
 import {
   ArrowLeft,
   ArrowLeftRight,
+  Edit3,
   FileDown,
   FileText,
   // Gem,
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { MouseEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, MouseEvent, useEffect, useMemo, useState } from "react";
 import { Pie, PieChart, Label } from "recharts";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
-import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
+import {
+  parseAsBoolean,
+  parseAsInteger,
+  parseAsStringLiteral,
+  useQueryState,
+} from "nuqs";
 import { useGetDetailCheckHistory } from "../_api/use-get-detail-check-history";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
@@ -60,6 +66,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import Loading from "@/app/(dashboard)/loading";
 import { useGetRefreshHistoryDocument } from "../_api/use-get-refresh-history-document";
 import { toast } from "sonner";
+import DialogEdit from "./dialog-edit";
+import { useUpdateProduct } from "../_api/use-update-product";
 
 const chartConfig = {
   values: {
@@ -86,6 +94,21 @@ const chartConfig = {
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false);
   const { historyId } = useParams();
+  const [openEdit, setOpenEdit] = useQueryState(
+    "dialog",
+    parseAsBoolean.withDefault(false)
+  );
+  const [productId, setProductId] = useQueryState("productId", {
+    defaultValue: "",
+  });
+  const [tableSource, setTableSource] = useQueryState("tableSource", {
+    defaultValue: "",
+  });
+  const [input, setInput] = useState({
+    actual_old_price_product: "0",
+    condition: "",
+    deskripsi: "",
+  });
   const [filter, setFilter] = useQueryState(
     "quality",
     parseAsStringLiteral([
@@ -108,6 +131,8 @@ export const Client = () => {
   });
 
   const { mutate, isPending: isPendingExport } = useExportHistory();
+  const { mutate: mutateUpdate, isPending: isPendingUpdate } =
+    useUpdateProduct();
   const {
     data: dataDetail,
     isError: isErrorDetail,
@@ -138,6 +163,7 @@ export const Client = () => {
     isPendingDetail ||
     isRefetchingDetail ||
     isLoadingDetail ||
+    isPendingUpdate ||
     isLoadingRefresh;
 
   const {
@@ -229,6 +255,42 @@ export const Client = () => {
     );
   };
 
+  const handleUpdate = (e: FormEvent) => {
+    e.preventDefault();
+    const body = {
+      actual_old_price_product: input.actual_old_price_product,
+      condition: input.condition,
+      deskripsi: input.deskripsi,
+    };
+    mutateUpdate(
+      { id: productId, tableSource: tableSource, body },
+      {
+        onSuccess: (data) => {
+          handleClose();
+          queryClient.invalidateQueries({
+            queryKey: ["detail-check-history", data.data.data.resource.id],
+          });
+        },
+      }
+    );
+  };
+
+  const handleClose = () => {
+    setOpenEdit(false);
+    setProductId("");
+    setInput({
+      actual_old_price_product: "0",
+      condition: "",
+      deskripsi: "",
+    });
+  };
+
+  useEffect(() => {
+    if (isNaN(parseFloat(input.actual_old_price_product))) {
+      setInput((prev) => ({ ...prev, actual_old_price_product: "0" }));
+    }
+  }, [input]);
+
   const columnDetailCheckHistory: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
@@ -274,11 +336,58 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "old_price_product",
-      header: "Total Items",
+      accessorKey: "actual_old_price_product",
+      header: "Price",
       cell: ({ row }) => (
         <div className="tabular-nums">
-          {formatRupiah(row.original.old_price_product)}
+          {formatRupiah(row.original.actual_old_price_product)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Edit</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                let parsedQuality: any = {};
+                try {
+                  parsedQuality = JSON.parse(
+                    row.original.actual_new_quality ?? "{}"
+                  );
+                } catch {
+                  parsedQuality = {};
+                }
+                const activeQuality =
+                  Object.values(parsedQuality).find((val) => val !== null) ??
+                  "";
+                setInput({
+                  actual_old_price_product: row.original
+                    .actual_old_price_product
+                    ? Math.round(
+                        parseFloat(row.original.actual_old_price_product)
+                      ).toString()
+                    : "0",
+                  condition: String(activeQuality),
+                  deskripsi: row.original.deskripsi ?? "",
+                });
+                setProductId(row.original.id);
+                setTableSource(row.original.table_source);
+                setOpenEdit(true);
+              }}
+            >
+              {isPendingUpdate ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Edit3 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -306,6 +415,19 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <DialogEdit
+        open={openEdit} // open modal
+        onCloseModal={() => {
+          if (openEdit) {
+            handleClose();
+          }
+        }} // handle close modal
+        productId={productId} // productId
+        input={input} // input form
+        setInput={setInput} // setInput Form
+        handleClose={handleClose} // handle close for cancel
+        handleUpdate={handleUpdate} // handle update product
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
