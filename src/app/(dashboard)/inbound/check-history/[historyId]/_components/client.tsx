@@ -355,6 +355,17 @@ export const Client = () => {
               variant={"outline"}
               onClick={(e) => {
                 e.preventDefault();
+                let parsedQuality: any = {};
+                try {
+                  parsedQuality = JSON.parse(
+                    row.original.actual_new_quality ?? "{}"
+                  );
+                } catch {
+                  parsedQuality = {};
+                }
+                const activeQuality =
+                  Object.values(parsedQuality).find((val) => val !== null) ??
+                  "";
                 setInput({
                   actual_old_price_product: row.original
                     .actual_old_price_product
@@ -362,7 +373,7 @@ export const Client = () => {
                         parseFloat(row.original.actual_old_price_product)
                       ).toString()
                     : "0",
-                  condition: row.original.actual_new_quality ?? "",
+                  condition: String(activeQuality),
                   deskripsi: row.original.deskripsi ?? "",
                 });
                 setProductId(row.original.id);
