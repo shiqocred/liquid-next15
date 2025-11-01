@@ -12,7 +12,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import {
   ArrowLeft,
   ArrowLeftRight,
-  Edit3,
+  // Edit3,
   FileDown,
   FileText,
   // Gem,
@@ -101,7 +101,7 @@ export const Client = () => {
   const [productId, setProductId] = useQueryState("productId", {
     defaultValue: "",
   });
-  const [tableSource, setTableSource] = useQueryState("tableSource", {
+  const [tableSource] = useQueryState("tableSource", {
     defaultValue: "",
   });
   const [input, setInput] = useState({
@@ -336,61 +336,61 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "actual_old_price_product",
+      accessorKey: "old_price_product",
       header: "Price",
       cell: ({ row }) => (
         <div className="tabular-nums">
-          {formatRupiah(row.original.actual_old_price_product)}
+          {formatRupiah(row.original.old_price_product)}
         </div>
       ),
     },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => (
-        <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>Edit</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              onClick={(e) => {
-                e.preventDefault();
-                let parsedQuality: any = {};
-                try {
-                  parsedQuality = JSON.parse(
-                    row.original.actual_new_quality ?? "{}"
-                  );
-                } catch {
-                  parsedQuality = {};
-                }
-                const activeQuality =
-                  Object.values(parsedQuality).find((val) => val !== null) ??
-                  "";
-                setInput({
-                  actual_old_price_product: row.original
-                    .actual_old_price_product
-                    ? Math.round(
-                        parseFloat(row.original.actual_old_price_product)
-                      ).toString()
-                    : "0",
-                  condition: String(activeQuality),
-                  deskripsi: row.original.deskripsi ?? "",
-                });
-                setProductId(row.original.id);
-                setTableSource(row.original.table_source);
-                setOpenEdit(true);
-              }}
-            >
-              {isPendingUpdate ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Edit3 className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
-        </div>
-      ),
-    },
+    // {
+    //   accessorKey: "action",
+    //   header: () => <div className="text-center">Action</div>,
+    //   cell: ({ row }) => (
+    //     <div className="flex gap-4 justify-center items-center">
+    //       <TooltipProviderPage value={<p>Edit</p>}>
+    //         <Button
+    //           className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+    //           variant={"outline"}
+    //           onClick={(e) => {
+    //             e.preventDefault();
+    //             let parsedQuality: any = {};
+    //             try {
+    //               parsedQuality = JSON.parse(
+    //                 row.original.actual_new_quality ?? "{}"
+    //               );
+    //             } catch {
+    //               parsedQuality = {};
+    //             }
+    //             const activeQuality =
+    //               Object.values(parsedQuality).find((val) => val !== null) ??
+    //               "";
+    //             setInput({
+    //               actual_old_price_product: row.original
+    //                 .actual_old_price_product
+    //                 ? Math.round(
+    //                     parseFloat(row.original.actual_old_price_product)
+    //                   ).toString()
+    //                 : "0",
+    //               condition: String(activeQuality),
+    //               deskripsi: row.original.deskripsi ?? "",
+    //             });
+    //             setProductId(row.original.id);
+    //             setTableSource(row.original.table_source);
+    //             setOpenEdit(true);
+    //           }}
+    //         >
+    //           {isPendingUpdate ? (
+    //             <Loader2 className="w-4 h-4 animate-spin" />
+    //           ) : (
+    //             <Edit3 className="w-4 h-4" />
+    //           )}
+    //         </Button>
+    //       </TooltipProviderPage>
+    //     </div>
+    //   ),
+    // },
   ];
 
   useEffect(() => {
