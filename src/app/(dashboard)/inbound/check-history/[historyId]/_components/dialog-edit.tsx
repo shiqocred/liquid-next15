@@ -85,6 +85,7 @@ const DialogEdit = ({
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
                   placeholder="Description..."
                   value={input.deskripsi}
+                  required
                   // disabled={loadingSubmit}
                   onChange={(e) =>
                     setInput((prev: any) => ({
