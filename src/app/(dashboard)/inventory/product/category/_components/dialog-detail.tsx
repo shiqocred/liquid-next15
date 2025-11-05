@@ -472,7 +472,7 @@ export const DialogDetail = ({
                   </div>
                   <BarcodePrinted
                     barcode={data?.new_barcode_product}
-                    newPrice={data?.new_price_product}
+                    newPrice={data?.display_price}
                     oldPrice={data?.old_price_product}
                     category={data?.new_category_product}
                     discount={data?.discount_category ?? "0"}

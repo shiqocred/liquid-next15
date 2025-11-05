@@ -155,14 +155,20 @@ export const DialogDetail = ({
   }, [input.oldPrice, input.category, categories]);
 
   useEffect(() => {
-    setInput((prev) => ({
-      ...prev,
-      displayPrice: Math.round(
-        parseFloat(input.price ?? "0") -
-          (parseFloat(input.price ?? "0") / 100) *
-            parseFloat(input.discount ?? "0")
-      ).toString(),
-    }));
+    const price = parseFloat(input.price ?? "0");
+    const discount = parseFloat(input.discount ?? "0");
+    if (isNaN(discount) || discount === 0) {
+      setInput((prev) => ({
+        ...prev,
+        displayPrice: price.toString(),
+      }));
+    } else {
+      const discounted = price - (price * discount) / 100;
+      setInput((prev) => ({
+        ...prev,
+        displayPrice: Math.round(discounted).toString(),
+      }));
+    }
   }, [input.discount, input.price]);
 
   useEffect(() => {
@@ -571,7 +577,7 @@ export const DialogDetail = ({
               <Button
                 disabled={
                   !input.name ||
-                  parseFloat(input.oldPrice) < 100000 || 
+                  parseFloat(input.oldPrice) < 100000 ||
                   parseFloat(input.qty) === 0 ||
                   (dataDetail?.old_price_product >= 100000 &&
                     !input.category &&
@@ -595,7 +601,7 @@ export const DialogDetail = ({
                   </div>
                   <BarcodePrinted
                     barcode={dataDetail?.new_barcode_product}
-                    newPrice={dataDetail?.new_price_product}
+                    newPrice={dataDetail?.display_price}
                     oldPrice={dataDetail?.old_price_product}
                     category={dataDetail?.new_category_product}
                     discount={dataDetail?.discount_category ?? "0"}
