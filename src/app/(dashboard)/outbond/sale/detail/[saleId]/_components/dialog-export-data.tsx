@@ -403,13 +403,13 @@ const DialogExportData = ({
                         <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
                           Kelas
                         </p>
-                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                        <div className="w-full px-3 py-0.5 flex items-center gap-3">
                           <RankIcon rank={data?.buyer_loyalty?.rank} />
                           <span>{data?.buyer_loyalty?.rank ?? "-"}</span>
                           <span className="text-[11px]">
                             (exp. {data?.buyer_loyalty?.expired_rank ?? "-"})
                           </span>
-                        </p>
+                        </div>
                       </div>
                     </div>
 
