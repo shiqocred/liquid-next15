@@ -85,20 +85,40 @@ const DialogDetail = ({
   const isColorPrice = !!color;
 
   useEffect(() => {
-    if (isColorPrice && color?.name_color) {
-      setInput((prev: any) => ({
-        ...prev,
-        new_tag_product: color.name_color,
-        category: null,
-        price: color.fixed_price_color?.toString() ?? "",
-      }));
-    } else {
-      setInput((prev: any) => ({
-        ...prev,
-        new_tag_product: "",
-      }));
+    if (!isColorPrice && input.category) {
+      const selectedCategory = categories.find(
+        (item: any) => item.name_category === input.category
+      );
+
+      if (selectedCategory) {
+        const discount = parseFloat(selectedCategory?.discount_category ?? "0");
+        const maxPrice = parseFloat(
+          selectedCategory?.max_price_category ?? "0"
+        );
+        const oldPrice = parseFloat(input.oldPrice ?? "0");
+
+        let calculatedPrice = oldPrice - (oldPrice * discount) / 100;
+
+        if (calculatedPrice > maxPrice) {
+          calculatedPrice = oldPrice - maxPrice;
+        }
+
+        setInput((prev: any) => ({
+          ...prev,
+          price: Math.round(calculatedPrice).toString(),
+          new_tag_product: "",
+          category: selectedCategory?.name_category ?? "",
+        }));
+      } else {
+        setInput((prev: any) => ({
+          ...prev,
+          price: color.fixed_price_color?.toString() ?? "",
+          new_tag_product: color.name_color,
+          category: "",
+        }));
+      }
     }
-  }, [isColorPrice, color, setInput]);
+  }, [input.oldPrice, input.category, categories, isColorPrice]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
