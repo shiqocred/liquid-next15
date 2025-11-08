@@ -22,7 +22,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import {
   PopoverPortal,
@@ -37,6 +37,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useGetPriceProductPA } from "../_api/use-get-price-product-pa";
 
 const DialogDetail = ({
   open,
@@ -73,6 +75,50 @@ const DialogDetail = ({
       return filteredEntries?.[0] ?? "";
     }
   };
+
+  const priceValue = useDebounce(input.oldPrice, 500);
+    const { data: dataPrice } = useGetPriceProductPA({
+      price: priceValue,
+    });
+  
+    const color = dataPrice?.data?.data?.resource?.warna;
+    const isColorPrice = !!color;
+  
+    useEffect(() => {
+      if (!isColorPrice && input.category) {
+        const selectedCategory = categories.find(
+          (item: any) => item.name_category === input.category
+        );
+  
+        if (selectedCategory) {
+          const discount = parseFloat(selectedCategory?.discount_category ?? "0");
+          const maxPrice = parseFloat(
+            selectedCategory?.max_price_category ?? "0"
+          );
+          const oldPrice = parseFloat(input.oldPrice ?? "0");
+  
+          let calculatedPrice = oldPrice - (oldPrice * discount) / 100;
+  
+          if (calculatedPrice > maxPrice) {
+            calculatedPrice = oldPrice - maxPrice;
+          }
+  
+          setInput((prev: any) => ({
+            ...prev,
+            price: Math.round(calculatedPrice).toString(),
+            new_tag_product: "",
+            category: selectedCategory?.name_category ?? "",
+          }));
+        } else {
+          setInput((prev: any) => ({
+            ...prev,
+            price: color.fixed_price_color?.toString() ?? "",
+            new_tag_product: color.name_color,
+            category: "",
+          }));
+        }
+      }
+    }, [input.oldPrice, input.category, categories, isColorPrice]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
