@@ -64,6 +64,21 @@ const sidebarMenu = [
         query: "analytic-sale",
         sub_menu: [],
       },
+      // {
+      //   title: "Movement Report",
+      //   href: undefined,
+      //   icon: <LineChart className="w-5 h-5 stroke-[1.5]" />,
+      //   sub_menu: [
+      //     {
+      //       title: "Product In",
+      //       href: "/dashboard/movement-report/product-in",
+      //     },
+      //     {
+      //       title: "Product Out",
+      //       href: "/dashboard/movement-report/product-out",
+      //     },
+      //   ],
+      // },
     ],
   },
   {
