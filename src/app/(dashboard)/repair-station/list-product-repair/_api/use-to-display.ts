@@ -17,7 +17,7 @@ export const useToDisplay = () => {
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body, id }) => {
-      const res = await axios.post(`${baseUrl}/repair/update/${id}`, body, {
+      const res = await axios.put(`${baseUrl}/repair/update/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
