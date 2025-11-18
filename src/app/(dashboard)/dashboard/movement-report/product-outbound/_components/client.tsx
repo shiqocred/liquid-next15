@@ -4,6 +4,7 @@ import {
   CalendarIcon,
   ChevronDown,
   FileDown,
+  Loader2,
   RefreshCw,
   XCircle,
 } from "lucide-react";
@@ -27,7 +28,6 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
-import { useGetListRankBuyer } from "../_api/use-get-list-rank-buyer";
 import { format, subDays } from "date-fns";
 import {
   Dialog,
@@ -36,7 +36,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useGetGeneralSale } from "../_api/use-get-general-sale";
 import {
   Popover,
   PopoverContent,
@@ -50,6 +49,8 @@ import {
 } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
+import { useExportSelectedData } from "../_api/use-export-summary-outbound";
+import { useGetListSummaryOutbound } from "../_api/use-get-list-summary-outbound";
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -57,6 +58,8 @@ export const Client = () => {
     from: undefined,
     to: undefined,
   });
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportSelectedData();
   // data search, page
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
@@ -78,36 +81,25 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListRankBuyer({ p: page, q: searchValue });
-
-  // memo data utama
-  const dataList: any[] = useMemo(() => {
-    return data?.data.data.resource.data;
-  }, [data]);
-
-  // get detail data
-  const {
-    data: dataGeneral,
-    isLoading: isLoadingGeneral,
-    refetch: refetchingGeneral,
-    isRefetching: isRefetchingGeneral,
-    // isError: isErrorGeneral,
-    // error: errorGeneral,
-  } = useGetGeneralSale({
+  } = useGetListSummaryOutbound({
+    p: page,
+    q: searchValue,
     from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
     to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
   });
 
-  const loading =
-    isPending ||
-    isRefetching ||
-    isLoading ||
-    isRefetchingGeneral ||
-    isLoadingGeneral;
+  const dataOutbound = useMemo(() => {
+    return data?.data?.data?.resource;
+  }, [data]);
 
-  const dataSale = useMemo(() => {
-    return dataGeneral?.data.data.resource;
-  }, [dataGeneral]);
+  // memo data utama
+  const dataList: any[] = useMemo(() => {
+    return data?.data?.data?.resource?.data;
+  }, [data]);
+  console.log("data", data);
+  console.log("dataList", dataList);
+
+  const loading = isPending || isRefetching || isLoading;
 
   const clearRange = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -147,54 +139,63 @@ export const Client = () => {
         </div>
       ),
     },
+    // {
+    //   accessorKey: "rank",
+    //   header: "Barcode",
+    // },
+    // {
+    //   accessorKey: "rank1",
+    //   header: "Product Name",
+    //   cell: ({ row }) => (
+    //     <div className="break-all max-w-[500px]">{row.original.rank}</div>
+    //   ),
+    // },
     {
-      accessorKey: "rank",
-      header: "Barcode",
-    },
-    {
-      accessorKey: "rank1",
-      header: "Product Name",
-      cell: ({ row }) => (
-        <div className="break-all max-w-[500px]">{row.original.rank}</div>
-      ),
-    },
-    {
-      accessorKey: "expired_weeks",
+      accessorKey: "qty",
       header: "Qty",
     },
     {
-      accessorKey: "min_amount_transaction",
+      accessorKey: "old_price_product",
       header: "Old Price",
       cell: ({ row }) => (
         <div className="break-all max-w-[500px]">
-          {formatRupiah(row.original.min_amount_transaction)}
+          {formatRupiah(row.original.old_price_product)}
         </div>
       ),
     },
     {
-      accessorKey: "min_amount_transaction1",
-      header: "New Price",
+      accessorKey: "price_sale",
+      header: "Price Sale",
       cell: ({ row }) => (
         <div className="break-all max-w-[500px]">
-          {formatRupiah(row.original.min_amount_transaction)}
+          {formatRupiah(row.original.price_sale)}
         </div>
       ),
     },
     {
-      accessorKey: "min_amount_transaction2",
+      accessorKey: "display_price_product",
       header: "Display Price",
       cell: ({ row }) => (
         <div className="break-all max-w-[500px]">
-          {formatRupiah(row.original.min_amount_transaction)}
+          {formatRupiah(row.original.display_price_product)}
+        </div>
+      ),
+    },
+      {
+      accessorKey: "discount",
+      header: "Discount",
+      cell: ({ row }) => (
+        <div className="break-all max-w-[500px]">
+          {formatRupiah(row.original.discount)}
         </div>
       ),
     },
     {
-      accessorKey: "created_at",
-      header: "Input Date",
+      accessorKey: "outbound_date",
+      header: "Outbound Date",
       cell: ({ row }) => {
         const formated = format(
-          new Date(row.original.created_at),
+          new Date(row.original.outbound_date),
           "iiii, dd MMMM yyyy"
         );
         return <div className="tabular-nums">{formated}</div>;
@@ -202,8 +203,28 @@ export const Client = () => {
     },
   ];
 
+  const handleExport = async () => {
+    mutateExport(
+      {
+        searchParams: {
+          from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
+          to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+        },
+      },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
   useEffect(() => {
-    refetchingGeneral();
+    refetch();
   }, [date]);
 
   useEffect(() => {
@@ -232,11 +253,11 @@ export const Client = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>Dashboard</BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Movement Report Product In</BreadcrumbItem>
+          <BreadcrumbItem>Movement Report Product Outbound</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Movement Report Product In</h2>
+        <h2 className="text-xl font-bold">List Movement Report Product Outbound</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -258,28 +279,28 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
-              {dataSale && (
+              {dataOutbound && (
                 <div className="px-3 h-10 py-1 border rounded flex gap-3 items-center text-sm border-gray-500">
                   <p>
-                    {dataSale?.month.current_month.month +
+                    {dataOutbound?.date.current_date.date +
                       " " +
-                      dataSale?.month.current_month.year}
+                      dataOutbound?.date.current_date.year}
                   </p>
-                  {dataSale?.month.date_from.date !== null && (
+                  {dataOutbound?.date.date_from.date !== null && (
                     <>
                       <p className="w-[1px] h-full bg-black" />
                       <p>
-                        {dataSale?.month.date_from.date +
+                        {dataOutbound?.date.date_from.date +
                           " " +
-                          dataSale?.month.date_from.month +
+                          dataOutbound?.date.date_from.date +
                           " " +
-                          dataSale?.month.date_from.year +
+                          dataOutbound?.date.date_from.year +
                           " - " +
-                          (dataSale?.month.date_to.date +
+                          (dataOutbound?.date.date_to.date +
                             " " +
-                            dataSale?.month.date_to.month +
+                            dataOutbound?.date.date_to.date +
                             " " +
-                            dataSale?.month.date_to.year)}
+                            dataOutbound?.date.date_to.year)}
                       </p>
                       <button onClick={clearRange}>
                         <XCircle className="w-4 h-4 text-red-500" />
@@ -395,17 +416,17 @@ export const Client = () => {
               <Button
                 onClick={(e) => {
                   e.preventDefault();
-                  // handleExport();
+                  handleExport();
                 }}
                 className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                // disabled={isPendingExport}
+                disabled={isPendingExport}
                 variant={"outline"}
               >
-                {/* {isPendingExport ? (
+                {isPendingExport ? (
                   <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
-                ) : ( */}
-                <FileDown className={"w-4 h-4 mr-1"} />
-                {/* )} */}
+                ) : (
+                  <FileDown className={"w-4 h-4 mr-1"} />
+                )}
                 Export Data
               </Button>
             </div>

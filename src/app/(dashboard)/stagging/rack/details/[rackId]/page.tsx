@@ -1,15 +1,15 @@
 import React from "react";
 import { Metadata } from "next";
-import { Client } from "./_components/client";
 import { protect } from "@/lib/protect";
 import { redirect } from "next/navigation";
 import { Footer } from "@/components/footer";
+import { Client } from "./_component/client";
 
 export const metadata: Metadata = {
-  title: "Movement Report Product In",
+  title: "Detail Rack",
 };
 
-const MovementReportProductIn = async () => {
+const detailRackPage = async () => {
   const user = await protect();
 
   if (!user) redirect("/login");
@@ -21,4 +21,4 @@ const MovementReportProductIn = async () => {
   );
 };
 
-export default MovementReportProductIn;
+export default detailRackPage;
