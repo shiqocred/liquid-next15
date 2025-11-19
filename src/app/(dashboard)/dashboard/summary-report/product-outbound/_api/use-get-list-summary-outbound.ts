@@ -3,13 +3,13 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListSummaryOutbound = ({ p, q, from, to }: any) => {
+export const useGetListSummaryOutbound = ({ q, date_from, date_to }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-summary-outbound", { p, q, from, to }],
+    queryKey: ["list-summary-outbound", { q, date_from, date_to }],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/list-summary-outbound?page=${p}&q=${q}&from=${from}&to=${to}`,
+        `${baseUrl}/list-summary-outbound?q=${q}&date_from=${date_from}&date_to=${date_to}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

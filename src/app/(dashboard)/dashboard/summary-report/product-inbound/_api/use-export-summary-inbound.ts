@@ -3,13 +3,13 @@ import { toast } from "sonner";
 import { useMutate } from "@/lib/query";
 
 type SearchParams = {
-  from: any;
-  to: any;
+  date_from: any;
+  date_to: any;
 };
 
 export const useExportSelectedData = () => {
   const mutation = useMutate<undefined, undefined, SearchParams>({
-    endpoint: "/summary-inbound",
+    endpoint: "/export-combined-summary-inbound",
     method: "get",
     onSuccess: () => {
       toast.success("File Successfully Exported");

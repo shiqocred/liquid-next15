@@ -66,17 +66,17 @@ const sidebarMenu = [
         sub_menu: [],
       },
       {
-        title: "Movement Report",
+        title: "Summary Report",
         href: undefined,
         icon: <LineChart className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
           {
             title: "Product Inbound",
-            href: "/dashboard/movement-report/product-inbound",
+            href: "/dashboard/summary-report/product-inbound",
           },
           {
             title: "Product Outbound",
-            href: "/dashboard/movement-report/product-outbound",
+            href: "/dashboard/summary-report/product-outbound",
           },
         ],
       },

@@ -6,10 +6,10 @@ import { redirect } from "next/navigation";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Movement Report Product Outbound",
+  title: "Summary Report Product Inbound",
 };
 
-const MovementReportProductOutbound = async () => {
+const SummaryReportProductInbound = async () => {
   const user = await protect();
 
   if (!user) redirect("/login");
@@ -21,4 +21,4 @@ const MovementReportProductOutbound = async () => {
   );
 };
 
-export default MovementReportProductOutbound;
+export default SummaryReportProductInbound;

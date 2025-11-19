@@ -84,8 +84,8 @@ export const Client = () => {
   } = useGetListSummaryInbound({
     p: page,
     q: searchValue,
-    from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-    to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+    date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
+    date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
   });
 
   const dataInbound = useMemo(() => {
@@ -198,8 +198,8 @@ export const Client = () => {
     mutateExport(
       {
         searchParams: {
-          from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-          to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+          date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
+          date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
         },
       },
       {
@@ -244,11 +244,11 @@ export const Client = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>Dashboard</BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Movement Report Product In</BreadcrumbItem>
+          <BreadcrumbItem>Summary Report Product Inbound</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Movement Report Product In</h2>
+        <h2 className="text-xl font-bold">Summary Inbound</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
