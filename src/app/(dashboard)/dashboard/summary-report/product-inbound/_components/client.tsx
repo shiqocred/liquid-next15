@@ -84,8 +84,8 @@ export const Client = () => {
   } = useGetListSummaryInbound({
     p: page,
     q: searchValue,
-    date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-    date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+    date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+    date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
   });
 
   const dataInbound = useMemo(() => {
@@ -198,8 +198,8 @@ export const Client = () => {
     mutateExport(
       {
         searchParams: {
-          date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-          date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+          date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+          date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
         },
       },
       {
