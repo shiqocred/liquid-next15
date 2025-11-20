@@ -3,19 +3,16 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetGeneralSale = ({ from, to }: any) => {
+export const useGetListProduct = ({ p, q }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["general-sale"],
+    queryKey: ["list-product-cashier", { p, q }],
     queryFn: async () => {
-      const res = await axios.get(
-        `${baseUrl}/dashboard/general-sales?from=${from}&to=${to}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const res = await axios.get(`${baseUrl}/sale-products?page=${p}&q=${q}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
   });
