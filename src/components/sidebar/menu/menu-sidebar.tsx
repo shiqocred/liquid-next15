@@ -10,6 +10,7 @@ import {
   BookMarked,
   Boxes,
   CandlestickChart,
+  ClipboardMinus,
   Container,
   Drill,
   FileCog,
@@ -67,7 +68,7 @@ const sidebarMenu = [
       {
         title: "Summary Report",
         href: undefined,
-        icon: <LineChart className="w-5 h-5 stroke-[1.5]" />,
+        icon: <ClipboardMinus className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
           {
             title: "Product Inbound",
