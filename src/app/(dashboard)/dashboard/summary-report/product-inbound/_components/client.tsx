@@ -132,9 +132,7 @@ export const Client = () => {
       header: () => <div className="text-center">No</div>,
       id: "id",
       cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {(metaPage.from + row.index).toLocaleString()}
-        </div>
+        <div className="text-center tabular-nums">{row.index + 1}</div>
       ),
     },
     // {
