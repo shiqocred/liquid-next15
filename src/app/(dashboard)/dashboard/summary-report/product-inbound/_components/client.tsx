@@ -84,9 +84,12 @@ export const Client = () => {
   } = useGetListSummaryInbound({
     p: page,
     q: searchValue,
-    date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-    date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+    date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+    date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
   });
+
+  console.log("error", error);
+  console.log("isError", isError);
 
   const dataInbound = useMemo(() => {
     return data?.data?.data?.resource;
@@ -199,8 +202,8 @@ export const Client = () => {
     mutateExport(
       {
         searchParams: {
-          date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-          date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+          date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+          date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
         },
       },
       {
@@ -293,35 +296,6 @@ export const Client = () => {
                     </button>
                   </>
                 )}
-                {/* <p>
-                    {
-                      dataInbound?.date.current_date.date
-                      // +
-                      //   " " +
-                      //   dataInbound?.date.current_date.year
-                    }
-                  </p>
-                  {dataInbound?.date.date_from.date !== null && (
-                    <>
-                      <p className="w-[1px] h-full bg-black" />
-                      <p>
-                        {dataInbound?.date.date_from.date +
-                          " " +
-                          dataInbound?.date.date_from.date +
-                          " " +
-                          dataInbound?.date.date_from.year +
-                          " - " +
-                          (dataInbound?.date.date_to.date +
-                            " " +
-                            dataInbound?.date.date_to.date +
-                            " " +
-                            dataInbound?.date.date_to.year)}
-                      </p>
-                      <button onClick={clearRange}>
-                        <XCircle className="w-4 h-4 text-red-500" />
-                      </button>
-                    </>
-                  )} */}
                 <p className="w-[1px] h-full bg-black" />
                 <Dialog>
                   <DialogTrigger asChild>
@@ -445,7 +419,14 @@ export const Client = () => {
               </Button>
             </div>
           </div>
-          <DataTable columns={columnDestinationMC} data={dataList ?? []} />
+          {dataInbound?.status === false ? (
+            <div className="w-full text-center py-10 text-red-500 font-semibold">
+              {dataInbound?.message ??
+                "Terjadi kesalahan, data tidak tersedia."}
+            </div>
+          ) : (
+            <DataTable columns={columnDestinationMC} data={dataList ?? []} />
+          )}{" "}
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
