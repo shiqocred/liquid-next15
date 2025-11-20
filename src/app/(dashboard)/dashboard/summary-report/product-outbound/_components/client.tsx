@@ -84,8 +84,8 @@ export const Client = () => {
   } = useGetListSummaryOutbound({
     p: page,
     q: searchValue,
-    date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-    date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+    date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+    date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
   });
 
   const dataOutbound = useMemo(() => {
@@ -181,7 +181,7 @@ export const Client = () => {
         </div>
       ),
     },
-      {
+    {
       accessorKey: "discount",
       header: "Discount",
       cell: ({ row }) => (
@@ -207,8 +207,8 @@ export const Client = () => {
     mutateExport(
       {
         searchParams: {
-          date_from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-          date_to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+          date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+          date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
         },
       },
       {
@@ -279,140 +279,133 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
-              {dataOutbound && (
-                <div className="px-3 h-10 py-1 border rounded flex gap-3 items-center text-sm border-gray-500">
-                  <p>
-                    {dataOutbound?.date.current_date.date +
-                      " " +
-                      dataOutbound?.date.current_date.year}
-                  </p>
-                  {dataOutbound?.date.date_from.date !== null && (
-                    <>
-                      <p className="w-[1px] h-full bg-black" />
-                      <p>
-                        {dataOutbound?.date.date_from.date +
-                          " " +
-                          dataOutbound?.date.date_from.date +
-                          " " +
-                          dataOutbound?.date.date_from.year +
-                          " - " +
-                          (dataOutbound?.date.date_to.date +
-                            " " +
-                            dataOutbound?.date.date_to.date +
-                            " " +
-                            dataOutbound?.date.date_to.year)}
-                      </p>
-                      <button onClick={clearRange}>
-                        <XCircle className="w-4 h-4 text-red-500" />
-                      </button>
-                    </>
-                  )}
-                  <p className="w-[1px] h-full bg-black" />
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button onClick={() => {}}>
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="w-auto max-w-5xl p-3 border-gray-300">
-                      <DialogHeader>
-                        <DialogTitle>Pick a Date Range</DialogTitle>
-                      </DialogHeader>
-                      <div className="w-full flex items-center gap-4 text-sm">
-                        <div className="w-full items-center flex justify-start px-3 border border-sky-400/80 rounded h-9">
-                          <CalendarIcon className="size-4 mr-2" />
-                          {(date?.from && format(date.from, "MMMM dd, yyyy")) ??
-                            "Pick a date"}{" "}
-                          -{" "}
-                          {(date?.to && format(date.to, "MMMM dd, yyyy")) ??
-                            "Pick a date"}
-                        </div>
+              <div className="px-3 h-10 py-1 border rounded flex gap-3 items-center text-sm border-gray-500">
+                <p>
+                  {dataOutbound?.date?.current_date?.date ??
+                    "Tanggal tidak tersedia"}
+                </p>
+                {/* Range Date */}
+                {dataOutbound?.date?.date_from?.date && (
+                  <>
+                    <p className="w-[1px] h-full bg-black" />
+                    <p>
+                      {`${dataOutbound?.date?.date_from?.date ?? "-"} ${
+                        dataOutbound?.date?.date_from?.month ?? ""
+                      } ${dataOutbound?.date?.date_from?.year ?? ""}
+                         -${dataOutbound?.date?.date_to?.date ?? "-"} ${
+                        dataOutbound?.date?.date_to?.month ?? ""
+                      } ${dataOutbound?.date?.date_to?.year ?? ""}`}
+                    </p>
+                    <button onClick={clearRange}>
+                      <XCircle className="w-4 h-4 text-red-500" />
+                    </button>
+                  </>
+                )}
+                <p className="w-[1px] h-full bg-black" />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button onClick={() => {}}>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="w-auto max-w-5xl p-3 border-gray-300">
+                    <DialogHeader>
+                      <DialogTitle>Pick a Date Range</DialogTitle>
+                    </DialogHeader>
+                    <div className="w-full flex items-center gap-4 text-sm">
+                      <div className="w-full items-center flex justify-start px-3 border border-sky-400/80 rounded h-9">
+                        <CalendarIcon className="size-4 mr-2" />
+                        {(date?.from && format(date.from, "MMMM dd, yyyy")) ??
+                          "Pick a date"}{" "}
+                        -{" "}
+                        {(date?.to && format(date.to, "MMMM dd, yyyy")) ??
+                          "Pick a date"}
+                      </div>
 
-                        <Popover
-                          open={isOpen}
-                          onOpenChange={setIsOpen}
-                          modal={false}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              className="flex-none border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 rounded"
-                              variant={"outline"}
-                              size={"icon"}
-                            >
-                              <ChevronDown className="size-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="p-0 w-fit" align="end">
-                            <Command>
-                              <CommandList>
-                                <CommandGroup>
-                                  <CommandItem
-                                    onSelect={() => {
-                                      setDate({
-                                        from: subDays(new Date(), 7),
-                                        to: new Date(),
-                                      });
-                                      setIsOpen(false);
-                                    }}
-                                  >
-                                    Last Week
-                                  </CommandItem>
-                                  <CommandItem
-                                    onSelect={() => {
-                                      setDate({
-                                        from: subDays(new Date(), 30),
-                                        to: new Date(),
-                                      });
-                                      setIsOpen(false);
-                                    }}
-                                  >
-                                    Last Month
-                                  </CommandItem>
-                                  <CommandItem
-                                    onSelect={() => {
-                                      setDate({
-                                        from: subDays(new Date(), 60),
-                                        to: new Date(),
-                                      });
-                                      setIsOpen(false);
-                                    }}
-                                  >
-                                    2 Months ago
-                                  </CommandItem>
-                                  <CommandItem
-                                    onSelect={() => {
-                                      setDate({
-                                        from: subDays(new Date(), 90),
-                                        to: new Date(),
-                                      });
-                                      setIsOpen(false);
-                                    }}
-                                  >
-                                    3 Months ago
-                                  </CommandItem>
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <div className="w-full p-2 border rounded border-sky-400/80">
-                        <Calendar
-                          initialFocus
-                          mode="range"
-                          defaultMonth={subDays(new Date(), 30)}
-                          selected={date}
-                          onSelect={setDate}
-                          numberOfMonths={2}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                        />
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              )}
+                      <Popover
+                        open={isOpen}
+                        onOpenChange={setIsOpen}
+                        modal={false}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            className="flex-none border-sky-400/80 hover:border-sky-400 hover:bg-sky-50 rounded"
+                            variant={"outline"}
+                            size={"icon"}
+                          >
+                            <ChevronDown className="size-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0 w-fit" align="end">
+                          <Command>
+                            <CommandList>
+                              <CommandGroup>
+                                <CommandItem
+                                  onSelect={() => {
+                                    setDate({
+                                      from: subDays(new Date(), 7),
+                                      to: new Date(),
+                                    });
+                                    setIsOpen(false);
+                                  }}
+                                >
+                                  Last Week
+                                </CommandItem>
+                                <CommandItem
+                                  onSelect={() => {
+                                    setDate({
+                                      from: subDays(new Date(), 30),
+                                      to: new Date(),
+                                    });
+                                    setIsOpen(false);
+                                  }}
+                                >
+                                  Last Month
+                                </CommandItem>
+                                <CommandItem
+                                  onSelect={() => {
+                                    setDate({
+                                      from: subDays(new Date(), 60),
+                                      to: new Date(),
+                                    });
+                                    setIsOpen(false);
+                                  }}
+                                >
+                                  2 Months ago
+                                </CommandItem>
+                                <CommandItem
+                                  onSelect={() => {
+                                    setDate({
+                                      from: subDays(new Date(), 90),
+                                      to: new Date(),
+                                    });
+                                    setIsOpen(false);
+                                  }}
+                                >
+                                  3 Months ago
+                                </CommandItem>
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="w-full p-2 border rounded border-sky-400/80">
+                      <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={subDays(new Date(), 30)}
+                        selected={date}
+                        onSelect={setDate}
+                        numberOfMonths={2}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Button
                 onClick={(e) => {
                   e.preventDefault();
@@ -431,7 +424,14 @@ export const Client = () => {
               </Button>
             </div>
           </div>
-          <DataTable columns={columnDestinationMC} data={dataList ?? []} />
+          {dataOutbound?.status === false ? (
+            <div className="w-full text-center py-10 text-red-500 font-semibold">
+              {dataOutbound?.message ??
+                "Terjadi kesalahan, data tidak tersedia."}
+            </div>
+          ) : (
+            <DataTable columns={columnDestinationMC} data={dataList ?? []} />
+          )}{" "}
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

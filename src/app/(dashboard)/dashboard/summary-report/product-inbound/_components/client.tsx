@@ -88,9 +88,6 @@ export const Client = () => {
     date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
   });
 
-  console.log("error", error);
-  console.log("isError", isError);
-
   const dataInbound = useMemo(() => {
     return data?.data?.data?.resource;
   }, [data]);
@@ -99,9 +96,6 @@ export const Client = () => {
   const dataList: any[] = useMemo(() => {
     return data?.data?.data?.resource?.data;
   }, [data]);
-
-  console.log("data", data);
-  console.log("dataList", dataList);
 
   const loading = isPending || isRefetching || isLoading;
 
