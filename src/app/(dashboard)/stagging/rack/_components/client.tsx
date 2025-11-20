@@ -156,6 +156,19 @@ export const Client = () => {
           <BreadcrumbItem>Rack</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-4 mb-6">
+        {/* Card: Total Rack */}
+        <div className="bg-white shadow rounded-xl p-5 flex flex-col border border-gray-200">
+          <h4 className="text-sm text-gray-500">Total Rack</h4>
+          <p className="text-3xl font-bold mt-2">50 </p>
+        </div>
+
+        {/* Card: Total Product */}
+        <div className="bg-white shadow rounded-xl p-5 flex flex-col border border-gray-200">
+          <h4 className="text-sm text-gray-500">Total Products</h4>
+          <p className="text-3xl font-bold mt-2">1000 </p>
+        </div>
+      </div>
       <Tabs className="w-full mt-5" defaultValue="rack">
         <div className="relative w-full flex justify-center">
           <TabsList className="absolute -top-12 p-1 h-auto border-2 border-white shadow bg-gray-200">
