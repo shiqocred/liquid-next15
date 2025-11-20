@@ -273,28 +273,22 @@ export const Client = () => {
               {dataInbound && (
                 <div className="px-3 h-10 py-1 border rounded flex gap-3 items-center text-sm border-gray-500">
                   <p>
-                    {
-                      dataInbound?.date.current_date.date
-                      // +
-                      //   " " +
-                      //   dataInbound?.date.current_date.year
-                    }
+                    {dataInbound?.date?.current_date?.date ??
+                      "Tanggal tidak tersedia"}
                   </p>
-                  {dataInbound?.date.date_from.date !== null && (
+
+                  {/* Range Date */}
+                  {dataInbound?.date?.date_from?.date && (
                     <>
                       <p className="w-[1px] h-full bg-black" />
                       <p>
-                        {dataInbound?.date.date_from.date +
-                          " " +
-                          dataInbound?.date.date_from.date +
-                          " " +
-                          dataInbound?.date.date_from.year +
-                          " - " +
-                          (dataInbound?.date.date_to.date +
-                            " " +
-                            dataInbound?.date.date_to.date +
-                            " " +
-                            dataInbound?.date.date_to.year)}
+                        {`${dataInbound?.date?.date_from?.date ?? "-"} ${
+                          dataInbound?.date?.date_from?.month ?? ""
+                        } ${dataInbound?.date?.date_from?.year ?? ""}
+                         -
+                         ${dataInbound?.date?.date_to?.date ?? "-"} ${
+                          dataInbound?.date?.date_to?.month ?? ""
+                        } ${dataInbound?.date?.date_to?.year ?? ""}`}
                       </p>
                       <button onClick={clearRange}>
                         <XCircle className="w-4 h-4 text-red-500" />
