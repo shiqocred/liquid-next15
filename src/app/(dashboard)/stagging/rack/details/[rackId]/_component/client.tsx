@@ -75,7 +75,7 @@ export const Client = () => {
 
   const [addProductSearch, setAddProductSearch] = useState("");
   const searchAddProductValue = useDebounce(addProductSearch);
-
+  const [search, setSearch] = useQueryState("q", { defaultValue: "" });
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
   const [metaPage, setMetaPage] = useState({
     last: 1, //page terakhir
@@ -125,7 +125,7 @@ export const Client = () => {
   // query strat ----------------------------------------------------------------
 
   const { data, refetch, isRefetching, error, isError, isSuccess } =
-    useGetListChasier({ p: page });
+    useGetListChasier({ p: page, q: search });
 
   const {
     data: dataProduct,
@@ -576,6 +576,28 @@ export const Client = () => {
         </div>
 
         <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
+          <div className="flex gap-2 items-center w-full justify-between">
+            <div className="flex items-center gap-3 w-full">
+              <Input
+                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                autoFocus
+              />
+              <TooltipProviderPage value={"Reload Data"}>
+                <Button
+                  onClick={() => refetch()}
+                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                  variant={"outline"}
+                >
+                  <RefreshCw
+                    className={cn("w-4 h-4", isRefetching ? "animate-spin" : "")}
+                  />
+                </Button>
+              </TooltipProviderPage>
+            </div>
+          </div>
           <DataTable
             isLoading={isRefetching}
             columns={columnSales}
