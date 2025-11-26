@@ -10,10 +10,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
-  Book,
   Edit3,
   PlusCircle,
   ReceiptText,
+  RefreshCw,
   Search,
   Trash2,
   X,
@@ -21,12 +21,10 @@ import {
 import { FormEvent, MouseEvent, useEffect, useMemo, useState } from "react";
 import { cn, formatRupiah } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGetAnalyticSaleMonthly } from "../_api/use-get-analytic-sale-monthly";
 import { useGetAnalyticSaleYearly } from "../_api/use-get-analytic-sale-yearly";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
@@ -35,6 +33,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { useGetListRacks } from "../_api/use-get-list-racks";
+import { useSearchQuery } from "@/lib/search";
+import { usePagination } from "@/lib/pagination";
+import { Input } from "@/components/ui/input";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -49,21 +51,17 @@ export const columnsAnalytic: ColumnDef<any>[] = [
     ),
   },
   {
-    accessorKey: "product_category_sale",
+    accessorKey: "name",
     header: "Category Name",
     cell: ({ row }) => (
-      <div className="break-all max-w-[500px]">
-        {row.original.product_category_sale}
-      </div>
+      <div className="break-all max-w-[500px]">{row.original.name}</div>
     ),
   },
   {
-    accessorKey: "total_category",
+    accessorKey: "total_data",
     header: () => <div className="text-center">Quantity</div>,
     cell: ({ row }) => (
-      <div className="text-center tabular-nums">
-        {row.original.total_category}
-      </div>
+      <div className="text-center tabular-nums">{row.original.total_data}</div>
     ),
   },
   {
@@ -90,13 +88,15 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
   // rack Id for Edit
-  const [rackId, setRackId] = useQueryState("rackId", {
+  const [rackId] = useQueryState("rackId", {
     defaultValue: "",
   });
   const [isMounted, setIsMounted] = useState(false);
   const [year] = useState(new Date().getFullYear());
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
-  const searchValue = useDebounce(dataSearch);
+  const { search, searchValue, setSearch } = useSearchQuery();
+  const { metaPage, page, setPage, setPagination } = usePagination();
+
   const [date] = useState<DateRange | undefined>({
     from: undefined,
     to: undefined,
@@ -107,16 +107,16 @@ export const Client = () => {
   });
 
   const {
-    data: dataMonthly,
-    refetch: refetchMonthly,
-    // isPending: isPendingMonthly,
-    // isRefetching: isRefetchingMonthly,
-    // isLoading: isLoadingMonthly,
-    isError: isErrorMonthly,
-    error: errorMonthly,
-  } = useGetAnalyticSaleMonthly({
-    from: date?.from ? format(date.from, "dd-MM-yyyy") : "",
-    to: date?.to ? format(date.to, "dd-MM-yyyy") : "",
+    data: dataRacks,
+    refetch: refetchRacks,
+    isPending: isPendingRacks,
+    isRefetching: isRefetchingRacks,
+    isLoading: isLoadingRacks,
+    isError: isErrorRacks,
+    error: errorRacks,
+  } = useGetListRacks({
+    p: page,
+    q: searchValue,
   });
 
   const {
@@ -129,25 +129,24 @@ export const Client = () => {
     error: errorYearly,
   } = useGetAnalyticSaleYearly(year);
 
-  const monthlyData = useMemo(() => {
-    return dataMonthly?.data.data.resource;
-  }, [dataMonthly]);
+  const rackData = useMemo(() => {
+    return dataRacks?.data.data.resource;
+  }, [dataRacks]);
+  const racksData = rackData?.racks;
+  const totalRacks = rackData?.total_racks;
+  console.log("racksData:", racksData);
+  console.log("totalRacks:", totalRacks);
 
   const yearlyData = useMemo(() => {
     return dataYearly?.data.data.resource;
   }, [dataYearly]);
 
-  const clearSearch = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setDataSearch("");
-  };
-
   // handle create
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
-    const body = {
-      name_buyer: input.name,
-    };
+    // const body = {
+    //   name_rack: input.name,
+    // };
     // mutateCreate(
     //   { body },
     //   {
@@ -161,17 +160,17 @@ export const Client = () => {
   // handle update
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
-    const body = {
-      name_buyer: input.name,
-    };
-    // mutateUpdate(
-    //   { id: buyerId, body },
-    //   {
-    //     onSuccess: () => {
-    //       handleClose();
-    //     },
-    //   }
-    // );
+    // const body = {
+    //   name_rack: input.name,
+    // };
+    // // mutateUpdate(
+    // //   { id: buyerId, body },
+    // //   {
+    // //     onSuccess: () => {
+    // //       handleClose();
+    // //     },
+    // //   }
+    // // );
   };
 
   // handle close
@@ -184,7 +183,7 @@ export const Client = () => {
   };
 
   useEffect(() => {
-    refetchMonthly();
+    refetchRacks();
   }, [date]);
 
   useEffect(() => {
@@ -200,7 +199,7 @@ export const Client = () => {
   }
 
   if (
-    (isErrorMonthly && (errorMonthly as AxiosError).status === 403) ||
+    (isErrorRacks && (errorRacks as AxiosError).status === 403) ||
     (isErrorYearly && (errorYearly as AxiosError).status === 403)
   ) {
     return (
@@ -241,13 +240,13 @@ export const Client = () => {
         {/* Card: Total Rack */}
         <div className="bg-white shadow rounded-xl p-5 flex flex-col border border-gray-200">
           <h4 className="text-sm text-gray-500">Total Rack</h4>
-          <p className="text-3xl font-bold mt-2">50 </p>
+          <p className="text-3xl font-bold mt-2">{totalRacks} </p>
         </div>
 
         {/* Card: Total Product */}
         <div className="bg-white shadow rounded-xl p-5 flex flex-col border border-gray-200">
           <h4 className="text-sm text-gray-500">Total Products</h4>
-          <p className="text-3xl font-bold mt-2">1000 </p>
+          <p className="text-3xl font-bold mt-2">{rackData?.total_products_in_racks} </p>
         </div>
       </div>
       <Tabs className="w-full mt-5" defaultValue="rack">
@@ -271,32 +270,28 @@ export const Client = () => {
           <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full flex flex-col gap-4">
               <h3 className="text-lg font-semibold">List Rak</h3>
-              <div className="w-full flex justify-between items-center">
-                <div
-                  className="flex items-center gap-5"
-                  style={{ width: "60%" }}
-                >
-                  <div className="relative w-full flex items-center mb-0">
-                    <Label className="absolute left-3" htmlFor="search">
-                      <Search className="w-4 h-4" />
-                    </Label>
-                    <input
-                      id="search"
-                      value={dataSearch}
-                      onChange={(e) => setDataSearch(e.target.value)}
-                      className="w-full h-9 rounded outline-none px-10 text-xs border border-gray-500"
-                    />
-                    <button
-                      onClick={clearSearch}
+              <div className="flex items-center gap-3 w-full">
+                <Input
+                  className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search..."
+                  autoFocus
+                />
+                <TooltipProviderPage value={"Reload Data"}>
+                  <Button
+                    onClick={() => refetchRacks()}
+                    className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                    variant={"outline"}
+                  >
+                    <RefreshCw
                       className={cn(
-                        "h-5 w-5 absolute right-2 items-center justify-center outline-none",
-                        dataSearch.length > 0 ? "flex" : "hidden"
+                        "w-4 h-4",
+                        isLoadingRacks ? "animate-spin" : ""
                       )}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                    />
+                  </Button>
+                </TooltipProviderPage>
                 <div className="flex gap-4 items-center ml-auto">
                   <Button
                     onClick={(e) => {
@@ -321,14 +316,12 @@ export const Client = () => {
             </div>
             <div className="grid grid-cols-4 gap-4 w-full p-4">
               {searchValue ? (
-                monthlyData?.list_analytic_sale.filter((item: any) =>
-                  item.product_category_sale
-                    .toLowerCase()
-                    .includes(searchValue.toLowerCase())
+                racksData?.data.filter((item: any) =>
+                  item.name.toLowerCase().includes(searchValue.toLowerCase())
                 ).length > 0 ? (
-                  monthlyData?.list_analytic_sale
+                  racksData?.data
                     .filter((item: any) =>
-                      item.product_category_sale
+                      item.name
                         .toLowerCase()
                         .includes(searchValue.toLowerCase())
                     )
@@ -340,7 +333,7 @@ export const Client = () => {
                         {/* CONTENT */}
                         <div className="flex w-full items-center gap-4">
                           <p className="text-sm font-bold text-black w-full">
-                            {item.product_category_sale}
+                            {item.name}
                           </p>
                         </div>
                         <div className="flex flex-col mt-2">
@@ -348,7 +341,7 @@ export const Client = () => {
                             Total Product
                           </p>
                           <p className="text-sm font-light text-gray-800">
-                            {item.total_category}
+                            {item.total_data}
                           </p>
                         </div>
 
@@ -401,8 +394,8 @@ export const Client = () => {
                     </div>
                   </div>
                 )
-              ) : monthlyData?.list_analytic_sale.length > 0 ? (
-                monthlyData?.list_analytic_sale.map((item: any, i: any) => (
+              ) : racksData?.data.length > 0 ? (
+                racksData?.data.map((item: any, i: any) => (
                   <div
                     key={`${item.code_document_sale}-${i}`}
                     className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
@@ -410,7 +403,7 @@ export const Client = () => {
                     {/* CONTENT */}
                     <div className="flex w-full items-center gap-4">
                       <p className="text-sm font-bold text-black w-full">
-                        {item.product_category_sale}
+                        {item.name}
                       </p>
                     </div>
                     <div className="flex flex-col mt-2">
@@ -418,7 +411,7 @@ export const Client = () => {
                         Total Product
                       </p>
                       <p className="text-sm font-light text-gray-800">
-                        {item.total_category}
+                        {item.total_data}
                       </p>
                     </div>
 
@@ -495,7 +488,7 @@ export const Client = () => {
                   placeholder="Search Product Category..."
                 />
                 <button
-                  onClick={clearSearch}
+                  // onClick={clearSearch}
                   className={cn(
                     "h-5 w-5 absolute right-2 items-center justify-center outline-none",
                     dataSearch.length > 0 ? "flex" : "hidden"
@@ -510,9 +503,7 @@ export const Client = () => {
                 <DataTable
                   columns={columnsAnalytic}
                   data={yearlyData.list_analytic_sale.filter((item: any) =>
-                    item.product_category_sale
-                      .toLowerCase()
-                      .includes(searchValue.toLowerCase())
+                    item.name.toLowerCase().includes(searchValue.toLowerCase())
                   )}
                 />
               ) : (

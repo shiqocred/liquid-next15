@@ -132,11 +132,17 @@ export const DialogDetail = ({
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const oldP = Math.round(parseFloat(input.oldPrice || "0"));
+               const oldP = Math.round(parseFloat(input.oldPrice || "0"));
                 const newP = Math.round(parseFloat(input.price || "0"));
                 const priceChanged = oldP !== newP;
+                const discountAmount = oldP - newP;
+                const shouldConfirmPrice =
+                  priceChanged &&
+                  selectedCategory &&
+                  maxPriceCategory !== null &&
+                  discountAmount > maxPriceCategory;
 
-                if (priceChanged) {
+                if (shouldConfirmPrice) {
                   setShowConfirmPrice(true);
                   return;
                 }

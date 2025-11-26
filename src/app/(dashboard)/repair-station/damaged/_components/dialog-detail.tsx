@@ -95,7 +95,7 @@ const DialogDetail = ({
       if (selectedCategory) {
         const discount = parseFloat(selectedCategory?.discount_category ?? "0");
         const oldPrice = parseFloat(input.oldPrice ?? "0");
-        let calculatedPrice = oldPrice - (oldPrice * discount) / 100;
+        const calculatedPrice = oldPrice - (oldPrice * discount) / 100;
 
         setInput((prev: any) => ({
           ...prev,
@@ -182,8 +182,14 @@ const DialogDetail = ({
                 const oldP = Math.round(parseFloat(input.oldPrice || "0"));
                 const newP = Math.round(parseFloat(input.price || "0"));
                 const priceChanged = oldP !== newP;
+                const discountAmount = oldP - newP;
+                const shouldConfirmPrice =
+                  priceChanged &&
+                  selectedCategory &&
+                  maxPriceCategory !== null &&
+                  discountAmount > maxPriceCategory;
 
-                if (priceChanged) {
+                if (shouldConfirmPrice) {
                   setShowConfirmPrice(true);
                   return;
                 }
