@@ -17,7 +17,7 @@ export const useAddProduct = () => {
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/racks/add-staging-product`, body, {
+      const res = await axios.post(`${baseUrl}/racks/add-product-by-barcode`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
