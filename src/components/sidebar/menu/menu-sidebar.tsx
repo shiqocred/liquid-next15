@@ -179,6 +179,10 @@ const sidebarMenu = [
             title: "by color",
             href: "/inventory/product/color",
           },
+          {
+            title: "rack display",
+            href: "/inventory/product/rack",
+          },
         ],
       },
       {

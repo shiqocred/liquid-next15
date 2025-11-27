@@ -43,7 +43,7 @@ import Pagination from "@/components/pagination";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
-export const columnProductStaging = ({
+export const columnProductDisplay = ({
   metaPageProduct,
 }: any): ColumnDef<any>[] => [
   {
@@ -115,12 +115,12 @@ export const Client = () => {
   // data form create edit
   const [input, setInput] = useState({
     name: "",
-    source: "staging",
+    source: "Display",
   });
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Rack Stagging",
+    "Delete Rack Display",
     "This action cannot be undone",
     "destructive"
   );
@@ -177,7 +177,7 @@ export const Client = () => {
     e.preventDefault();
     const body = {
       name: input.name,
-      source: "staging",
+      source: "display",
     };
     mutateCreate(
       { body },
@@ -194,7 +194,7 @@ export const Client = () => {
     e.preventDefault();
     const body = {
       name: input.name,
-      source: "staging",
+      source: "Display",
     };
     mutateUpdate(
       { id: rackId, body },
@@ -271,7 +271,7 @@ export const Client = () => {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Stagging</BreadcrumbItem>
+          <BreadcrumbItem>Display</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>Rack</BreadcrumbItem>
         </BreadcrumbList>
@@ -397,7 +397,7 @@ export const Client = () => {
                               variant={"outline"}
                               asChild
                             >
-                              <Link href={`/stagging/rack/details/2`}>
+                              <Link href={`/inventory/product/rack/details/2`}>
                                 <ReceiptText className="w-4 h-4" />
                               </Link>
                             </Button>
@@ -423,7 +423,7 @@ export const Client = () => {
                               variant={"outline"}
                               asChild
                             >
-                              <Link href={`/stagging/rack/details/2`}>
+                              <Link href={`/inventory/product/rack/details/2`}>
                                 <Trash2 className="w-4 h-4" />
                               </Link>
                             </Button>
@@ -467,7 +467,7 @@ export const Client = () => {
                           variant={"outline"}
                           asChild
                         >
-                          <Link href={`/stagging/rack/details/${item.id}`}>
+                          <Link href={`/inventory/product/rack/details/${item.id}`}>
                             <ReceiptText className="w-4 h-4" />
                           </Link>
                         </Button>
@@ -557,7 +557,7 @@ export const Client = () => {
                 </button>
               </div>
               <DataTable
-                columns={columnProductStaging({
+                columns={columnProductDisplay({
                   metaPageProduct,
                 })}
                 data={productData ?? []}

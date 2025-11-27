@@ -17,28 +17,34 @@ export const useAddProduct = () => {
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/racks/add-staging-product`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await axios.post(
+        `${baseUrl}/racks/add-product-by-barcode
+`,
+        body,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
       toast.success("Product successfully added");
-      queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
+      queryClient.invalidateQueries({ queryKey: ["list-product-display"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-detail-rack"],
+        queryKey: ["list-detail-rack-display"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error( `ERROR ${err?.status}: ${
-            (err.response?.data as any).data.message ||
-            "Product failed to add"
-          } `);
+        toast.error(
+          `ERROR ${err?.status}: ${
+            (err.response?.data as any).data.message || "Product failed to add"
+          } `
+        );
         console.log("ERROR_ADD_PRODUCT:", err);
       }
     },

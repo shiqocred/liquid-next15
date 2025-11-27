@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListChasier = ({ p, q }: any) => {
+export const useGetListProduct = ({ p, q }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-data-cashier", { p, q }],
+    queryKey: ["list-product-display", { p, q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/sales?page=${p}&search=${q}`, {
+      const res = await axios.get(`${baseUrl}/product_byCategory?page=${p}&q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

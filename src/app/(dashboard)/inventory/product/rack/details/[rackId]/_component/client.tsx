@@ -36,7 +36,6 @@ import { useAddProduct } from "../_api/use-add-product";
 import { useRemoveProduct } from "../_api/use-remove-product";
 import { useGetListProduct } from "../_api/use-get-list-product";
 import { useGetDetailRacks } from "../_api/use-get-detail-rack";
-import { useSubmit } from "../_api/use-submit";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -96,7 +95,6 @@ export const Client = () => {
     useAddProduct();
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
-  const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
 
   // mutate end ----------------------------------------------------------------
 
@@ -151,7 +149,7 @@ export const Client = () => {
     const body = {
       rack_id: rackId,
       barcode: barcode,
-      source: "staging",
+      source: "display",
     };
     mutateAddProduct(
       { body },
@@ -180,13 +178,6 @@ export const Client = () => {
     if (!ok) return;
 
     mutateRemoveProduct({ id, idProduct });
-  };
-
-  const handleSubmit = async (id: any) => {
-    const ok = await confirmToDisplay();
-
-    if (!ok) return;
-    mutateSubmit({ id });
   };
 
   // handling action end ----------------------------------------------------------------
@@ -296,7 +287,7 @@ export const Client = () => {
             type="button"
             disabled={isPendingRemoveProduct}
             onClick={() => {
-              handleRemoveProduct(rackId, row.original.id);
+              handleRemoveProduct(rackId, row.original.barcode);
             }}
           >
             {isPendingRemoveProduct ? (
@@ -412,10 +403,10 @@ export const Client = () => {
               <BreadcrumbLink href="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>Stagging</BreadcrumbItem>
+            <BreadcrumbItem>Display</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/stagging/rack">Rack</BreadcrumbLink>
+              <BreadcrumbLink href="/inventory/product/rack">Rack</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>Detail Rack</BreadcrumbItem>
@@ -468,18 +459,6 @@ export const Client = () => {
                       isRefetching ? "animate-spin" : ""
                     )}
                   />
-                </Button>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  onClick={() => {
-                    handleSubmit(rackId);
-                  }}
-                >
-                  <Monitor className="size-4" />
-                  To Display
                 </Button>
               </div>
             </div>

@@ -6,18 +6,19 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  body: any;
+  id: string;
+  idProduct: string;
 };
 
 type Error = AxiosError;
 
-export const useAddProduct = () => {
+export const useRemoveProduct = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/racks/add-staging-product`, body, {
+    mutationFn: async ({ id, idProduct }) => {
+      const res = await axios.delete(`${baseUrl}/racks/${id}/display-products/${idProduct}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,8 +26,8 @@ export const useAddProduct = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully added");
-      queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
+      toast.success("Product successfully removed");
+      queryClient.invalidateQueries({ queryKey: ["list-product-display"] });
       queryClient.invalidateQueries({
         queryKey: ["list-detail-rack"],
       });
@@ -35,11 +36,8 @@ export const useAddProduct = () => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error( `ERROR ${err?.status}: ${
-            (err.response?.data as any).data.message ||
-            "Product failed to add"
-          } `);
-        console.log("ERROR_ADD_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to remove`);
+        console.log("ERROR_REMOVE_PRODUCT:", err);
       }
     },
   });
