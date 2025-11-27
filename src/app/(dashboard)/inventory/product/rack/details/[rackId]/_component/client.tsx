@@ -2,7 +2,6 @@
 
 import {
   Loader2,
-  Monitor,
   PlusCircle,
   RefreshCw,
   Search,
@@ -77,12 +76,6 @@ export const Client = () => {
 
   const [DeleteProductDialog, confirmDeleteProduct] = useConfirm(
     "Delete Product",
-    "This action cannot be undone",
-    "destructive"
-  );
-
-  const [ToDisplayDialog, confirmToDisplay] = useConfirm(
-    "To Display Rack",
     "This action cannot be undone",
     "destructive"
   );
@@ -378,7 +371,6 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
       <DeleteProductDialog />
-      <ToDisplayDialog />
       <DialogProduct
         open={isProduct}
         onCloseModal={() => {

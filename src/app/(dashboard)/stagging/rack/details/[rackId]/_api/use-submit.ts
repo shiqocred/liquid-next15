@@ -27,7 +27,7 @@ export const useSubmit = () => {
       );
       return res;
     },
-    onSuccess: (res) => {
+    onSuccess: () => {
       toast.success("successfully updated rack to display");
       invalidateQuery(queryClient, [["list-detail-rack"]]);
     },

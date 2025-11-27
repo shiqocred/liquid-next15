@@ -477,6 +477,7 @@ export const Client = () => {
                   onClick={() => {
                     handleSubmit(rackId);
                   }}
+                  disabled={isPendingSubmit}
                 >
                   <Monitor className="size-4" />
                   To Display
