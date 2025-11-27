@@ -7,7 +7,7 @@ import { getCookie } from "cookies-next/client";
 import { invalidateQuery } from "@/lib/query";
 
 type RequestType = {
-  body: any;
+  id: string;
 };
 type Error = AxiosError;
 
@@ -16,27 +16,27 @@ export const useSubmit = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/sale-finish`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ id }) => {
+      const res = await axios.post(
+        `${baseUrl}/racks/${id}/move-to-display`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
-    onSuccess: (res) => {
-      toast.success("Sale successfully created");
-      invalidateQuery(queryClient, [
-        ["list-sale"],
-        ["list-detail-cashier", res.data.data.resource.id],
-      ]);
+    onSuccess: () => {
+      toast.success("successfully updated rack to display");
+      invalidateQuery(queryClient, [["list-detail-rack"]]);
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Sale failed to create`);
-        console.log("ERROR_CREATE_SALE:", err);
+        toast.error(`ERROR ${err?.status}: Rack failed update to display`);
+        console.log("ERROR_UPDATE_TO_DISPLAY:", err);
       }
     },
   });

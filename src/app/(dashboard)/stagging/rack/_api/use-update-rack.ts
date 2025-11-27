@@ -6,40 +6,38 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
+  id: string;
   body: any;
 };
 
 type Error = AxiosError;
 
-export const useAddProduct = () => {
+export const useUpdateRack = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/racks/add-product-by-barcode`, body, {
+    mutationFn: async ({ id, body }) => {
+      const res = await axios.put(`${baseUrl}/racks/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       return res;
     },
-    onSuccess: () => {
-      toast.success("Product successfully added");
-      queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
+    onSuccess: (res) => {
+      toast.success("Rack successfully updated");
+      queryClient.invalidateQueries({ queryKey: ["list-racks"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-detail-rack"],
+        queryKey: ["rack-detail", res.data.data.resource.id],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error( `ERROR ${err?.status}: ${
-            (err.response?.data as any).data.message ||
-            "Product failed to add"
-          } `);
-        console.log("ERROR_ADD_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Rack failed to update`);
+        console.log("ERROR_UPDATE_RACK:", err);
       }
     },
   });

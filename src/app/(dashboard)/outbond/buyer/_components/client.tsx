@@ -48,7 +48,7 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
 
-  // warehouse Id for Edit
+  // buyer Id for Edit
   const [buyerId, setBuyerId] = useQueryState("buyerId", {
     defaultValue: "",
   });

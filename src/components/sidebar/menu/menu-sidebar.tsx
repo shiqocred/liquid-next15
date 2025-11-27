@@ -17,6 +17,7 @@ import {
   FolderClock,
   IdCard,
   Layers3,
+  LibraryBigIcon,
   LineChart,
   PackageSearch,
   RailSymbol,
@@ -152,12 +153,12 @@ const sidebarMenu = [
         icon: <SquareLibrary className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-      // {
-      //   title: "Stagging",
-      //   href: "/stagging/rack",
-      //   icon: <LibraryBigIcon className="w-5 h-5 stroke-[1.5]" />,
-      //   sub_menu: [],
-      // },
+      {
+        title: "Stagging",
+        href: "/stagging/rack",
+        icon: <LibraryBigIcon className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
     ],
   },
   {
@@ -177,6 +178,10 @@ const sidebarMenu = [
           {
             title: "by color",
             href: "/inventory/product/color",
+          },
+          {
+            title: "rack display",
+            href: "/inventory/product/rack",
           },
         ],
       },

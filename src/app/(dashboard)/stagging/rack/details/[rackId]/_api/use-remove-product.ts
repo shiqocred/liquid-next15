@@ -7,6 +7,7 @@ import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: string;
+  idProduct: string;
 };
 
 type Error = AxiosError;
@@ -16,8 +17,8 @@ export const useRemoveProduct = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/sales/${id}`, {
+    mutationFn: async ({ id, idProduct }) => {
+      const res = await axios.delete(`${baseUrl}/racks/${id}/staging-products/${idProduct}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -26,9 +27,9 @@ export const useRemoveProduct = () => {
     },
     onSuccess: () => {
       toast.success("Product successfully removed");
-      queryClient.invalidateQueries({ queryKey: ["list-product-cashier"] });
+      queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-data-cashier"],
+        queryKey: ["list-detail-rack"],
       });
     },
     onError: (err) => {
