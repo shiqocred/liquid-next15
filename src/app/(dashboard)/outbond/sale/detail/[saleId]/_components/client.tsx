@@ -71,6 +71,9 @@ const DialogOnlinePayment = dynamic(() => import("./dialog-online-payment"), {
 const DialogQrCode = dynamic(() => import("./dialog-qr-code"), {
   ssr: false,
 });
+const DialogRegisterEmail = dynamic(() => import("./dialog-register-email"), {
+  ssr: false,
+});
 
 export const Client = () => {
   const { saleId } = useParams();
@@ -82,6 +85,12 @@ export const Client = () => {
   const [isExportProduct, setIsExportProduct] = useState(false);
   const [isOnlinePayment, setisOnlinePayment] = useState(false);
   const [isShowQrDialog, setIsShowQrDialog] = useState(false);
+  const [isRegisterEmailDialog, setIsRegisterEmailDialog] = useState(false);
+  const [registerEmailData, setRegisterEmailData] = useState({
+    email: "",
+    payment_type: "",
+    phone_number: "",
+  });
 
   const [inputEdit, setInputEdit] = useState({
     id: "",
@@ -260,6 +269,42 @@ export const Client = () => {
       {
         onSuccess: () => {
           handleCloseUpdateOnlinePayment();
+          setIsShowQrDialog(true);
+        },
+        onError: (error: any) => {
+          if (
+            error?.response?.data?.data?.resource?.status ===
+            "email_not_registered"
+          ) {
+            setisOnlinePayment(false);
+            setRegisterEmailData({
+              email: inputOnlinePayment.email,
+              payment_type: inputOnlinePayment.payment_type,
+              phone_number: "",
+            });
+            setIsRegisterEmailDialog(true);
+          } else {
+            console.log("error", error);
+          }
+        },
+      }
+    );
+  };
+
+  const handleRegisterEmail = async () => {
+    mutateUpdateOnlinePayment(
+      {
+        id: saleId,
+        body: {
+          email: registerEmailData.email,
+          payment_type: registerEmailData.payment_type,
+          register_email: true,
+          phone_number: registerEmailData.phone_number,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsRegisterEmailDialog(false);
           setIsShowQrDialog(true);
         },
       }
@@ -664,6 +709,14 @@ export const Client = () => {
           }
         }}
       />
+      <DialogRegisterEmail
+        open={isRegisterEmailDialog}
+        onClose={() => setIsRegisterEmailDialog(false)}
+        input={registerEmailData}
+        setInput={setRegisterEmailData}
+        onSubmit={handleRegisterEmail}
+      />
+
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
           <BreadcrumbList>

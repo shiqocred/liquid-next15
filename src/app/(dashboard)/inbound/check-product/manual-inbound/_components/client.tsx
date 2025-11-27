@@ -287,6 +287,7 @@ export const Client = () => {
                 }
                 type="number"
                 className="w-full border-sky-400/80 focus-visible:ring-sky-400"
+                disabled
               />
             </div>
             <p className="flex w-full items-center justify-center mt-4 mb-2 font-semibold">

@@ -10,12 +10,14 @@ import {
   BookMarked,
   Boxes,
   CandlestickChart,
+  ClipboardMinus,
   Container,
   Drill,
   FileCog,
   FolderClock,
   IdCard,
   Layers3,
+  LibraryBigIcon,
   LineChart,
   PackageSearch,
   RailSymbol,
@@ -63,6 +65,21 @@ const sidebarMenu = [
         icon: <CandlestickChart className="w-5 h-5 stroke-[1.5]" />,
         query: "analytic-sale",
         sub_menu: [],
+      },
+      {
+        title: "Summary Report",
+        href: undefined,
+        icon: <ClipboardMinus className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [
+          {
+            title: "Product Inbound",
+            href: "/dashboard/summary-report/product-inbound",
+          },
+          {
+            title: "Product Outbound",
+            href: "/dashboard/summary-report/product-outbound",
+          },
+        ],
       },
     ],
   },
@@ -136,6 +153,12 @@ const sidebarMenu = [
         icon: <SquareLibrary className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
+      {
+        title: "Stagging",
+        href: "/stagging/rack",
+        icon: <LibraryBigIcon className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
     ],
   },
   {
@@ -155,6 +178,10 @@ const sidebarMenu = [
           {
             title: "by color",
             href: "/inventory/product/color",
+          },
+          {
+            title: "rack display",
+            href: "/inventory/product/rack",
           },
         ],
       },

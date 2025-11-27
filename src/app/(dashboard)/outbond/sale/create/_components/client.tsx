@@ -130,7 +130,9 @@ export const Client = () => {
   const [isOpenPPN, setIsOpenPPN] = useState(false);
   const [isOpenSelectPPN, setIsOpenSelectPPN] = useState(false);
   const [isTax, setIsTax] = useState<boolean | "indeterminate">(false);
-
+  const [dynamicMessage, setDynamicMessage] = useState(
+    "This action cannot be undone"
+  );
   const addRef = useRef<HTMLInputElement | null>(null);
   const [direction, setDirection] = useState(0);
 
@@ -216,6 +218,12 @@ export const Client = () => {
     "Delete PPN",
     "This action cannot be undone",
     "destructive"
+  );
+
+  const [AddProductDialog, confirmAddProduct] = useConfirm(
+    "Confirm Add Product",
+    dynamicMessage,
+    "liquid"
   );
 
   // confirm end ----------------------------------------------------------------
@@ -396,6 +404,34 @@ export const Client = () => {
           }
           setAddProductSearch("");
           handleCloseProduct();
+        },
+        onError: async (err: any) => {
+          if (err?.status === 404) {
+            setDynamicMessage("Product tidak ada");
+            await confirmAddProduct(); 
+            return; 
+          }
+
+          const resource = (err?.response?.data?.data as any)?.resource ?? {};
+          const barcodeMsg = resource.barcode ?? "-";
+          const systemPrice = resource.price_now
+            ? `Rp ${formatRupiah(resource.price_now)}`
+            : "-";
+          const ExpectPrice = resource.expected_price
+            ? `Rp ${formatRupiah(resource.expected_price)}`
+            : "-";
+          const message = `
+          ⚠️ UNMATCHED PRICE\n
+          Barcode : ${barcodeMsg}
+          Harga sistem : ${systemPrice}
+          Harga seharusnya : ${ExpectPrice}`;
+
+          setDynamicMessage(message);
+          const ok = await confirmAddProduct();
+          const desc = document.querySelector("[data-confirm-message]");
+          if (desc) desc.textContent = message;
+          if (!ok) return;
+          mutateAddProduct({ body });
         },
       }
     );
@@ -1022,6 +1058,7 @@ export const Client = () => {
       <SubmitDialog />
       <DeletePPNDialog />
       <DeleteProductDialog />
+      <AddProductDialog />
       <DialogCarton
         open={isOpenCarton}
         onCloseModal={() => {

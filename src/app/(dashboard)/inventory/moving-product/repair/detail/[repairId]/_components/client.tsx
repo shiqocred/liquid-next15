@@ -168,6 +168,22 @@ export const Client = () => {
     }
   }, [dataPrice]);
 
+  useEffect(() => {
+    if (!input.category || !input.total) return;
+    const selectedCategory = dataListCategories.find(
+      (item) => item.name_category === input.category
+    );
+    if (selectedCategory) {
+      const discount = parseFloat(selectedCategory.discount_category) || 0;
+      const maxPrice = parseFloat(selectedCategory.max_price_category) || 0;
+      const total = parseFloat(input.total) || 0;
+      const discountValue = (total * discount) / 100;
+      const finalDiscount = discountValue > maxPrice ? maxPrice : discountValue;
+      const newPrice = total - finalDiscount;
+      setInput((prev: any) => ({ ...prev, custom: newPrice.toString() }));
+    }
+  }, [input.total, input.category, dataListCategories, setInput]);
+
   // paginate end ----------------------------------------------------------------
 
   // handling action strat ----------------------------------------------------------------
@@ -198,6 +214,7 @@ export const Client = () => {
       new_quantity_product: input.qty,
       new_tag_product: parseFloat(input.total) < 100000 ? input.color : "",
       old_price_product: input.total,
+      new_price_product: input.custom,
     };
     mutateUpdateProduct(
       { id: productId, body },
@@ -264,15 +281,6 @@ export const Client = () => {
       method: "GET",
     });
   }, [isErrorPrice, errorPrice]);
-
-  useEffect(() => {
-    if (isNaN(parseFloat(input.total))) {
-      setInput((prev) => ({ ...prev, total: "0" }));
-    }
-    if (isNaN(parseFloat(input.qty))) {
-      setInput((prev) => ({ ...prev, qty: "0" }));
-    }
-  }, [input]);
 
   const columnRepair: ColumnDef<any>[] = [
     {
@@ -435,7 +443,7 @@ export const Client = () => {
               color: "",
               qty: "",
               total: "0",
-              custom: "0",
+              custom: "",
             });
           }
         }}

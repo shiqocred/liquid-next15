@@ -78,6 +78,7 @@ export const DialogDetail = ({
   const { data: dataPrice } = useGetPriceProductStaging({
     price: input.oldPrice,
   });
+  const [showConfirmPrice, setShowConfirmPrice] = useState(false);
 
   const isLoading = isPending || isPendingUpdate;
 
@@ -133,6 +134,51 @@ export const DialogDetail = ({
       return filteredEntries?.[0] ?? "";
     }
   };
+
+  // selected category and its max price (used in confirmation dialog)
+  const selectedCategory = categories?.find(
+    (item: any) => item.name_category === input.category
+  );
+  const maxPriceCategory = selectedCategory
+    ? parseFloat(selectedCategory.max_price_category ?? "0")
+    : null;
+
+  useEffect(() => {
+    let discount = 0;
+    if (input.category) {
+      const selectedCategory = categories.find(
+        (item: any) => item.name_category === input.category
+      );
+      discount = selectedCategory
+        ? parseFloat(selectedCategory.discount_category ?? "0")
+        : 0;
+    }
+
+    const oldPrice = parseFloat(input.oldPrice) || 0;
+    const newPrice = oldPrice - (oldPrice * discount) / 100;
+
+    setInput((prev: any) => ({
+      ...prev,
+      price: newPrice.toString(),
+    }));
+  }, [input.oldPrice, input.category, categories]);
+
+  useEffect(() => {
+    const price = parseFloat(input.price ?? "0");
+    const discount = parseFloat(input.discount ?? "0");
+    if (isNaN(discount) || discount === 0) {
+      setInput((prev) => ({
+        ...prev,
+        displayPrice: price.toString(),
+      }));
+    } else {
+      const discounted = price - (price * discount) / 100;
+      setInput((prev) => ({
+        ...prev,
+        displayPrice: Math.round(discounted).toString(),
+      }));
+    }
+  }, [input.discount, input.price]);
 
   useEffect(() => {
     alertError({
@@ -213,6 +259,20 @@ export const DialogDetail = ({
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                const oldP = Math.round(parseFloat(input.oldPrice || "0"));
+                const newP = Math.round(parseFloat(input.price || "0"));
+                const priceChanged = oldP !== newP;
+                const discountAmount = oldP - newP;
+                const shouldConfirmPrice =
+                  priceChanged &&
+                  selectedCategory &&
+                  maxPriceCategory !== null &&
+                  discountAmount > maxPriceCategory;
+
+                if (shouldConfirmPrice) {
+                  setShowConfirmPrice(true);
+                  return;
+                }
                 handleUpdate();
               }}
               className="flex flex-col gap-3 w-full"
@@ -532,7 +592,7 @@ export const DialogDetail = ({
                   <Input
                     id="priceNew"
                     className="border-0 border-b rounded-none shadow-none w-full border-sky-400/80 focus-visible:border-sky-400 focus-visible:ring-transparent  disabled:opacity-100"
-                    value={formatRupiah(parseFloat(input.price || "0"))}
+                    value={formatRupiah(parseFloat(input.displayPrice || "0"))}
                     disabled
                   />
                 </div>
@@ -540,6 +600,7 @@ export const DialogDetail = ({
               <Button
                 disabled={
                   !input.name ||
+                  parseFloat(input.oldPrice) < 100000 ||
                   parseFloat(input.qty) === 0 ||
                   (dataDetail?.old_price_product >= 100000 &&
                     !input.category &&
@@ -563,7 +624,7 @@ export const DialogDetail = ({
                   </div>
                   <BarcodePrinted
                     barcode={dataDetail?.new_barcode_product}
-                    newPrice={dataDetail?.new_price_product}
+                    newPrice={dataDetail?.display_price}
                     oldPrice={dataDetail?.old_price_product}
                     category={dataDetail?.new_category_product}
                     discount={dataDetail?.discount_category ?? "0"}
@@ -583,6 +644,60 @@ export const DialogDetail = ({
             </div>
           </div>
         )}
+        {/* Confirmation dialog when price changed */}
+        <Dialog
+          open={showConfirmPrice}
+          onOpenChange={(open) => setShowConfirmPrice(open)}
+        >
+          <DialogContent
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            className="max-w-md"
+            onClose={false}
+          >
+            <DialogHeader>
+              <DialogTitle>Konfirmasi Ubah Harga</DialogTitle>
+            </DialogHeader>
+            <div className="p-4">
+              <p className="text-sm">
+                Anda yakin ingin mengubah harga dari
+                <span className="font-semibold mx-1">
+                  {formatRupiah(parseFloat(input.oldPrice || "0"))}
+                </span>
+                menjadi
+                <span className="font-semibold mx-1">
+                  {formatRupiah(parseFloat(input.price || "0"))}
+                </span>
+                ?
+              </p>
+              {selectedCategory && (
+                <p className="text-xs text-gray-600 mt-2">
+                  Batas diskon max produk kategori
+                  <span className="font-semibold mx-1">
+                    {selectedCategory.name_category}
+                  </span>
+                  = {formatRupiah(maxPriceCategory ?? 0)}
+                </p>
+              )}
+              <div className="flex justify-end gap-2 mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowConfirmPrice(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-sky-400/80 hover:bg-sky-400 text-black"
+                  onClick={() => {
+                    setShowConfirmPrice(false);
+                    handleUpdate();
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );

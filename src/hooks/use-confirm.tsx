@@ -55,7 +55,7 @@ export const useConfirm = (
           <CardContent className="pt-8">
             <CardHeader className="p-0">
               <CardTitle>{title}</CardTitle>
-              <CardDescription>{message}</CardDescription>
+              <CardDescription className="whitespace-pre-line">{message}</CardDescription>
             </CardHeader>
             <div className="w-full pt-4 flex items-center flex-col gap-y-2 lg:flex-row gap-x-2 justify-end">
               <Button

@@ -403,22 +403,13 @@ const DialogExportData = ({
                         <p className="w-24 flex-none px-3 py-0.5 border-r border-black font-bold">
                           Kelas
                         </p>
-                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
+                        <div className="w-full px-3 py-0.5 flex items-center gap-3">
                           <RankIcon rank={data?.buyer_loyalty?.rank} />
                           <span>{data?.buyer_loyalty?.rank ?? "-"}</span>
                           <span className="text-[11px]">
                             (exp. {data?.buyer_loyalty?.expired_rank ?? "-"})
                           </span>
-                        </p>
-                      </div>
-                      <div className="flex w-1/3 flex-none">
-                        <p className="w-1/3 flex-none px-3 py-0.5 border-x border-black font-bold">
-                          Kelas Berikutnya
-                        </p>
-                        <p className="w-full px-3 py-0.5 flex items-center gap-3">
-                          <RankIcon rank={data?.buyer_loyalty?.next_rank} />
-                          <span>{data?.buyer_loyalty?.next_rank ?? "-"}</span>
-                        </p>
+                        </div>
                       </div>
                     </div>
 
@@ -532,7 +523,7 @@ const DialogExportData = ({
                         -{formatRupiah(data?.buyer?.voucher) ?? "Rp 0"}
                       </p>
                     </div>
-                    <div className="flex border-t border-black pt-1 mt-1 pl-10 border-dashed">
+                    <div className="flex">
                       <p className="px-3">Discount Rank</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">
@@ -541,7 +532,7 @@ const DialogExportData = ({
                           "Rp 0"}
                       </p>
                     </div>
-                    <div className="flex pt-1 pl-10 mb-1">
+                    <div className="flex border-t border-black pt-1 mt-1 pl-10 border-dashed">
                       <p className="px-3">DPP</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">

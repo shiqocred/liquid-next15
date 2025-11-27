@@ -77,6 +77,13 @@ const columnB2BDetailBag = (
     header: "Category",
   },
   {
+    accessorKey: "qty",
+    header: "Qty",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">{row.original.qty ?? 1}</div>
+    ),
+  },
+  {
     accessorKey: "old_price_bulky_sale",
     header: "Price",
     cell: ({ row }) => formatRupiah(row.original.old_price_bulky_sale),

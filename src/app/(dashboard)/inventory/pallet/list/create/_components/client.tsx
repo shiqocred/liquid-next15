@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Send,
   Trash2,
+  Upload,
   X,
   XCircle,
 } from "lucide-react";
@@ -75,6 +76,8 @@ import { useGetWarehouseBulky } from "../_api/use-get-warehouse-bulky";
 import { useGetBrandsBulky } from "../_api/use-get-brands-bulky";
 import { useGetConditionsBulky } from "../_api/use-get-conditions-bulky";
 import { useGetStatusBulky } from "../_api/use-get-statuses-bulky";
+import { DialogUploadExcel } from "./dialog-upload-excel";
+import { useAddProductExcel } from "../_api/use-add-product-excel";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -95,6 +98,7 @@ export const Client = () => {
   const [isProduct, setIsProduct] = useState(false);
   const [isOpenImage, setIsOpenImage] = useState(false);
   const [isOpenUpload, setIsOpenUpload] = useState(false);
+  const [isOpenUploadExcel, setIsOpenUploadExcel] = useState(false);
 
   const [resProceedImage, setResProceedImage] = useState<string[]>([]);
   const [urlDialog, setUrlDialog] = useState("/images/liquid8_og_800x800.png");
@@ -153,7 +157,9 @@ export const Client = () => {
 
   const { mutate: mutateAddProduct, isPending: isPendingAddProduct } =
     useAddProduct();
-
+  const addProducExcelMutate = useAddProductExcel();
+  const { mutate: mutateAddProductExcel, isPending: isPendingAddProductExcel } =
+    addProducExcelMutate;
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
 
@@ -277,6 +283,31 @@ export const Client = () => {
     mutateAddProduct({ id });
   };
 
+  const handleAddProductExcel = ({
+    type,
+    barcode,
+    file,
+  }: {
+    type: "product" | "file";
+    barcode?: string;
+    file?: File;
+  }) => {
+    const bodyProduct = {
+      barcode_product: barcode,
+      // buyer_id: input.buyer_id,
+      // bulky_document_id: b2bId,
+    };
+
+    const bodyFile = new FormData();
+    if (file) {
+      bodyFile.append("file", file);
+    }
+
+    mutateAddProductExcel({
+      body: type === "product" ? bodyProduct : bodyFile,
+    });
+  };
+
   const handleRemoveProduct = async (id: any) => {
     const ok = await confirmDeleteProduct();
 
@@ -362,6 +393,39 @@ export const Client = () => {
   };
 
   // handling close end ----------------------------------------------------------------
+
+  useEffect(() => {
+    const brandsStr =
+      input.brand?.length > 0
+        ? input.brand.map((b: any) => b.name).join(", ")
+        : "various brands";
+
+    const desc = `Palet "${input.name || "Unnamed"}" - Category: ${
+      input.category?.name || "Not selected"
+    }, Warehouse: ${input.warehouse?.name || "Not selected"}, Condition: ${
+      input.condition?.name || "Not selected"
+    }, Status: ${
+      input.status?.name || "Not selected"
+    }, Brands: ${brandsStr}. Total products: ${
+      metaPage?.total || 0
+    }, Total price: ${formatRupiah(parseFloat(input.totalNew || "0"))}.`;
+
+    if (input.description !== desc) {
+      setInput((prev: any) => ({
+        ...prev,
+        description: desc,
+      }));
+    }
+  }, [
+    input.name,
+    input.category?.name,
+    input.warehouse?.name,
+    input.condition?.name,
+    input.status?.name,
+    JSON.stringify(input.brand),
+    input.totalNew,
+    metaPage?.total,
+  ]);
 
   useEffect(() => {
     alertError({
@@ -551,6 +615,17 @@ export const Client = () => {
         isPending={isPendingProceed}
         images={resProceedImage.length}
       />
+      <DialogUploadExcel
+        open={isOpenUploadExcel}
+        onOpenChange={() => {
+          if (isOpenUploadExcel) {
+            setIsOpenUploadExcel(false);
+          }
+        }}
+        handleAddProductExcel={handleAddProductExcel}
+        addProductExcelMutate={addProducExcelMutate}
+        isPendingAddProductExcel={isPendingAddProductExcel}
+      />
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
           <BreadcrumbList>
@@ -693,6 +768,7 @@ export const Client = () => {
                           id: item.id,
                           name: item.name,
                         },
+                        name: `Palet ${item.name}`,
                       }));
                       setIsOpenCategory(false);
                     }}
@@ -763,9 +839,7 @@ export const Client = () => {
                       setIsOpenCondition(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.title}
-                      </div>
+                      <div className="w-full font-medium">{item.title}</div>
                     )}
                   />
                 </div>
@@ -790,9 +864,7 @@ export const Client = () => {
                       setIsOpenStatus(false);
                     }}
                     itemSelect={(item: any) => (
-                      <div className="w-full font-medium">
-                        {item.status}
-                      </div>
+                      <div className="w-full font-medium">{item.status}</div>
                     )}
                   />
                 </div>
@@ -800,13 +872,14 @@ export const Client = () => {
               <div className="flex flex-col w-full col-span-2 gap-1.5">
                 <Label>Description</Label>
                 <RichInput
+                  key={input.description}
                   content={input.description}
                   className="min-h-[250px]"
                   editorClassName={"max-h-[235px]"}
-                  onChange={(e) =>
+                  onChange={(desc) =>
                     setInput((prev: any) => ({
                       ...prev,
-                      description: e,
+                      description: desc,
                     }))
                   }
                 />
@@ -1026,6 +1099,15 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
+              <Button
+                variant={"liquid"}
+                onClick={() => setIsOpenUploadExcel(true)}
+                disabled={isPendingSubmit || isPendingAddProductExcel}
+                className="z-10"
+              >
+                <Upload />
+                Import File
+              </Button>
               <Button
                 variant={"liquid"}
                 disabled={isPendingSubmit || isPendingAddProduct}

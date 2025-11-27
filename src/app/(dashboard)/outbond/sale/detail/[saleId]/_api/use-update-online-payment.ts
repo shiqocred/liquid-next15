@@ -32,8 +32,13 @@ export const useUpdateOnlinePayment = () => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Order into bulky failed to update`);
-        console.log("ERROR_UPDATE_ORDER_INTO_BULKY:", err);
+        toast.error(
+          `ERROR ${err?.status}: ${
+            (err?.response?.data as any)?.data?.resource?.message ||
+            "Gagal mengirim order ke Bulky!"
+          }`
+        );
+        console.log("RROR_UPDATE_ORDER_INTO_BULKY", err);
       }
     },
   });

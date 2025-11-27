@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
+import { invalidateQuery } from "@/lib/query";
 
 type RequestType = {
   id: string;
@@ -14,6 +15,7 @@ type Error = AxiosError;
 
 export const useUpdateProductStaging = () => {
   const accessToken = getCookie("accessToken");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id, body }) => {
@@ -26,6 +28,7 @@ export const useUpdateProductStaging = () => {
     },
     onSuccess: () => {
       toast.success("Product Staging successfully updated");
+      invalidateQuery(queryClient, [["list-staging-product"]]);
     },
     onError: (err) => {
       if (err.status === 403) {
