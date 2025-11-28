@@ -26,7 +26,7 @@ export const useAddProduct = () => {
     },
     onSuccess: () => {
       toast.success("Product successfully added");
-      queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
+      queryClient.invalidateQueries({ queryKey: ["list-product-staging-detail"] });
       queryClient.invalidateQueries({
         queryKey: ["list-detail-rack"],
       });
