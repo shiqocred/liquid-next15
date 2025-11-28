@@ -1,12 +1,12 @@
 "use client";
 
 import {
+  ArrowRightFromLine,
   Loader2,
   Monitor,
   PlusCircle,
   RefreshCw,
   Search,
-  Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
@@ -300,7 +300,7 @@ useEffect(() => {
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
           <Button
-            className="items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
+            className="items-center border-sky-400 text-sky-500 hover:bg-sky-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
             variant={"outline"}
             type="button"
             disabled={isPendingRemoveProduct}
@@ -311,9 +311,8 @@ useEffect(() => {
             {isPendingRemoveProduct ? (
               <Loader2 className="w-4 h-4 mr-1" />
             ) : (
-              <Trash2 className="w-4 h-4 mr-1" />
+              <ArrowRightFromLine className="w-4 h-4 mr-1" />
             )}
-            <div>Delete</div>
           </Button>
         </div>
       ),

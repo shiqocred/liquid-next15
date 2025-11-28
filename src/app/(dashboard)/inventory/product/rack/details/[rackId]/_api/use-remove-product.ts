@@ -18,18 +18,23 @@ export const useRemoveProduct = () => {
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id, idProduct }) => {
-      const res = await axios.delete(`${baseUrl}/racks/${id}/display-products/${idProduct}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await axios.delete(
+        `${baseUrl}/racks/${id}/display-products/${idProduct}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
       toast.success("Product successfully removed");
-      queryClient.invalidateQueries({ queryKey: ["list-product-display"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-detail-rack"],
+        queryKey: ["list-product-detail-display"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["ist-detail-rack-display"],
       });
     },
     onError: (err) => {
