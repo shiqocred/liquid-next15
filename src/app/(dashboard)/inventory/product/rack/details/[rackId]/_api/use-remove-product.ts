@@ -34,7 +34,7 @@ export const useRemoveProduct = () => {
         queryKey: ["list-product-detail-display"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["ist-detail-rack-display"],
+        queryKey: ["list-detail-rack-display"],
       });
     },
     onError: (err) => {

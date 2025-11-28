@@ -39,6 +39,7 @@ import { useGetDetailRacks } from "../_api/use-get-detail-rack";
 import { useSubmit } from "../_api/use-submit";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { usePagination } from "@/lib/pagination";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -54,23 +55,15 @@ export const Client = () => {
   const [addProductSearch, setAddProductSearch] = useState("");
   const searchAddProductValue = useDebounce(addProductSearch);
   const [search, setSearch] = useQueryState("q", { defaultValue: "" });
-  const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage, setMetaPage] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
-
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
-  const [pageProduct, setPageProduct] = useState(1);
-  const [metaPageProduct, setMetaPageProduct] = useState({
-    last: 1, //page terakhir
-    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
-    total: 1, //total data
-    perPage: 1,
-  });
+  const { metaPage, page, setPage, setPagination } = usePagination();
+  const {
+    metaPage: metaPageProduct,
+    page: pageProduct,
+    setPage: setPageProduct,
+    setPagination: setPaginationProduct,
+  } = usePagination();
 
   // search, debounce, paginate end ----------------------------------------------------------------
 
@@ -102,11 +95,12 @@ export const Client = () => {
 
   // query strat ----------------------------------------------------------------
 
-  const { data, refetch, isRefetching, error, isError, isSuccess } = useGetDetailRacks({
-    id: rackId,
-    p: page,
-    q: search,
-  });
+  const { data, refetch, isRefetching, error, isError, isSuccess } =
+    useGetDetailRacks({
+      id: rackId,
+      p: page,
+      q: search,
+    });
 
   const {
     data: dataProduct,
@@ -132,25 +126,17 @@ export const Client = () => {
   // memo end ----------------------------------------------------------------
 
   // paginate strat ----------------------------------------------------------------
-useEffect(() => {
-    setPaginate({
-      isSuccess: isSuccess,
-      data: data,
-      dataPaginate: data?.data.data.resource.products,
-      setPage: setPage,
-      setMetaPage: setMetaPage,
-    });
-  }, [data]);
-  
   useEffect(() => {
-    setPaginate({
-      isSuccess: isSuccessProduct,
-      data: dataProduct,
-      dataPaginate: dataProduct?.data.data.resource.products,
-      setPage: setPageProduct,
-      setMetaPage: setMetaPageProduct,
-    });
-  }, [dataProduct]);
+    if (data && isSuccess) {
+      setPagination(data?.data.data.resource.products);
+    }
+  }, [data, isSuccess]);
+
+  useEffect(() => {
+    if (dataProduct && isSuccessProduct) {
+      setPaginationProduct(dataProduct?.data.data.resource.products);
+    }
+  }, [dataProduct, isSuccessProduct]);
 
   // paginate end ----------------------------------------------------------------
 
@@ -205,13 +191,6 @@ useEffect(() => {
   const handleCloseProduct = () => {
     setIsProduct(false);
     setProductSearch("");
-    setPageProduct(1);
-    setMetaPageProduct({
-      from: 0,
-      last: 0,
-      perPage: 0,
-      total: 0,
-    });
   };
 
   // handling close end ----------------------------------------------------------------
@@ -250,7 +229,7 @@ useEffect(() => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPageProduct.from + row.index).toLocaleString()}
+          {(row.index + 1).toLocaleString()}
         </div>
       ),
     },
@@ -325,7 +304,7 @@ useEffect(() => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPage.from + row.index).toLocaleString()}
+          {(metaPageProduct.from + row.index).toLocaleString()}
         </div>
       ),
     },
@@ -341,10 +320,6 @@ useEffect(() => {
           {row.original.new_name_product}
         </div>
       ),
-    },
-    {
-      accessorKey: "new_category_product",
-      header: "Category",
     },
     {
       accessorKey: "action",
