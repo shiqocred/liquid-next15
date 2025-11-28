@@ -55,7 +55,7 @@ export const Client = () => {
   const searchAddProductValue = useDebounce(addProductSearch);
   const [search, setSearch] = useQueryState("q", { defaultValue: "" });
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
-  const [metaPage] = useState({
+  const [metaPage, setMetaPage] = useState({
     last: 1, //page terakhir
     from: 1, //data dimulai dari (untuk memulai penomoran tabel)
     total: 1, //total data
@@ -102,7 +102,7 @@ export const Client = () => {
 
   // query strat ----------------------------------------------------------------
 
-  const { data, refetch, isRefetching, error, isError } = useGetDetailRacks({
+  const { data, refetch, isRefetching, error, isError, isSuccess } = useGetDetailRacks({
     id: rackId,
     p: page,
     q: search,
@@ -126,18 +126,27 @@ export const Client = () => {
   }, [data]);
 
   const dataListProduct: any[] = useMemo(() => {
-    return dataProduct?.data.data.resource.products;
+    return dataProduct?.data.data.resource.products.data;
   }, [dataProduct]);
 
   // memo end ----------------------------------------------------------------
 
   // paginate strat ----------------------------------------------------------------
-
+useEffect(() => {
+    setPaginate({
+      isSuccess: isSuccess,
+      data: data,
+      dataPaginate: data?.data.data.resource.products,
+      setPage: setPage,
+      setMetaPage: setMetaPage,
+    });
+  }, [data]);
+  
   useEffect(() => {
     setPaginate({
       isSuccess: isSuccessProduct,
       data: dataProduct,
-      dataPaginate: dataProduct?.data.data.resource,
+      dataPaginate: dataProduct?.data.data.resource.products,
       setPage: setPageProduct,
       setMetaPage: setMetaPageProduct,
     });
@@ -241,7 +250,7 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPage.from + row.index).toLocaleString()}
+          {(metaPageProduct.from + row.index).toLocaleString()}
         </div>
       ),
     },
@@ -317,7 +326,7 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPageProduct.from + row.index).toLocaleString()}
+          {(metaPage.from + row.index).toLocaleString()}
         </div>
       ),
     },
