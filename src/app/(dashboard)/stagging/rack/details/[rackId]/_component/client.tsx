@@ -9,7 +9,7 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,7 +18,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
@@ -318,6 +318,15 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="max-w-[500px] break-all">
           {row.original.new_name_product}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_category_product",
+      header: "Category",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.new_category_product}
         </div>
       ),
     },
