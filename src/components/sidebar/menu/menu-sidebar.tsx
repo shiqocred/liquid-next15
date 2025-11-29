@@ -159,7 +159,7 @@ const sidebarMenu = [
         sub_menu: [],
       },
       {
-        title: "Rack Stagging",
+        title: "Stagging",
         href: "/stagging/rack",
         icon: <LibraryBigIcon className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
@@ -185,7 +185,7 @@ const sidebarMenu = [
             href: "/inventory/product/color",
           },
           {
-            title: "rack display",
+            title: "by category",
             href: "/inventory/product/rack",
           },
         ],
