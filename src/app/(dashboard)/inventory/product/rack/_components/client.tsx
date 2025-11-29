@@ -7,18 +7,17 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Label } from "@/components/ui/label";
 import {
   Edit3,
+  FileDown,
+  Loader2,
   PlusCircle,
   ReceiptText,
   RefreshCw,
-  Search,
   Trash2,
-  X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah } from "@/lib/utils";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
@@ -40,71 +39,62 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteRack } from "../_api/use-delete-rack";
 import { useGetListProduct } from "../_api/use-get-list-product";
 import Pagination from "@/components/pagination";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { useDeleteProductCategory } from "../_api/use-delete-product-category";
+import { useExportProductCategory } from "../_api/use-export-product-category";
+import { useUpdateProductCategory } from "../_api/use-update-product-category";
+import { useGetProductCategoryDetail } from "../_api/use-get-product-category-detail";
+import { DialogDetail } from "./dialog-detail";
+import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
+import { useQueryClient } from "@tanstack/react-query";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
-export const columnProductDisplay = ({
-  metaPageProduct,
-}: any): ColumnDef<any>[] => [
-  {
-    header: () => <div className="text-center">No</div>,
-    id: "id",
-    cell: ({ row }) => (
-      <div className="text-center tabular-nums">
-        {(metaPageProduct.from + row.index).toLocaleString()}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "new_barcode_product||old_barcode_product",
-    header: "Barcode",
-    cell: ({ row }) =>
-      row.original.new_barcode_product ??
-      row.original.old_barcode_product ??
-      "-",
-  },
-  {
-    accessorKey: "new_name_product",
-    header: () => <div className="text-center">Product Name</div>,
-    cell: ({ row }) => (
-      <div className="max-w-[300px] break-all">
-        {row.original.new_name_product}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "new_category_product||new_tag_product",
-    header: "Category",
-    cell: ({ row }) =>
-      row.original.new_category_product ?? row.original.new_tag_product ?? "-",
-  },
-  {
-    accessorKey: "new_price_product||old_price_product",
-    header: "Price",
-    cell: ({ row }) => (
-      <div className="tabular-nums">
-        {formatRupiah(
-          row.original.new_price_product ?? row.original.old_price_product
-        )}
-      </div>
-    ),
-  },
-];
+
+interface QualityData {
+  lolos: string | null;
+  damaged: string | null;
+  abnormal: string | null;
+}
 
 export const Client = () => {
+  const queryClient = useQueryClient();
   const [openCreateEdit, setOpenCreateEdit] = useQueryState(
     "dialog",
+    parseAsBoolean.withDefault(false)
+  );
+  const [isOpenCategory, setIsOpenCategory] = useState(false);
+  const [isOpenDetailProduct, setIsOpenDetailProduct] = useQueryState(
+    "dialog2",
     parseAsBoolean.withDefault(false)
   );
   // rack Id for Edit
   const [rackId, setRackId] = useQueryState("rackId", {
     defaultValue: "",
   });
+  const [productId, setProductId] = useQueryState("productId", {
+    defaultValue: "",
+  });
   const [isMounted, setIsMounted] = useState(false);
-  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
-  const { search, searchValue, setSearch } = useSearchQuery();
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const {
+    search: searchRack,
+    searchValue: searchValueRack,
+    setSearch: setSearchRack,
+  } = useSearchQuery("qRack");
+  const {
+    search: searchProduct,
+    searchValue: searchValueProduct,
+    setSearch: setSearchProduct,
+  } = useSearchQuery("qProduct");
+  const [searchRackInput, setSearchRackInput] = useState<string>(
+    (searchRack as string) ?? ""
+  );
+  const [searchProductInput, setSearchProductInput] = useState<string>(
+    (searchProduct as string) ?? ""
+  );
 
+  const { metaPage, page, setPage, setPagination } = usePagination();
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
@@ -118,17 +108,55 @@ export const Client = () => {
     source: "Display",
   });
 
-  // donfirm delete
+  // data form edit product
+  const [inputProduct, setInputProduct] = useState({
+    barcode: "",
+    oldBarcode: "",
+    name: "",
+    oldName: "",
+    price: "0",
+    oldPrice: "0",
+    qty: "1",
+    oldQty: "1",
+    category: "",
+    discount: "0",
+    displayPrice: "0",
+  });
+
+  // confirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Rack Display",
     "This action cannot be undone",
     "destructive"
   );
+  const [DeleteDialogProduct, confirmDeleteProduct] = useConfirm(
+    "Delete Product",
+    "This action cannot be undone",
+    "liquid"
+  );
 
-  // mutate DELETE, UPDATE, CREATE
+  // mutate DELETE, UPDATE, CREATE, EXPORT
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteRack();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateRack();
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateRack();
+  const { mutate: mutateDeleteProduct, isPending: isPendingDeleteProduct } =
+    useDeleteProductCategory();
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportProductCategory();
+
+  const {
+    mutate: updateProduct,
+    isSuccess: isSuccessUpdate,
+    isPending: isPendingUpdateProduct,
+  } = useUpdateProductCategory();
+
+  const {
+    data: dataProduct,
+    isSuccess: isSuccessProduct,
+    isError: isErrorProduct,
+    error: errorProduct,
+    isLoading: isLoadingDetailProduct,
+  } = useGetProductCategoryDetail({ id: productId });
 
   const {
     data: dataRacks,
@@ -139,17 +167,21 @@ export const Client = () => {
     isSuccess: isSuccessRacks,
   } = useGetListRacks({
     p: page,
-    q: searchValue,
+    q: searchValueRack,
   });
 
   const {
     data: dataProducts,
+    refetch: refetchProducts,
+    isLoading: isLoadingProducts,
+    isRefetching: isRefetchingProducts,
+    isPending: isPendingProducts,
     isError: isErrorProducts,
     error: errorProducts,
     isSuccess: isSuccessProducts,
   } = useGetListProduct({
     p: pageProduct,
-    q: dataSearch, // product tab has its own search input `dataSearch`
+    q: searchValueProduct, // product tab has its own search input `dataSearch`
   });
 
   const rackData = useMemo(() => {
@@ -162,6 +194,85 @@ export const Client = () => {
     return dataProducts?.data.data.resource.data;
   }, [dataProducts]);
 
+  const dataDetailProduct: any = useMemo(() => {
+    return dataProduct?.data.data.resource;
+  }, [dataProduct]);
+
+  const { data: dataPrice } = useGetPriceProductCategory({
+    price: dataDetailProduct?.old_price_product,
+  });
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorProduct,
+      error: errorProduct as AxiosError,
+      data: "Data Detail",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorProduct, errorProduct]);
+
+  useEffect(() => {
+    if (isSuccessProduct && dataProduct) {
+      setInputProduct({
+        barcode: dataProduct?.data.data.resource.new_barcode_product ?? "",
+        name: dataProduct?.data.data.resource.new_name_product ?? "",
+        price: dataProduct?.data.data.resource.new_price_product ?? "0",
+        qty: dataProduct?.data.data.resource.new_quantity_product ?? "1",
+        oldBarcode: dataProduct?.data.data.resource.old_barcode_product ?? "",
+        oldName: dataProduct?.data.data.resource.new_name_product ?? "",
+        oldPrice: dataProduct?.data.data.resource.old_price_product ?? "0",
+        oldQty: dataProduct?.data.data.resource.new_quantity_product ?? "1",
+        category: dataProduct?.data.data.resource.new_category_product ?? "",
+        discount: dataProduct?.data.data.resource.new_discount ?? "0",
+        displayPrice: dataProduct?.data.data.resource.display_price ?? "0",
+      });
+    }
+  }, [dataProduct]);
+
+  const categories: any[] = useMemo(() => {
+    return dataPrice?.data.data.resource.category ?? [];
+  }, [dataPrice]);
+
+  const handleUpdateProduct = () => {
+    const body = {
+      code_document: dataDetailProduct?.code_document,
+      old_barcode_product: inputProduct.oldBarcode,
+      new_barcode_product: inputProduct.barcode,
+      new_name_product: inputProduct.name,
+      new_quantity_product: inputProduct.qty,
+      new_price_product: inputProduct.price,
+      old_price_product: inputProduct.oldPrice,
+      new_date_in_product: dataDetailProduct?.new_date_in_product,
+      new_status_product: dataDetailProduct?.new_status_product,
+      condition: Object.keys(JSON.parse(dataDetailProduct?.new_quality)).find(
+        (key) =>
+          JSON.parse(dataDetailProduct?.new_quality)[
+            key as keyof QualityData
+          ] !== null
+      ),
+      new_category_product:
+        inputProduct.category ?? dataDetailProduct?.new_category_product,
+      new_tag_product: dataDetailProduct?.new_tag_product,
+      display_price: inputProduct.displayPrice,
+      new_discount: inputProduct.discount,
+    };
+
+    updateProduct(
+      { body, params: { id: dataDetailProduct.id } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["product-detail-product-detail", dataDetailProduct.id],
+          });
+        },
+      }
+    );
+  };
+
+  const loading =
+    isLoadingProducts || isRefetchingProducts || isPendingProducts;
+
   // handle close
   const handleClose = () => {
     setOpenCreateEdit(false);
@@ -170,6 +281,16 @@ export const Client = () => {
       ...prev,
       name: "",
     }));
+  };
+
+  const handleCloseProduct = () => {
+    setIsOpenDetailProduct(false);
+    setProductId("");
+    if (isSuccessUpdate) {
+      queryClient.invalidateQueries({
+        queryKey: ["list-product-by-category"],
+      });
+    }
   };
 
   // handle create
@@ -215,6 +336,39 @@ export const Client = () => {
     mutateDelete({ id });
   };
 
+  // handle delete product
+  const handleDeleteProduct = async (id: any) => {
+    const ok = await confirmDeleteProduct();
+
+    if (!ok) return;
+
+    mutateDeleteProduct({ params: { id } });
+  };
+
+  // handle export
+  const handleExport = async () => {
+    mutateExport(
+      {},
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
+  useEffect(() => {
+    setSearchRackInput((searchRack as string) ?? "");
+  }, [searchRack]);
+
+  useEffect(() => {
+    setSearchProductInput((searchProduct as string) ?? "");
+  }, [searchProduct]);
+
   useEffect(() => {
     if (dataProducts && isSuccessProducts) {
       setPaginationProduct(dataProducts?.data.data.resource);
@@ -226,6 +380,165 @@ export const Client = () => {
       setPagination(dataRacks?.data.data.resource.racks);
     }
   }, [dataRacks, isSuccessRacks]);
+
+  useEffect(() => {
+    if (isNaN(parseFloat(inputProduct.qty))) {
+      setInputProduct((prev) => ({ ...prev, qty: "0" }));
+    }
+    if (isNaN(parseFloat(inputProduct.discount))) {
+      setInputProduct((prev) => ({ ...prev, discount: "0" }));
+    }
+    if (isNaN(parseFloat(inputProduct.displayPrice))) {
+      setInputProduct((prev) => ({ ...prev, displayPrice: "0" }));
+    }
+    if (isNaN(parseFloat(inputProduct.price))) {
+      setInputProduct((prev) => ({ ...prev, price: "0" }));
+    }
+    if (isNaN(parseFloat(inputProduct.oldPrice))) {
+      setInputProduct((prev) => ({ ...prev, oldPrice: "0" }));
+    }
+  }, [inputProduct]);
+
+  useEffect(() => {
+    setInputProduct((prev) => ({
+      ...prev,
+      displayPrice: Math.round(
+        parseFloat(inputProduct.price ?? "0") -
+          (parseFloat(inputProduct.price ?? "0") / 100) *
+            parseFloat(inputProduct.discount ?? "0")
+      ).toString(),
+    }));
+  }, [inputProduct.discount, inputProduct.price]);
+
+  const columnProductDisplay = ({ metaPageProduct }: any): ColumnDef<any>[] => [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPageProduct.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_barcode_product||old_barcode_product",
+      header: "Barcode",
+      cell: ({ row }) =>
+        row.original.new_barcode_product ??
+        row.original.old_barcode_product ??
+        "-",
+    },
+    {
+      accessorKey: "new_name_product",
+      header: () => <div className="text-center">Product Name</div>,
+      cell: ({ row }) => (
+        <div className="max-w-[400px] break-all">
+          {row.original.new_name_product}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_category_product||new_tag_product",
+      header: "Category",
+      cell: ({ row }) =>
+        row.original.new_category_product ??
+        row.original.new_tag_product ??
+        "-",
+    },
+    {
+      accessorKey: "new_price_product||old_price_product",
+      header: "Price",
+      cell: ({ row }) => (
+        <div className="tabular-nums">
+          {formatRupiah(
+            row.original.new_price_product ?? row.original.old_price_product
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_date_in_product",
+      header: "Date",
+      cell: ({ row }) => (
+        <div className="">
+          {format(
+            new Date(row.original.new_date_in_product),
+            "iii, dd MMM yyyy"
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_status_product",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.new_status_product;
+        const color = {
+          display: "bg-green-400/80 hover:bg-green-400/80",
+          expired: "bg-rose-400/80 hover:bg-rose-400/80",
+          slowmoving: "bg-yellow-400/80 hover:bg-yellow-400/80",
+        };
+        return (
+          <Badge
+            className={cn(
+              "font-normal rounded-full text-black capitalize",
+              color[
+                status.replace(/\s+/g, "").toLowerCase() as
+                  | "display"
+                  | "expired"
+                  | "slowmoving"
+              ]
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isLoadingDetailProduct}
+              onClick={(e) => {
+                e.preventDefault();
+                setProductId(row.original.id);
+                setIsOpenDetailProduct(true);
+              }}
+            >
+              {isLoadingDetailProduct ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ReceiptText className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDeleteProduct}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteProduct(row.original.id);
+              }}
+            >
+              {isPendingDeleteProduct ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
+  ];
 
   useEffect(() => {
     setIsMounted(true);
@@ -264,6 +577,20 @@ export const Client = () => {
         handleUpdate={handleUpdate} // handle update rack
         isPendingCreate={isPendingCreate} // loading create
         isPendingUpdate={isPendingUpdate} // loading update
+      />
+      <DeleteDialogProduct />
+      <DialogDetail
+        isOpen={isOpenDetailProduct}
+        handleClose={handleCloseProduct}
+        isLoadingProduct={isLoadingDetailProduct}
+        isLoadingUpdate={isPendingUpdateProduct}
+        handleUpdate={handleUpdateProduct}
+        input={inputProduct}
+        setInput={setInputProduct}
+        data={dataDetailProduct}
+        isOpenCategory={isOpenCategory}
+        setIsOpenCategory={setIsOpenCategory}
+        categories={categories}
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -315,8 +642,11 @@ export const Client = () => {
               <div className="flex items-center gap-3 w-full">
                 <Input
                   className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={searchRackInput}
+                  onChange={(e) => {
+                    setSearchRackInput(e.target.value);
+                    setSearchRack(e.target.value);
+                  }}
                   placeholder="Search..."
                   autoFocus
                 />
@@ -357,17 +687,17 @@ export const Client = () => {
               </div>
             </div>
             <div className="grid grid-cols-4 gap-4 w-full p-4">
-              {searchValue ? (
+              {searchValueRack ? (
                 racksData?.data.filter((item: any) =>
                   (item.name ?? "")
                     .toLowerCase()
-                    .includes((searchValue ?? "").toLowerCase())
+                    .includes((searchValueRack ?? "").toLowerCase())
                 ).length > 0 ? (
                   racksData?.data
                     .filter((item: any) =>
                       (item.name ?? "")
                         .toLowerCase()
-                        .includes((searchValue ?? "").toLowerCase())
+                        .includes((searchValueRack ?? "").toLowerCase())
                     )
                     .map((item: any, i: any) => (
                       <div
@@ -405,13 +735,18 @@ export const Client = () => {
 
                           <TooltipProviderPage value={<p>Edit</p>}>
                             <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setRackId(item.id);
+                                setInput((prev) => ({
+                                  ...prev,
+                                  name: item.name,
+                                }));
+                                setOpenCreateEdit(true);
+                              }}
                               className="items-center w-7 px-0 flex-none h-7 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
                               variant={"outline"}
                               asChild
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setOpenCreateEdit(true);
-                              }}
                             >
                               <Edit3 className="w-4 h-4" />
                             </Button>
@@ -419,13 +754,16 @@ export const Client = () => {
 
                           <TooltipProviderPage value={<p>Delete</p>}>
                             <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDelete(item.id);
+                              }}
                               className="items-center w-7 px-0 flex-none h-7 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
                               variant={"outline"}
                               asChild
+                              disabled={isPendingDelete}
                             >
-                              <Link href={`/inventory/product/rack/details/2`}>
-                                <Trash2 className="w-4 h-4" />
-                              </Link>
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </TooltipProviderPage>
                         </div>
@@ -467,7 +805,9 @@ export const Client = () => {
                           variant={"outline"}
                           asChild
                         >
-                          <Link href={`/inventory/product/rack/details/${item.id}`}>
+                          <Link
+                            href={`/inventory/product/rack/details/${item.id}`}
+                          >
                             <ReceiptText className="w-4 h-4" />
                           </Link>
                         </Button>
@@ -527,11 +867,9 @@ export const Client = () => {
           </div>
         </TabsContent>
         <TabsContent value="product" className="w-full gap-4 flex flex-col">
-          <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
+          {/* <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full flex flex-col gap-4">
               <h3 className="text-lg font-semibold">List Product</h3>
-
-              {/* Search */}
               <div
                 className="relative w-full flex items-center mb-4"
                 style={{ width: "40%" }}
@@ -547,7 +885,6 @@ export const Client = () => {
                   placeholder="Search Product Category..."
                 />
                 <button
-                  // onClick={clearSearch}
                   className={cn(
                     "h-5 w-5 absolute right-2 items-center justify-center outline-none",
                     dataSearch.length > 0 ? "flex" : "hidden"
@@ -555,6 +892,62 @@ export const Client = () => {
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
+              <DataTable
+                columns={columnProductDisplay({
+                  metaPageProduct,
+                })}
+                data={productData ?? []}
+              />
+              <Pagination
+                pagination={{ ...metaPageProduct, current: pageProduct }}
+                setPagination={setPageProduct}
+              />
+            </div>
+          </div> */}
+
+          <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
+            <h2 className="text-xl font-bold">List Product by Category</h2>
+            <div className="flex flex-col w-full gap-4">
+              <div className="flex gap-2 items-center w-full justify-between">
+                <div className="flex items-center gap-3 w-full">
+                  <Input
+                    className="w-[250px] border-sky-400/80 focus-visible:ring-sky-400"
+                    value={searchProductInput}
+                    onChange={(e) => {
+                      setSearchProductInput(e.target.value);
+                      setSearchProduct(e.target.value);
+                    }}
+                    placeholder="Search..."
+                  />
+                  <TooltipProviderPage value={"Reload Data"}>
+                    <Button
+                      onClick={() => refetchProducts()}
+                      className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                      variant={"outline"}
+                    >
+                      <RefreshCw
+                        className={cn("w-4 h-4", loading ? "animate-spin" : "")}
+                      />
+                    </Button>
+                  </TooltipProviderPage>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleExport();
+                    }}
+                    className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                    disabled={isPendingExport}
+                    variant={"outline"}
+                  >
+                    {isPendingExport ? (
+                      <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+                    ) : (
+                      <FileDown className={"w-4 h-4 mr-1"} />
+                    )}
+                    Export Data
+                  </Button>
+                </div>
               </div>
               <DataTable
                 columns={columnProductDisplay({
