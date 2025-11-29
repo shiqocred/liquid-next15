@@ -3,13 +3,13 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetAnalyticSaleYearly = (year: any) => {
+export const useGetPriceProductStaging = ({ price }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["analytic-sale-yearly"],
+    queryKey: ["price-product-product-staging", price],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/dashboard/yearly-analytic-sales?y=${year}`,
+        `${baseUrl}/get-latestPrice?old_price_product=${price}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -18,6 +18,7 @@ export const useGetAnalyticSaleYearly = (year: any) => {
       );
       return res;
     },
+    enabled: !!price,
   });
   return query;
 };

@@ -13,29 +13,27 @@ import { cn } from "@/lib/utils";
 
 const DialogCreateEdit = ({
   open,
-  onCloseModal,
+  onOpenChange,
   rackId,
   input,
   setInput,
-  handleClose,
   handleCreate,
   handleUpdate,
   isPendingCreate,
   isPendingUpdate,
 }: {
   open: boolean;
-  onCloseModal: () => void;
+  onOpenChange: () => void;
   rackId: any;
   input: any;
   setInput: any;
-  handleClose: () => void;
   handleCreate: any;
   handleUpdate: any;
   isPendingCreate: boolean;
   isPendingUpdate: boolean;
 }) => {
   return (
-    <Dialog open={open} onOpenChange={onCloseModal}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{rackId ? "Edit Rack" : "Create Rack"}</DialogTitle>
@@ -65,10 +63,7 @@ const DialogCreateEdit = ({
             <div className="flex w-full gap-2">
               <Button
                 className="w-full bg-transparent hover:bg-transparent text-black border-black/50 border hover:border-black"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleClose();
-                }}
+                onClick={() => onOpenChange()}
                 type="button"
               >
                 Cancel
