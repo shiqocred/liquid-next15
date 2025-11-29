@@ -24,12 +24,12 @@ export const useDeleteRack = () => {
       });
       return res;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Rack successfully Deleted");
       queryClient.invalidateQueries({ queryKey: ["list-racks-display"] });
-      queryClient.invalidateQueries({
-        queryKey: ["rack-detail-display", data.data.data.resource.id],
-      });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["rack-detail-display", data.data.data.resource.id],
+      // });
     },
     onError: (err) => {
       if (err.status === 403) {
