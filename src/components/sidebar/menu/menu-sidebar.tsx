@@ -16,7 +16,6 @@ import {
   FileCog,
   FolderClock,
   IdCard,
-  Layers3,
   LibraryBigIcon,
   LineChart,
   PackageSearch,
