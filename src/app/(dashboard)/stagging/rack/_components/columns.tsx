@@ -65,8 +65,10 @@ export const columnProductStaging = ({
   metaPageProduct,
   isLoading,
   handleAddFilter,
+  handleDryScrap,
   setProductId,
   setIsOpen,
+  isPendingDryScrap,
 }: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -198,11 +200,10 @@ export const columnProductStaging = ({
               <Button
                 variant="ghost"
                 className="justify-start px-3 text-sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setProductId(row.original.id);
-                  setIsOpen("dry-scrap");
+                onClick={() => {
+                  handleDryScrap(row.original.id);
                 }}
+                disabled={isPendingDryScrap}
               >
                 Dry Scrap
               </Button>

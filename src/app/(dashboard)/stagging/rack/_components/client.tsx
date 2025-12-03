@@ -45,11 +45,10 @@ import { useAddFilterProductStaging } from "../_api/use-add-filter-product-stagi
 import { useExportStagingProduct } from "../_api/use-export-staging-product";
 import { DialogDetail } from "./dialog-detail";
 import { DialogToLPR } from "./dialog-to-lpr";
-import { DialogDryScrap } from "./dialog-dry-scrap";
 import { DialogFiltered } from "./dialog-filtered";
-import { DialogAction } from "./dialog-action";
 import { useGetListCategories } from "../_api/use-get-list-categories";
 import { useSubmit } from "../_api/use-submit";
+import { useDryScrap } from "../_api/use-dry-scrap";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -81,9 +80,7 @@ export const Client = () => {
     setSearch: setSearchProduct,
   } = useSearchQuery("qProduct");
 
-  const {
-    searchValue: searchValueCategories,
-  } = useSearchQuery("qCategories");
+  const { searchValue: searchValueCategories } = useSearchQuery("qCategories");
 
   // local input state stored at parent level so values survive tab unmounts
   const [searchRackInput, setSearchRackInput] = useState<string>(
@@ -139,6 +136,12 @@ export const Client = () => {
     "destructive"
   );
 
+  const [DialogDryScrap, confirmDryScrap] = useConfirm(
+    "Dry Scrap Product Stagging",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteRack();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateRack();
@@ -148,6 +151,8 @@ export const Client = () => {
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportStagingProduct();
   const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
+  const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
+    useDryScrap();
 
   const {
     data: dataRacks,
@@ -175,9 +180,7 @@ export const Client = () => {
     q: searchValueProduct, // product tab has its own search input
   });
 
-  const {
-    data: dataCategories,
-  } = useGetListCategories({
+  const { data: dataCategories } = useGetListCategories({
     p: page,
     q: searchValueCategories,
   });
@@ -279,6 +282,13 @@ export const Client = () => {
     mutateSubmit({ id });
   };
 
+  const handleDryScrap = async (id: any) => {
+    const ok = await confirmDryScrap();
+
+    if (!ok) return;
+    mutateDryScrap({ id });
+  };
+
   useEffect(() => {
     if (dataProducts && isSuccessProducts) {
       setPaginationProduct(dataProducts?.data.data.resource);
@@ -314,6 +324,7 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
       <ToDisplayDialog />
+      <DialogDryScrap />
       <DialogCreateEdit
         open={isOpen === "create-edit"}
         onOpenChange={() => {
@@ -351,16 +362,6 @@ export const Client = () => {
         }}
         productId={productId}
       />
-      <DialogDryScrap
-        open={isOpen === "dry-scrap"}
-        onOpenChange={() => {
-          if (isOpen === "dry-scrap") {
-            setIsOpen("");
-            setProductId("");
-          }
-        }}
-        productId={productId}
-      />
       <DialogFiltered
         open={isOpen === "filtered"}
         onOpenChange={() => {
@@ -368,16 +369,6 @@ export const Client = () => {
             setIsOpen("");
           }
         }}
-      />
-      <DialogAction
-        open={isOpen === "action"}
-        onOpenChange={() => {
-          if (isOpen === "action") {
-            setIsOpen("");
-            setProductId("");
-          }
-        }}
-        productId={productId}
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -738,7 +729,9 @@ export const Client = () => {
                 columns={columnProductStaging({
                   metaPageProduct,
                   isLoadingProducts,
+                  isPendingDryScrap,
                   handleAddFilter,
+                  handleDryScrap,
                   setProductId,
                   setIsOpen,
                 })}
