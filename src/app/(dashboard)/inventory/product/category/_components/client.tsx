@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Drill,
   FileDown,
   Loader2,
   ReceiptText,
@@ -39,6 +40,7 @@ import { useGetPriceProductCategory } from "../_api/use-get-price-product-catego
 import { DialogDetail } from "./dialog-detail";
 import { usePagination } from "@/lib/pagination";
 import { useSearchQuery } from "@/lib/search";
+import { useDryScrap } from "../_api/use-dry-scrap";
 
 interface QualityData {
   lolos: string | null;
@@ -58,10 +60,18 @@ export const Client = () => {
     "liquid"
   );
 
+  const [DialogDryScrap, confirmDryScrap] = useConfirm(
+    "Dry Scrap Product Display",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   const { mutate: mutateDelete, isPending: isPendingDelete } =
     useDeleteProductCategory();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportProductCategory();
+  const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
+    useDryScrap();
 
   const {
     data,
@@ -117,6 +127,13 @@ export const Client = () => {
         },
       }
     );
+  };
+
+  const handleDryScrap = async (id: any) => {
+    const ok = await confirmDryScrap();
+
+    if (!ok) return;
+    mutateDryScrap({ id });
   };
 
   // ---------------- Start Detail Fn -------------------- //
@@ -274,7 +291,7 @@ export const Client = () => {
 
   // ---------------- End Detail Fn ---------------------//
 
-  const columnApprovementStaging: ColumnDef<any>[] = [
+  const columnApprovementDisplay: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -399,6 +416,23 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Scrapt</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDryScrap(row.original.id);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Drill className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -425,6 +459,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <DialogDryScrap />
       <DialogDetail
         isOpen={isOpenDetailProduct}
         handleClose={handleClose}
@@ -492,7 +527,7 @@ export const Client = () => {
               </Button>
             </div>
           </div>
-          <DataTable columns={columnApprovementStaging} data={dataList ?? []} />
+          <DataTable columns={columnApprovementDisplay} data={dataList ?? []} />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
