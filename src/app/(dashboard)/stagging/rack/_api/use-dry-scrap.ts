@@ -6,22 +6,22 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  description: string;
-  status: string;
   id: string;
 };
-
 type Error = AxiosError;
 
-export const useLPRProductStaging = () => {
+export const useDryScrap = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, status, description }) => {
+    mutationFn: async ({ id }) => {
       const res = await axios.post(
-        `${baseUrl}/staging/move_to_lpr/${id}`,
-        { status, description },
+        `${baseUrl}/products/status-dump`,
+        {
+          product_id: id,
+          source: "staging",
+        },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -30,16 +30,21 @@ export const useLPRProductStaging = () => {
       );
       return res;
     },
+
     onSuccess: () => {
-      toast.success("Product successfully Moved to LPR");
+      toast.success("successfully updated products staging to dump");
+      queryClient.invalidateQueries({ queryKey: ["list-staging-product"] });
       queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
+      queryClient.invalidateQueries({
+        queryKey: ["list-filter-staging-product"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: "Product failed to Move to LPR"`);
-        console.log("ERROR_TO_LPR_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: products staging failed update to dump`);
+        console.log("ERROR_UPDATE_TO_DUMP:", err);
       }
     },
   });

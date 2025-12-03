@@ -7,7 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import PopoverWithTrigger from "@/app/(dashboard)/inventory/pallet/list/create/_components/popover-with-trigger";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const DialogCreateEdit = ({
   handleUpdate,
   isPendingCreate,
   isPendingUpdate,
+  categories,
 }: {
   open: boolean;
   onOpenChange: () => void;
@@ -31,7 +33,9 @@ const DialogCreateEdit = ({
   handleUpdate: any;
   isPendingCreate: boolean;
   isPendingUpdate: boolean;
+  categories?: any;
 }) => {
+  const [isOpenCategory, setIsOpenCategory] = useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -45,18 +49,34 @@ const DialogCreateEdit = ({
           >
             <div className="border p-4 rounded border-sky-500 gap-4 flex flex-col">
               <div className="flex flex-col gap-1 w-full">
-                <Label>Name</Label>
-                <Input
-                  className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
-                  placeholder="Rack name..."
-                  value={input.name}
-                  // disabled={loadingSubmit}
-                  onChange={(e) =>
+                <Label>Category</Label>
+                <PopoverWithTrigger
+                  open={isOpenCategory}
+                  setIsOpen={setIsOpenCategory}
+                  data={categories ?? []}
+                  dataId={input?.category?.id ?? input?.categoryId}
+                  trigger={
+                    input?.category?.name_category
+                      ? input.category.name_category
+                      : "Select Category..."
+                  }
+                  onSelect={(item: any) => {
                     setInput((prev: any) => ({
                       ...prev,
-                      name: e.target.value,
-                    }))
-                  }
+                      category: {
+                        id: item.id,
+                        name_category: item.name_category,
+                      },
+                      categoryId: String(item.id),
+                      name: item.name_category ?? prev.name,
+                    }));
+                    setIsOpenCategory(false);
+                  }}
+                  itemSelect={(item: any) => (
+                    <div className="w-full font-medium">
+                      {item.name_category}
+                    </div>
+                  )}
                 />
               </div>
             </div>
@@ -76,7 +96,9 @@ const DialogCreateEdit = ({
                     : "bg-sky-400 hover:bg-sky-400/80"
                 )}
                 type="submit"
-                disabled={isPendingCreate || isPendingUpdate}
+                disabled={
+                  isPendingCreate || isPendingUpdate || !input?.categoryId
+                }
               >
                 {rackId ? "Update" : "Create"}
               </Button>

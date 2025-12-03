@@ -4,42 +4,37 @@ import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
+import { invalidateQuery } from "@/lib/query";
 
 type RequestType = {
-  description: string;
-  status: string;
   id: string;
 };
-
 type Error = AxiosError;
 
-export const useLPRProductStaging = () => {
+export const useSubmit = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, status, description }) => {
-      const res = await axios.post(
-        `${baseUrl}/staging/move_to_lpr/${id}`,
-        { status, description },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+    mutationFn: async ({ id }) => {
+      const res = await axios.post(`${baseUrl}/racks/${id}/move-to-display`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully Moved to LPR");
-      queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
+      toast.success("successfully updated rack to display");
+      invalidateQuery(queryClient, [["list-detail-rack"]]);
+      invalidateQuery(queryClient, [["list-racks"]]);
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: "Product failed to Move to LPR"`);
-        console.log("ERROR_TO_LPR_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Rack failed update to display`);
+        console.log("ERROR_UPDATE_TO_DISPLAY:", err);
       }
     },
   });
