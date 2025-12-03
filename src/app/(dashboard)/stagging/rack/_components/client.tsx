@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   ArrowRightCircle,
+  Boxes,
   Edit3,
   FileDown,
   Loader2,
@@ -44,7 +45,11 @@ import { useAddFilterProductStaging } from "../_api/use-add-filter-product-stagi
 import { useExportStagingProduct } from "../_api/use-export-staging-product";
 import { DialogDetail } from "./dialog-detail";
 import { DialogToLPR } from "./dialog-to-lpr";
+import { DialogDryScrap } from "./dialog-dry-scrap";
 import { DialogFiltered } from "./dialog-filtered";
+import { DialogAction } from "./dialog-action";
+import { useGetListCategories } from "../_api/use-get-list-categories";
+import { useSubmit } from "../_api/use-submit";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -76,6 +81,10 @@ export const Client = () => {
     setSearch: setSearchProduct,
   } = useSearchQuery("qProduct");
 
+  const {
+    searchValue: searchValueCategories,
+  } = useSearchQuery("qCategories");
+
   // local input state stored at parent level so values survive tab unmounts
   const [searchRackInput, setSearchRackInput] = useState<string>(
     (searchRack as string) ?? ""
@@ -103,14 +112,29 @@ export const Client = () => {
   } = usePagination();
 
   // data form create edit
-  const [input, setInput] = useState({
-    name: "",
+  type InputState = {
+    categoryId: string;
+    source: string;
+    name: string;
+    category: { id: string; name_category: string };
+  };
+
+  const [input, setInput] = useState<InputState>({
+    categoryId: "",
     source: "staging",
+    name: "",
+    category: { id: "", name_category: "" },
   });
 
-  // donfirm delete
+  // confirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Rack Stagging",
+    "This action cannot be undone",
+    "destructive"
+  );
+
+  const [ToDisplayDialog, confirmToDisplay] = useConfirm(
+    "To Display Rack",
     "This action cannot be undone",
     "destructive"
   );
@@ -123,6 +147,7 @@ export const Client = () => {
     useAddFilterProductStaging();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportStagingProduct();
+  const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
 
   const {
     data: dataRacks,
@@ -150,6 +175,13 @@ export const Client = () => {
     q: searchValueProduct, // product tab has its own search input
   });
 
+  const {
+    data: dataCategories,
+  } = useGetListCategories({
+    p: page,
+    q: searchValueCategories,
+  });
+
   const rackData = useMemo(() => {
     return dataRacks?.data.data.resource;
   }, [dataRacks]);
@@ -159,6 +191,10 @@ export const Client = () => {
   const productData = useMemo(() => {
     return dataProducts?.data.data.resource.data;
   }, [dataProducts]);
+
+  const CategoriesData = useMemo(() => {
+    return dataCategories?.data.data.resource;
+  }, [dataCategories]);
 
   const loading =
     isLoadingProducts ||
@@ -172,7 +208,9 @@ export const Client = () => {
     setRackId("");
     setInput((prev) => ({
       ...prev,
+      categoryId: "",
       name: "",
+      category: { id: "", name_category: "" },
     }));
   };
 
@@ -196,8 +234,8 @@ export const Client = () => {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      name: input.name,
-      source: "staging",
+      category_id: input.categoryId,
+      source: input.source ?? "staging",
     };
     mutateCreate(
       { body },
@@ -213,8 +251,7 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      name: input.name,
-      source: "staging",
+      category_id: input.categoryId,
     };
     mutateUpdate(
       { id: rackId, body },
@@ -233,6 +270,13 @@ export const Client = () => {
     if (!ok) return;
 
     mutateDelete({ id });
+  };
+
+  const handleSubmit = async (id: any) => {
+    const ok = await confirmToDisplay();
+
+    if (!ok) return;
+    mutateSubmit({ id });
   };
 
   useEffect(() => {
@@ -269,6 +313,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <ToDisplayDialog />
       <DialogCreateEdit
         open={isOpen === "create-edit"}
         onOpenChange={() => {
@@ -280,6 +325,7 @@ export const Client = () => {
         rackId={rackId} // rackId
         input={input} // input form
         setInput={setInput} // setInput Form
+        categories={CategoriesData?.data ?? CategoriesData}
         handleCreate={handleCreate} // handle create rack
         handleUpdate={handleUpdate} // handle update rack
         isPendingCreate={isPendingCreate} // loading create
@@ -305,6 +351,16 @@ export const Client = () => {
         }}
         productId={productId}
       />
+      <DialogDryScrap
+        open={isOpen === "dry-scrap"}
+        onOpenChange={() => {
+          if (isOpen === "dry-scrap") {
+            setIsOpen("");
+            setProductId("");
+          }
+        }}
+        productId={productId}
+      />
       <DialogFiltered
         open={isOpen === "filtered"}
         onOpenChange={() => {
@@ -312,6 +368,16 @@ export const Client = () => {
             setIsOpen("");
           }
         }}
+      />
+      <DialogAction
+        open={isOpen === "action"}
+        onOpenChange={() => {
+          if (isOpen === "action") {
+            setIsOpen("");
+            setProductId("");
+          }
+        }}
+        productId={productId}
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -460,13 +526,30 @@ export const Client = () => {
 
                           <TooltipProviderPage value={<p>Delete</p>}>
                             <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDelete(item.id);
+                              }}
                               className="items-center w-7 px-0 flex-none h-7 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
                               variant={"outline"}
                               asChild
+                              disabled={isPendingDelete}
                             >
-                              <Link href={`/stagging/rack/details/2`}>
-                                <Trash2 className="w-4 h-4" />
-                              </Link>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TooltipProviderPage>
+                          <TooltipProviderPage value={<p>To Display</p>}>
+                            <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleSubmit(item.id);
+                              }}
+                              className="items-center w-7 px-0 flex-none h-7 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                              variant={"outline"}
+                              asChild
+                              disabled={isPendingSubmit}
+                            >
+                              <Boxes className="w-4 h-4" />
                             </Button>
                           </TooltipProviderPage>
                         </div>
@@ -521,7 +604,17 @@ export const Client = () => {
                             setRackId(item.id);
                             setInput((prev) => ({
                               ...prev,
-                              name: item.name,
+                              categoryId:
+                                item.category_id ?? item.category?.id ?? "",
+                              category: {
+                                id: item.category_id ?? item.category?.id ?? "",
+                                name_category:
+                                  item.category?.name_category ??
+                                  item.name_category ??
+                                  "",
+                              },
+                              // keep rack name in name field if present
+                              name: item.name ?? prev.name,
                             }));
                             setIsOpen("create-edit");
                           }}
@@ -545,6 +638,20 @@ export const Client = () => {
                           disabled={isPendingDelete}
                         >
                           <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TooltipProviderPage>
+                      <TooltipProviderPage value={<p>To Display</p>}>
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleSubmit(item.id);
+                          }}
+                          className="items-center w-7 px-0 flex-none h-7 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                          variant={"outline"}
+                          asChild
+                          disabled={isPendingSubmit}
+                        >
+                          <Boxes className="w-4 h-4" />
                         </Button>
                       </TooltipProviderPage>
                     </div>

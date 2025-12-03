@@ -1,5 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
@@ -161,17 +166,49 @@ export const columnProductStaging = ({
           }}
           label="Detail"
         />
-        <ButtonAction
-          icon={Drill}
-          isLoading={isLoading}
-          type="red"
-          onClick={(e) => {
-            e.preventDefault();
-            setProductId(row.original.id);
-            setIsOpen("lpr");
-          }}
-          label="To LPR"
-        />
+        <Popover>
+          <TooltipProviderPage value={<p>To LPR / Dry Scrap</p>}>
+            <PopoverTrigger asChild>
+              <Button
+                className={cn(
+                  "items-center p-0 w-9 disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed",
+                  "border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:hover:bg-red-50"
+                )}
+                variant={"outline"}
+                type="button"
+              >
+                <Drill className="w-4 h-4" />
+              </Button>
+            </PopoverTrigger>
+          </TooltipProviderPage>
+
+          <PopoverContent className="w-auto py-2">
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="ghost"
+                className="justify-start px-3 text-sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setProductId(row.original.id);
+                  setIsOpen("lpr");
+                }}
+              >
+                To LPR
+              </Button>
+              <Button
+                variant="ghost"
+                className="justify-start px-3 text-sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setProductId(row.original.id);
+                  setIsOpen("dry-scrap");
+                }}
+              >
+                Dry Scrap
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     ),
   },
