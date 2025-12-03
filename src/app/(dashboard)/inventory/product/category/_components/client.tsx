@@ -420,13 +420,13 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingDelete}
+              disabled={isPendingDryScrap}
               onClick={(e) => {
                 e.preventDefault();
                 handleDryScrap(row.original.id);
               }}
             >
-              {isPendingDelete ? (
+              {isPendingDryScrap ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Drill className="w-4 h-4" />
