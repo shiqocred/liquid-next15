@@ -5,35 +5,35 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
-type RequestType = {
-  id: string;
-};
-
 type Error = AxiosError;
 
-export const useUnbundleQCD = () => {
+export const useScrapQCDAll = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/bundle/qcd/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+  const mutation = useMutation<AxiosResponse, Error, void>({
+    mutationFn: async () => {
+      const res = await axios.post(
+        `${baseUrl}/product-qcd/scrap-all`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("QCD successfully unbundled");
+      toast.success("QCD successfully scrap all");
       queryClient.invalidateQueries({ queryKey: ["list-qcd"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: QCD failed to unbundle`);
-        console.log("ERROR_UNBUNDLE_QCD:", err);
+        toast.error(`ERROR ${err?.status}: ${(err?.response?.data as any)?.message || "Product failed to scrap all"} `);
+        console.log("ERROR_ALL_SCRAP_QCD:", err);
       }
     },
   });

@@ -8,7 +8,7 @@ export const useGetListQCD = ({ p, q }: any) => {
   const query = useQuery({
     queryKey: ["list-qcd", { p, q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/bundle/qcd?page=${p}&q=${q}`, {
+      const res = await axios.get(`${baseUrl}/dumps?page=${p}&q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
