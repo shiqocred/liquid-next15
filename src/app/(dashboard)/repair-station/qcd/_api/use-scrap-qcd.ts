@@ -7,6 +7,7 @@ import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: string;
+  source: string;
 };
 
 type Error = AxiosError;
@@ -16,12 +17,19 @@ export const useScrapQCD = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/bundle/qcd/${id}/destroy`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+    mutationFn: async ({ id, source }) => {
+      const res = await axios.post(
+        `${baseUrl}/product-qcd/scrap`,
+        {
+          product_id: id,
+          source: source,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
@@ -32,7 +40,11 @@ export const useScrapQCD = () => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to scrap`);
+        toast.error(
+          `ERROR ${err?.status}: ${
+            (err?.response?.data as any)?.message || "Product failed to scrap"
+          } `
+        );
         console.log("ERROR_SCRAP_QCD:", err);
       }
     },
