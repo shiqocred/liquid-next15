@@ -6,37 +6,40 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
+  description: string;
+  status: string;
   id: string;
 };
 
 type Error = AxiosError;
 
-export const useDeleteRack = () => {
+export const useLPRProductStaging = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/racks/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ id, status, description }) => {
+      const res = await axios.post(
+        `${baseUrl}/staging/move_to_lpr/${id}`,
+        { status, description },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("Rack successfully Deleted");
-      queryClient.invalidateQueries({ queryKey: ["list-racks-display"] });
-      // queryClient.invalidateQueries({
-      //   queryKey: ["rack-detail-display", data.data.data.resource.id],
-      // });
+      toast.success("Product successfully Moved to LPR");
+      queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Rack failed to delete`);
-        console.log("ERROR_DELETE_RACK:", err);
+        toast.error(`ERROR ${err?.status}: "Product failed to Move to LPR"`);
+        console.log("ERROR_TO_LPR_PRODUCT:", err);
       }
     },
   });

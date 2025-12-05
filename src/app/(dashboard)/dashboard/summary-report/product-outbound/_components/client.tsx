@@ -96,8 +96,6 @@ export const Client = () => {
   const dataList: any[] = useMemo(() => {
     return data?.data?.data?.resource?.data;
   }, [data]);
-  console.log("data", data);
-  console.log("dataList", dataList);
 
   const loading = isPending || isRefetching || isLoading;
 

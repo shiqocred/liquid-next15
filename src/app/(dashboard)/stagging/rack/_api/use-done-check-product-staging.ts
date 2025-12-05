@@ -5,25 +5,17 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
-type RequestType = {
-  id: string;
-  source: string;
-};
-
 type Error = AxiosError;
 
-export const useScrapQCD = () => {
+export const useDoneCheckProductStaging = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, source }) => {
+  const mutation = useMutation<AxiosResponse, Error, any>({
+    mutationFn: async () => {
       const res = await axios.post(
-        `${baseUrl}/product-qcd/scrap`,
-        {
-          product_id: id,
-          source: source,
-        },
+        `${baseUrl}/staging_products`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -33,19 +25,17 @@ export const useScrapQCD = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("QCD successfully scrap");
-      queryClient.invalidateQueries({ queryKey: ["list-qcd"] });
+      toast.success("Product successfully checked all");
+      queryClient.invalidateQueries({
+        queryKey: ["list-filter-staging-product"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(
-          `ERROR ${err?.status}: ${
-            (err?.response?.data as any)?.message || "Product failed to scrap"
-          } `
-        );
-        console.log("ERROR_SCRAP_QCD:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to check all`);
+        console.log("ERROR_DONE_CHECK_AL_PRODUCT_INPUT:", err);
       }
     },
   });

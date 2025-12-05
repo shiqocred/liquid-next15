@@ -6,18 +6,18 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: string;
+  body: any;
 };
 
 type Error = AxiosError;
 
-export const useDeleteRack = () => {
+export const useCreateB2B = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/racks/${id}`, {
+    mutationFn: async ({ body }) => {
+      const res = await axios.post(`${baseUrl}/create-b2b`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,18 +25,17 @@ export const useDeleteRack = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Rack successfully Deleted");
-      queryClient.invalidateQueries({ queryKey: ["list-racks-display"] });
-      // queryClient.invalidateQueries({
-      //   queryKey: ["rack-detail-display", data.data.data.resource.id],
-      // });
+      toast.success("B2B successfully created");
+      queryClient.invalidateQueries({
+        queryKey: ["list-bag-by-user-b2b"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Rack failed to delete`);
-        console.log("ERROR_DELETE_RACK:", err);
+        toast.error(`ERROR ${err?.status}: B2B failed to create`);
+        console.log("ERROR_CREATE_B2B:", err);
       }
     },
   });

@@ -11,29 +11,35 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useUnbundleQCD = () => {
+export const useRemoveFilterProductStaging = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/bundle/qcd/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await axios.delete(
+        `${baseUrl}/staging/filter_product/destroy/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
-      toast.success("QCD successfully unbundled");
-      queryClient.invalidateQueries({ queryKey: ["list-qcd"] });
+      toast.success("Product successfully removed to filter");
+      queryClient.invalidateQueries({ queryKey: ["list-staging-product"] });
+      queryClient.invalidateQueries({
+        queryKey: ["list-filter-staging-product"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: QCD failed to unbundle`);
-        console.log("ERROR_UNBUNDLE_QCD:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to remove to filter`);
+        console.log("ERROR_REMOVE_FILTER_PRODUCT:", err);
       }
     },
   });

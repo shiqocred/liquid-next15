@@ -16,7 +16,6 @@ import {
   FileCog,
   FolderClock,
   IdCard,
-  Layers3,
   LibraryBigIcon,
   LineChart,
   PackageSearch,
@@ -134,6 +133,12 @@ const sidebarMenu = [
         query: "check-history",
         sub_menu: [],
       },
+      //  {
+      //   title: "BKL",
+      //   href: "/inbound/bkl",
+      //   icon: <Target className="w-5 h-5 stroke-[1.5]" />,
+      //   sub_menu: [],
+      // },
     ],
   },
   {
@@ -141,12 +146,12 @@ const sidebarMenu = [
     title: "Stagging",
     href: undefined,
     menu: [
-      {
-        title: "Product Stagging",
-        href: "/stagging/product",
-        icon: <Layers3 className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [],
-      },
+      // {
+      //   title: "Product Stagging",
+      //   href: "/stagging/product",
+      //   icon: <Layers3 className="w-5 h-5 stroke-[1.5]" />,
+      //   sub_menu: [],
+      // },
       {
         title: "Approvement Stagging",
         href: "/stagging/approvement",
@@ -179,10 +184,10 @@ const sidebarMenu = [
             title: "by color",
             href: "/inventory/product/color",
           },
-          {
-            title: "rack display",
-            href: "/inventory/product/rack",
-          },
+          // {
+          //   title: "by category",
+          //   href: "/inventory/product/rack",
+          // },
         ],
       },
       {
