@@ -1,9 +1,7 @@
 "use client";
 
-import {
-  ArrowLeft,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Breadcrumb,
@@ -16,9 +14,37 @@ import { Button } from "@/components/ui/button";
 import Loading from "@/app/(dashboard)/loading";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { useGetListTagColorWMS } from "../_api/use-get-list-tag-color-wms";
+import { useQueryState } from "nuqs";
+import { useDebounce } from "@/hooks/use-debounce";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false);
+  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
+  const searchValue = useDebounce(dataSearch);
+  const {
+    data,
+    refetch,
+    isLoading,
+    isRefetching,
+    isPending,
+    error,
+    isError,
+    isSuccess,
+  } = useGetListTagColorWMS({ q: searchValue });
+  const dataListColor: any[] = useMemo(() => {
+    return data?.data.data.resource;
+  }, [data]);
+
+  console.log("dataListColor:", dataListColor);
+
   type ColorItem = { color: string; qty: string };
   const [formState, setFormState] = useState<{
     name: string;
@@ -60,7 +86,7 @@ export const Client = () => {
       <div className="w-full relative flex flex-col gap-4">
         <div className="p-4 bg-white rounded shadow flex flex-col gap-4">
           <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
-            <Link href="/outbond/b2b">
+            <Link href="/inbound/bkl">
               <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
                 <ArrowLeft className="w-5 h-5 text-black" />
               </Button>
@@ -119,19 +145,30 @@ export const Client = () => {
 
               <div className="flex flex-col gap-3">
                 {formState.colors.map((c, idx) => (
-                  <div key={idx} className="flex gap-3 items-center">
-                    <Input
-                      placeholder="Warna"
+                  <div key={idx} className="flex gap-3 items-center ">
+                    <Select
                       value={c.color}
-                      onChange={(e) =>
+                      onValueChange={(val) =>
                         setFormState((s) => {
                           const next = { ...s };
-                          next.colors[idx].color = e.target.value;
+                          next.colors[idx].color = val;
                           return next;
                         })
                       }
-                      className="px-3 py-2 border rounded w-1/2 border-sky-400/80 focus-visible:ring-sky-400"
-                    />
+                    >
+                      <SelectTrigger className="px-3 py-2 border rounded w-1/2 border-sky-400/80 focus-visible:ring-sky-400">
+                        <SelectValue placeholder="Pilih Warna" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {dataListColor?.map((item, i) => (
+                          <SelectItem key={i} value={item.name_color}>
+                            {item.name_color}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
                     <Input
                       placeholder="Quantity"
                       value={c.qty}
