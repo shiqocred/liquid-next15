@@ -55,21 +55,30 @@ const DialogCreateEdit = ({
                   setIsOpen={setIsOpenCategory}
                   data={categories ?? []}
                   dataId={input?.category?.id ?? input?.categoryId}
+                  // trigger={
+                  //   input?.category?.name_category
+                  //     ? input.category.name_category
+                  //     : "Select Category..."
+                  // }
                   trigger={
-                    input?.category?.name_category
-                      ? input.category.name_category
+                    input && typeof input === "object"
+                      ? input.name?.trim()
+                        ? input.name
+                        : input.category?.name_category?.trim()
+                        ? input.category.name_category
+                        : "Select Category..."
                       : "Select Category..."
                   }
                   onSelect={(item: any) => {
-                    setInput((prev: any) => ({
-                      ...prev,
+                    setInput({
+                      categoryId: String(item.id ?? ""),
+                      name: item.name_category ?? "",
+                      source: input.source ?? "staging",
                       category: {
-                        id: item.id,
-                        name_category: item.name_category,
+                        id: item.id ?? "",
+                        name_category: item.name_category ?? "",
                       },
-                      categoryId: String(item.id),
-                      name: item.name_category ?? prev.name,
-                    }));
+                    });
                     setIsOpenCategory(false);
                   }}
                   itemSelect={(item: any) => (

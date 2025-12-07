@@ -133,12 +133,12 @@ const sidebarMenu = [
         query: "check-history",
         sub_menu: [],
       },
-       {
-        title: "BKL",
-        href: "/inbound/bkl",
-        icon: <Target className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [],
-      },
+      //  {
+      //   title: "BKL",
+      //   href: "/inbound/bkl",
+      //   icon: <Target className="w-5 h-5 stroke-[1.5]" />,
+      //   sub_menu: [],
+      // },
     ],
   },
   {

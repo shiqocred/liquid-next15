@@ -199,6 +199,76 @@ export const Client = () => {
     return dataCategories?.data.data.resource;
   }, [dataCategories]);
 
+  // function uniqueCategories(CategoriesData: any[]) {
+  //   const map = new Map();
+
+  //   CategoriesData.forEach((cat) => {
+  //     // Ambil nama sebelum "("
+  //     const baseName = cat.name_category.split("(")[0].trim();
+
+  //     // Hanya masukkan pertama kali
+  //     if (!map.has(baseName)) {
+  //       map.set(baseName, {
+  //         ...cat,
+  //         name_category: baseName, // ubah menjadi nama tanpa range
+  //       });
+  //     }
+  //   });
+
+  //   return Array.from(map.values());
+  // }
+
+  function uniqueCategories(CategoriesData: any[] = []) {
+    if (!Array.isArray(CategoriesData)) return [];
+
+    const map = new Map();
+
+    CategoriesData.forEach((cat) => {
+      if (!cat?.name_category) return;
+
+      // 1. Buang kurung
+      const cleaned = cat.name_category.split("(")[0].trim();
+
+      // 2. Pecah kata
+      const parts = cleaned.split(" ");
+
+      let baseName = "";
+
+      // --- RULE ---
+      // Jika minimal ada 2 kata → ambil 2 kata pertama
+      if (parts.length >= 2) {
+        const first = parts[0];
+        const second = parts[1];
+
+        // Jika kata kedua itu kode pendek (HV/LV/XX)
+        if (second.length <= 5) {
+          // maka ambil hanya 1 kata
+          baseName = first;
+        } else {
+          // selain itu ambil 2 kata
+          baseName = `${first} ${second}`;
+        }
+      } else {
+        // Hanya 1 kata
+        baseName = parts[0];
+      }
+
+      // Masukkan hanya pertama kali
+      if (!map.has(baseName)) {
+        map.set(baseName, {
+          ...cat,
+          name_category: baseName,
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
+  const uniqueCategoryList = useMemo(() => {
+    return uniqueCategories(CategoriesData);
+  }, [CategoriesData]);
+
   const loading =
     isLoadingProducts ||
     isRefetchingProducts ||
@@ -239,6 +309,7 @@ export const Client = () => {
     const body = {
       category_id: input.categoryId,
       source: input.source ?? "staging",
+      name: input.category.name_category,
     };
     mutateCreate(
       { body },
@@ -255,6 +326,7 @@ export const Client = () => {
     e.preventDefault();
     const body = {
       category_id: input.categoryId,
+      name: input.category.name_category,
     };
     mutateUpdate(
       { id: rackId, body },
@@ -336,7 +408,8 @@ export const Client = () => {
         rackId={rackId} // rackId
         input={input} // input form
         setInput={setInput} // setInput Form
-        categories={CategoriesData?.data ?? CategoriesData}
+        // categories={CategoriesData?.data ?? CategoriesData}
+        categories={uniqueCategoryList} // unique categories
         handleCreate={handleCreate} // handle create rack
         handleUpdate={handleUpdate} // handle update rack
         isPendingCreate={isPendingCreate} // loading create

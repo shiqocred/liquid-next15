@@ -27,23 +27,21 @@ import {
 
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
+  const [dataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const {
     data,
-    refetch,
-    isLoading,
-    isRefetching,
-    isPending,
-    error,
-    isError,
-    isSuccess,
+    // refetch,
+    // isLoading,
+    // isRefetching,
+    // isPending,
+    // error,
+    // isError,
+    // isSuccess,
   } = useGetListTagColorWMS({ q: searchValue });
   const dataListColor: any[] = useMemo(() => {
     return data?.data.data.resource;
   }, [data]);
-
-  console.log("dataListColor:", dataListColor);
 
   type ColorItem = { color: string; qty: string };
   const [formState, setFormState] = useState<{
