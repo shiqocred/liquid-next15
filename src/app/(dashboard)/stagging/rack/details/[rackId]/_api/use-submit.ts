@@ -19,6 +19,7 @@ export const useSubmit = () => {
     mutationFn: async ({ id }) => {
       const res = await axios.post(
         `${baseUrl}/racks/${id}/move-to-display`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

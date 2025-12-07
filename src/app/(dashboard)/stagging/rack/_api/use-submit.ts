@@ -17,11 +17,15 @@ export const useSubmit = () => {
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.post(`${baseUrl}/racks/${id}/move-to-display`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await axios.post(
+        `${baseUrl}/racks/${id}/move-to-display`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {
