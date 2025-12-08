@@ -20,7 +20,7 @@ import {
 
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { UseMutationResult } from "@tanstack/react-query";
-import axios from "axios";
+import { AxiosResponse } from "axios";
 
 interface UploadedFileProps {
   file: File;
@@ -37,7 +37,7 @@ export const DialogUpload = ({
   open: boolean;
   onOpenChange: () => void;
   addProductMutate: UseMutationResult<
-    axios.AxiosResponse<any, any>,
+    AxiosResponse<any, any>,
     Error,
     any,
     unknown

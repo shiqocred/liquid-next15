@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  CalendarX,
-  Loader,
-  Loader2,
-  PlusCircle,
-  ReceiptText,
-  RefreshCw,
-  ScanBarcode,
-  Trash2,
-} from "lucide-react";
+import { PlusCircle, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
@@ -20,42 +11,22 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
-import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
+import { parseAsInteger, useQueryState } from "nuqs";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
 import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
-import { useGetListBKL } from "../_api/use-get-list-bkl";
-import { useDeleteBKL } from "../_api/use-delete-bkl";
-import { useQueryClient } from "@tanstack/react-query";
-import { useGetDetailBKL } from "../_api/use-get-detail-bkl";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import Pagination from "@/components/pagination";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/use-debounce";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { useGetListBKL } from "../_api/use-get-list-bkl";
 
 export const Client = () => {
-  const queryClient = useQueryClient();
-
-  const [isMounted, setIsMounted] = useState(false);
-  const [openDialog, setOpenDialog] = useQueryState(
-    "dialog",
-    parseAsBoolean.withDefault(false)
-  );
-  const [productId, setProductId] = useQueryState("productId", {
-    defaultValue: "",
-  });
-
+  // data search, page
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -66,14 +37,7 @@ export const Client = () => {
     perPage: 1,
   });
 
-  const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Product",
-    "This action cannot be undone",
-    "destructive"
-  );
-
-  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteBKL();
-
+  // get data utama
   const {
     data,
     refetch,
@@ -85,69 +49,28 @@ export const Client = () => {
     isSuccess,
   } = useGetListBKL({ p: page, q: searchValue });
 
-  const {
-    data: dataDetail,
-    isLoading: isLoadingDetail,
-    isError: isErrorDetail,
-    error: errorDetail,
-  } = useGetDetailBKL({ id: productId });
-
+  // memo data utama
   const dataList: any[] = useMemo(() => {
-    return data?.data.data.resource.products.data;
+    return data?.data.data.resource.data;
   }, [data]);
 
-  const detailData: any = useMemo(() => {
-    return dataDetail?.data.data.resource;
-  }, [dataDetail]);
-
+  // load data
   const loading = isLoading || isRefetching || isPending;
 
+  // get pagetination
   useEffect(() => {
     setPaginate({
       isSuccess,
       data,
-      dataPaginate: data?.data.data.resource.products,
+      dataPaginate: data?.data.data.resource,
       setPage,
       setMetaPage,
     });
   }, [data]);
 
-  const handleDelete = async (id: any) => {
-    const ok = await confirmDelete();
-
-    if (!ok) return;
-
-    mutateDelete(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["detail-product-slow", id],
-          });
-          queryClient.invalidateQueries({ queryKey: ["list-product-slow"] });
-        },
-      }
-    );
-  };
-
-  const handleClose = () => {
-    setOpenDialog(false);
-    setProductId("");
-  };
-
   useEffect(() => {
     alertError({
-      isError: isErrorDetail,
-      error: errorDetail as AxiosError,
-      data: "Detail",
-      action: "get data",
-      method: "GET",
-    });
-  }, [isErrorDetail, errorDetail]);
-
-  useEffect(() => {
-    alertError({
-      isError: isError,
+      isError,
       error: error as AxiosError,
       data: "Data",
       action: "get data",
@@ -155,7 +78,8 @@ export const Client = () => {
     });
   }, [isError, error]);
 
-  const columnListPromo: ColumnDef<any>[] = [
+  // column data
+  const columnBKL: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -166,86 +90,53 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "old_barcode_product",
-      header: "Old Barcode",
-      cell: ({ row }) => row.original.old_barcode_product,
+      accessorKey: "code_document_bulky",
+      header: "Code Document",
     },
     {
-      accessorKey: "new_barcode_product",
-      header: "Old Barcode",
-      cell: ({ row }) => row.original.new_barcode_product,
+      accessorKey: "name_document",
+      header: "Name Document",
     },
     {
-      accessorKey: "new_name_product",
-      header: "Product Name",
+      accessorKey: "total_product_bulky",
+      header: () => <div className="text-center">Total Product</div>,
       cell: ({ row }) => (
-        <div className="max-w-[400px] break-all">
-          {row.original.new_name_product}
+        <div className="text-center tabular-nums">
+          {row.original.total_product_bulky}
         </div>
       ),
     },
     {
-      accessorKey: "old_price_product",
-      header: "Old Price",
+      accessorKey: "total_old_price_bulky",
+      header: () => <div className="text-center">Total Old Price</div>,
       cell: ({ row }) => (
-        <div className="tabular-nums">
-          {formatRupiah(row.original.old_price_product)}
+        <div className="text-center tabular-nums">
+          {formatRupiah(row.original.total_old_price_bulky)}
         </div>
       ),
     },
     {
-      accessorKey: "new_price_product",
-      header: "New Price",
+      accessorKey: "status_bulky",
+      header: () => <div className="text-center">Status</div>,
       cell: ({ row }) => (
-        <div className="tabular-nums">
-          {formatRupiah(row.original.new_price_product)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => (
-        <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>Detail</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={isLoadingDetail}
-              onClick={(e) => {
-                e.preventDefault();
-                setProductId(row.original.id);
-                setOpenDialog(true);
-              }}
-            >
-              {isLoadingDetail ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ReceiptText className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Delete</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={isPendingDelete}
-              onClick={(e) => {
-                e.preventDefault();
-                handleDelete(row.original.id);
-              }}
-            >
-              {isPendingDelete ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
+        <div className="flex justify-center">
+          <Badge
+            className={cn(
+              "rounded w-20 px-0 justify-center text-black font-normal capitalize",
+              row.original.status_bulky.toLowerCase() === "selesai"
+                ? "bg-green-400 hover:bg-green-400"
+                : "bg-yellow-400 hover:bg-yellow-400"
+            )}
+          >
+            {row.original.status_bulky}
+          </Badge>
         </div>
       ),
     },
   ];
+
+  // loading
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -265,7 +156,6 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <DeleteDialog />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -279,20 +169,6 @@ export const Client = () => {
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List BKL</h2>
-        <div className="flex w-full gap-4 p-4 border border-sky-400/80 rounded-md">
-          <div className="flex w-1/3 flex-col">
-            <p className="text-sm underline underline-offset-2">Total BKL</p>
-            <p className="text-3xl font-semibold">{metaPage.total}</p>
-          </div>
-          <div className="flex w-2/3 flex-col border-l pl-4 border-sky-400">
-            <p className="text-sm underline underline-offset-2">
-              Total Price BKL
-            </p>
-            <p className="text-3xl font-semibold">
-              {formatRupiah(data?.data.data.resource.tota_price ?? 0)}
-            </p>
-          </div>
-        </div>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -314,113 +190,21 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
-              <div className="flex gap-4 items-center ml-auto">
-                <Button
-                  asChild
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                >
-                  <Link href={"/inventory/slow-moving-product/bkl/create"}>
-                    <PlusCircle className={"w-4 h-4 mr-1"} />
-                    Add BKL
-                  </Link>
-                </Button>
-              </div>
             </div>
+            <Button variant={"liquid"} asChild>
+              <Link href="/inventory/slow-moving-product/bkl/create">
+                <PlusCircle className="size-4" />
+                Create BKL
+              </Link>
+            </Button>
           </div>
-          <DataTable columns={columnListPromo} data={dataList ?? []} />
+          <DataTable columns={columnBKL} data={dataList ?? []} />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
           />
         </div>
       </div>
-      <Dialog
-        open={openDialog}
-        onOpenChange={() => {
-          handleClose();
-        }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Detail Product</DialogTitle>
-          </DialogHeader>
-          {isLoadingDetail ? (
-            <div className="w-full h-[275px] flex items-center justify-center">
-              <Loader className="size-6 animate-spin" />
-            </div>
-          ) : (
-            <div className="w-full flex flex-col border rounded border-gray-500 p-3 gap-2">
-              <div className="flex items-center text-sm font-semibold border-b border-gray-500 pb-3">
-                <ScanBarcode className="w-5 h-5 mr-2" />
-                <div className="w-full flex justify-between items-center">
-                  Barcode:
-                  <Badge className="bg-gray-200 hover:bg-gray-200 border border-black rounded-full text-black">
-                    {detailData?.old_barcode_product}
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex gap-3 flex-col my-4">
-                <div className="w-full flex gap-4 items-center">
-                  <div className="flex flex-col w-full overflow-hidden gap-0.5">
-                    <p className="text-sm font-medium">Name Product</p>
-                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 py-2 leading-relaxed flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                      {detailData?.new_name_product}
-                    </p>
-                  </div>
-                  <div className="flex flex-col w-1/3 overflow-hidden gap-0.5">
-                    <p className="text-sm font-medium">Qty</p>
-                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                      {parseFloat(
-                        detailData?.new_quantity_product ?? "0"
-                      ).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="w-full flex gap-4">
-                  <div className="flex flex-col w-full overflow-hidden gap-0.5">
-                    <p className="text-sm font-medium">Old Price</p>
-                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                      {formatRupiah(
-                        parseFloat(detailData?.old_price_product ?? "0")
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex flex-col w-full overflow-hidden gap-0.5">
-                    <p className="text-sm font-medium">New Price</p>
-                    <p className="text-sm w-full whitespace-pre-wrap min-h-9 flex items-center px-3 border-b border-sky-400/80 text-gray-600">
-                      {formatRupiah(
-                        parseFloat(detailData?.new_price_product ?? "0")
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm font-semibold border-t justify-between border-gray-500 pt-3">
-                <CalendarX className="w-5 h-5 mr-2" />
-                <div className="w-full flex justify-between items-center">
-                  The duration of goods:
-                  <Badge className="bg-gray-200 hover:bg-gray-200 border border-black rounded-full text-black">
-                    {detailData?.days_since_created}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="w-full flex justify-end">
-            <Button
-              className="bg-transparent hover:bg-transparent text-black border-black/50 border hover:border-black"
-              onClick={(e) => {
-                e.preventDefault();
-                handleClose();
-              }}
-              type="button"
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
