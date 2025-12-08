@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { UseMutationResult } from "@tanstack/react-query";
-import axios from "axios";
+// import axios from "axios";
+import type { AxiosResponse } from "axios";
 
 interface UploadedFileProps {
   file: File;
@@ -39,7 +40,7 @@ export const DialogUploadExcel = ({
   onOpenChange: () => void;
   isPendingAddProductExcel: boolean;
   addProductExcelMutate: UseMutationResult<
-    axios.AxiosResponse<any, any>,
+    AxiosResponse<any, any>,
     Error,
     any,
     unknown
