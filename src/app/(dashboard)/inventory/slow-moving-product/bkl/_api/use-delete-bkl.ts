@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
@@ -13,10 +13,11 @@ type Error = AxiosError;
 
 export const useDeleteBKL = () => {
   const accessToken = getCookie("accessToken");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/bkls/${id}`, {
+      const res = await axios.delete(`${baseUrl}/bulky-documents/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -24,14 +25,28 @@ export const useDeleteBKL = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully Deleted");
+      toast.success("BKL successfully Deleted");
+      queryClient.invalidateQueries({ queryKey: ["list-list-bkl"] });
     },
     onError: (err) => {
+      console.log("ERROR DELETE BKL:", err);
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
+      } else if (err.status === 400) {
+        const message =
+          err?.response &&
+          err.response.data &&
+          typeof err.response.data === "object" &&
+          "data" in err.response.data &&
+          err.response.data.data &&
+          typeof err.response.data.data === "object" &&
+          "message" in err.response.data.data
+            ? err.response.data.data.message
+            : "Bad Request";
+        toast.error(`ERROR ${err?.status}: ${message}`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to delete`);
-        console.log("ERROR_DELETE_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: ${err.message}`);
+        console.log("ERROR_DELETE_BKL:", err);
       }
     },
   });
