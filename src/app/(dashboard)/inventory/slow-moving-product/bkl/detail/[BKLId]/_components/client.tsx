@@ -24,48 +24,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateBKL } from "../_api";
-import { useRouter } from "next/navigation";
-import { useGetListBKL } from "../_api/use-get-list-bkl";
+import { useParams, useRouter } from "next/navigation";
+import { useGetDetailBKL } from "../_api/use-get-detail-bkl";
+import { useUpdateBKL } from "../_api";
+import { useToEditBKL } from "../_api/use-to-edit-b2b";
 
 export const Client = () => {
   const router = useRouter();
+  const { BKLId } = useParams();
   const [isMounted, setIsMounted] = useState(false);
   const [dataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
-  const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateBKL();
+  const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateBKL({
+    id: BKLId,
+  });
+  const { mutate: mutateToEdit, isPending: isPendingToEdit } = useToEditBKL({
+    id: BKLId,
+  });
+
+  const { data } = useGetListTagColorWMS({ q: searchValue });
 
   const {
-    data,
-    // refetch,
-    // isLoading,
-    // isRefetching,
-    // isPending,
-    // error,
-    // isError,
-    // isSuccess,
-  } = useGetListTagColorWMS({ q: searchValue });
-
-  const {
-    data: dataBKL,
+    data: detailBKL,
     refetch: refetchBKL,
-    // isLoading,
-    // isRefetching,
-    // isPending,
     error: errorBKL,
     isError: isErrorBKL,
     isSuccess: isSuccessBKL,
-  } = useGetListBKL({ q: searchValue });
+  } = useGetDetailBKL({ id: BKLId });
 
   const dataListColor: any[] = useMemo(() => {
     return data?.data.data.resource;
   }, [data]);
 
-  const dataListBKL: any[] = useMemo(() => {
-    return dataBKL?.data.data.resource.data;
-  }, [dataBKL]);
+  const dataDetailBKL: any = useMemo(() => {
+    return detailBKL?.data.data.resource;
+  }, [detailBKL]);
+
+  console.log("dataDetailBKL", dataDetailBKL);
+
+  // ⬇⬇ DISABLE SEMUA INPUT JIKA STATUS DONE
+  const isDisabled = dataDetailBKL?.status === "done";
 
   type ColorItem = { color: string; qty: string };
+
   const [formState, setFormState] = useState<{
     name: string;
     damaged: string;
@@ -78,27 +79,63 @@ export const Client = () => {
     colors: [{ color: "", qty: "" }],
   });
 
-  const handleCreate = (e: FormEvent) => {
-    e.preventDefault();
+  // ⬇ AUTO FILL
+  useEffect(() => {
+    if (!dataDetailBKL) return;
 
+    const damagedItem = dataDetailBKL.items?.find(
+      (it: any) => it.is_damaged === 1
+    );
+
+    const colorItems =
+      dataDetailBKL.items
+        ?.filter((it: any) => it.is_damaged !== 1)
+        .map((it: any) => ({
+          color: it.color_tag?.name_color ?? "",
+          qty: String(it.qty),
+        })) ?? [];
+
+    setFormState({
+      name: dataDetailBKL.code_document_bkl ?? "",
+      damaged: "damaged",
+      quantity: damagedItem.qty,
+      colors: colorItems.length > 0 ? colorItems : [{ color: "", qty: "" }],
+    });
+  }, [dataDetailBKL]);
+
+  const handleToEdit = () => {
+    mutateToEdit(
+      {},
+      {
+        onSuccess: async () => {
+          await refetchBKL(); // ambil ulang detail dengan status terbaru
+
+          // setelah API "to edit", biasanya status berubah → editable
+          // maka aktifkan kembali form
+        },
+      }
+    );
+  };
+
+  // CREATE
+  const handleUpdate = (e: FormEvent) => {
+    e.preventDefault();
+    if (isDisabled) return; // jika done → tidak ada create
     if (!dataListColor) return;
 
-    // Mapping warna → format API
     const mappedColors = formState.colors
-      .filter((c) => c.color && c.qty) // hanya yang terisi
+      .filter((c) => c.color && c.qty)
       .map((c) => {
         const found = dataListColor.find(
           (item: any) => item.name_color === c.color
         );
-
         return {
-          color_tag_id: found?.id, // sesuaikan jika API pakai field lain
+          color_tag_id: found?.id,
           qty: Number(c.qty),
         };
       })
-      .filter((c) => c.color_tag_id); // buang jika id tidak ada
+      .filter((c) => c.color_tag_id);
 
-    // Body API
     const body = {
       name_document: formState.name,
       type: "in",
@@ -106,40 +143,16 @@ export const Client = () => {
       colors: mappedColors,
     };
 
-    mutateCreate(
+    mutateUpdate(
       { body },
       {
         onSuccess: () => {
           router.push("/inventory/slow-moving-product/bkl");
+          refetchBKL();
         },
       }
     );
   };
-
-  useEffect(() => {
-    if (!dataListBKL) return;
-
-    // Ambil nama yang formatnya BKL-XXXXXX (6 digit)
-    const names = dataListBKL
-      .map((item) => item?.code_document_bkl)
-      .filter(
-        (v) => typeof v === "string" && /^BKL-\d{6}$/.test(v) // hanya BKL-000001 format 6 digit
-      );
-
-    const numbers = names
-      .map((n) => parseInt(n.replace("BKL-", ""), 10))
-      .filter((num) => !isNaN(num));
-
-    const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
-
-    const nextNumber = maxNumber + 1;
-    const padded = String(nextNumber).padStart(6, "0");
-
-    setFormState((s) => ({
-      ...s,
-      name: `BKL-${padded}`,
-    }));
-  }, [dataListBKL]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -165,31 +178,41 @@ export const Client = () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Create</BreadcrumbItem>
+          <BreadcrumbItem>Update</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
       <div className="w-full relative flex flex-col gap-4">
         <div className="p-4 bg-white rounded shadow flex flex-col gap-4">
           <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
             <Link href="/inventory/slow-moving-product/bkl">
-              <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
+              <Button
+                disabled={isDisabled}
+                className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none"
+              >
                 <ArrowLeft className="w-5 h-5 text-black" />
               </Button>
             </Link>
-            <h1 className="text-2xl font-semibold">Create BKL</h1>
+            <h1 className="text-2xl font-semibold">
+              Update BKL {isDisabled && "(Completed)"}
+            </h1>
           </div>
+
           <div className="flex flex-col gap-4">
             <div className="w-full flex items-start justify-between">
-              <h2 className="text-lg font-semibold">Create BKL</h2>
-              <Button onClick={handleCreate} className="bg-sky-500 text-white">
-                Submit
-              </Button>
+              <h2 className="text-lg font-semibold">Update BKL</h2>
+              <div className="flex items-center gap-2 ml-auto">
+                <Button
+                  onClick={handleToEdit}
+                  className="bg-sky-500 text-white disabled:bg-gray-400"
+                >
+                  To Edit
+                </Button>
+              </div>
             </div>
 
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
+              onSubmit={(e) => e.preventDefault()}
               className="flex flex-col gap-4"
             >
               <div className="flex gap-4 items-center">
@@ -197,29 +220,26 @@ export const Client = () => {
                   disabled
                   placeholder="Nama"
                   value={formState.name}
-                  onChange={(e) =>
-                    setFormState((s) => ({ ...s, name: e.target.value }))
-                  }
-                  className="px-3 py-2 border rounded w-1/3 border-sky-400/80 focus-visible:ring-sky-400 "
+                  className="px-3 py-2 border rounded w-1/3"
                 />
               </div>
+
               <div className="flex gap-3 items-center">
                 <Input
                   placeholder="Damaged"
                   value={formState.damaged}
-                  onChange={(e) =>
-                    setFormState((s) => ({ ...s, damaged: e.target.value }))
-                  }
-                  className="px-3 py-2 border rounded w-1/2 border-sky-400/80 focus-visible:ring-sky-400"
                   disabled
+                  className="px-3 py-2 border rounded w-1/2"
                 />
+
                 <Input
                   placeholder="Quantity"
                   value={formState.quantity}
                   onChange={(e) =>
                     setFormState((s) => ({ ...s, quantity: e.target.value }))
                   }
-                  className="px-3 py-2 border rounded w-1/2 border-sky-400/80 focus-visible:ring-sky-400"
+                  disabled={isDisabled}
+                  className="px-3 py-2 border rounded w-1/2"
                 />
               </div>
 
@@ -227,9 +247,10 @@ export const Client = () => {
 
               <div className="flex flex-col gap-3">
                 {formState.colors.map((c, idx) => (
-                  <div key={idx} className="flex gap-3 items-center ">
-                    <Select
+                  <div key={idx} className="flex gap-3 items-center">
+                    {/* <Select
                       value={c.color}
+                      disabled={isDisabled}
                       onValueChange={(val) =>
                         setFormState((s) => {
                           const next = { ...s };
@@ -238,7 +259,7 @@ export const Client = () => {
                         })
                       }
                     >
-                      <SelectTrigger className="px-3 py-2 border rounded w-1/2 border-sky-400/80 focus-visible:ring-sky-400">
+                      <SelectTrigger className="px-3 py-2 border rounded w-1/2">
                         <SelectValue placeholder="Pilih Warna" />
                       </SelectTrigger>
 
@@ -249,11 +270,47 @@ export const Client = () => {
                           </SelectItem>
                         ))}
                       </SelectContent>
+                    </Select> */}
+                    <Select
+                      value={c.color}
+                      disabled={isDisabled}
+                      onValueChange={(val) =>
+                        setFormState((s) => {
+                          const next = { ...s };
+                          next.colors[idx].color = val;
+                          return next;
+                        })
+                      }
+                    >
+                      <SelectTrigger className="px-3 py-2 border rounded w-1/2">
+                        <SelectValue placeholder="Pilih Warna" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {dataListColor
+                          ?.filter((item: any) => {
+                            const selectedColors = formState.colors.map(
+                              (c) => c.color
+                            );
+
+                            const isSelectedByOther =
+                              selectedColors.includes(item.name_color) &&
+                              item.name_color !== c.color;
+
+                            return !isSelectedByOther;
+                          })
+                          .map((item: any, i: number) => (
+                            <SelectItem key={i} value={item.name_color}>
+                              {item.name_color}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
                     </Select>
 
                     <Input
                       placeholder="Quantity"
                       value={c.qty}
+                      disabled={isDisabled}
                       onChange={(e) =>
                         setFormState((s) => {
                           const next = { ...s };
@@ -261,12 +318,14 @@ export const Client = () => {
                           return next;
                         })
                       }
-                      className="px-3 py-2 border rounded w-1/3 border-sky-400/80 focus-visible:ring-sky-400"
+                      className="px-3 py-2 border rounded w-1/3"
                     />
+
                     <Button
                       type="button"
-                      variant={"outline"}
-                      className=" border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                      variant="outline"
+                      disabled={isDisabled}
+                      className="border-red-400 text-red-700 disabled:text-gray-400"
                       onClick={() =>
                         setFormState((s) => ({
                           ...s,
@@ -280,10 +339,11 @@ export const Client = () => {
                 ))}
               </div>
 
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-2">
                 <Button
                   type="button"
-                  className="bg-sky-400 border-sky-400 text-white hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  disabled={isDisabled}
+                  className="bg-sky-400 text-white disabled:bg-gray-400"
                   onClick={() =>
                     setFormState((s) => ({
                       ...s,
@@ -292,6 +352,13 @@ export const Client = () => {
                   }
                 >
                   Tambah +
+                </Button>
+                <Button
+                  onClick={handleUpdate}
+                  disabled={isDisabled}
+                  className=" bg-yellow-400 text-white disabled:bg-gray-400"
+                >
+                  Update
                 </Button>
               </div>
             </form>

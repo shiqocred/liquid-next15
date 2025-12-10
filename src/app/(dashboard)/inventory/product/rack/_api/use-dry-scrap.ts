@@ -6,36 +6,46 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  body: any;
+  id: string;
 };
-
 type Error = AxiosError;
 
-export const useCreateBKL = () => {
+export const useDryScrap = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/bkl/add-bklDocument`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+    mutationFn: async ({ id }) => {
+      const res = await axios.post(
+        `${baseUrl}/products/status-dump`,
+        {
+          product_id: id,
+          source: "display",
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
+
     onSuccess: () => {
-      toast.success("BKL successfully created");
+      toast.success("successfully updated products display to dump");
+      queryClient.invalidateQueries({ queryKey: ["list-product-by-category"] });
       queryClient.invalidateQueries({
-        queryKey: ["list-list-bkl"],
+        queryKey: ["product-detail-product-detail"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: BKL failed to create`);
-        console.log("ERROR_CREATE_BKL:", err);
+        toast.error(
+          `ERROR ${err?.status}: products display failed update to dump`
+        );
+        console.log("ERROR_UPDATE_TO_DUMP:", err);
       }
     },
   });

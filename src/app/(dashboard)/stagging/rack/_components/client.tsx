@@ -44,6 +44,7 @@ import { DialogFiltered } from "./dialog-filtered";
 import { useGetListCategories } from "../_api/use-get-list-categories";
 import { useSubmit } from "../_api/use-submit";
 import { useDryScrap } from "../_api/use-dry-scrap";
+import DialogBarcode from "./dialog-barcode";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -62,6 +63,11 @@ export const Client = () => {
     defaultValue: "",
   });
   const [isMounted, setIsMounted] = useState(false);
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
+  const [selectedNameRack, setSelectedNameRack] = useState("");
+  const [selectedBarcode, setSelectedBarcode] = useState("");
+  const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+
   // separate search states for rack and product so values don't collide
   const {
     search: searchRack,
@@ -322,6 +328,20 @@ export const Client = () => {
       <DeleteDialog />
       <ToDisplayDialog />
       <DialogDryScrap />
+      <DialogBarcode
+        onCloseModal={() => {
+          if (barcodeOpen) {
+            setBarcodeOpen(false);
+          }
+        }}
+        open={barcodeOpen}
+        barcode={selectedBarcode}
+        qty={selectedTotalProduct}
+        name={selectedNameRack}
+        handleCancel={() => {
+          setBarcodeOpen(false);
+        }}
+      />
       <DialogCreateEdit
         open={isOpen === "create-edit"}
         onOpenChange={() => {
@@ -660,6 +680,10 @@ export const Client = () => {
                 setRackId,
                 setInput,
                 setIsOpen,
+                setSelectedBarcode,
+                setSelectedNameRack,
+                setSelectedTotalProduct,
+                setBarcodeOpen,
               })}
               data={racksData?.data ?? []}
             />

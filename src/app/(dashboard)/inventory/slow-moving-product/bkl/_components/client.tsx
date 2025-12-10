@@ -129,7 +129,11 @@ export const Client = () => {
               {/* {isLoadingDetailProduct ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : ( */}
+              <Link
+                href={`/inventory/slow-moving-product/bkl/detail/${row.original.id}`}
+              >
                 <Edit2 className="w-4 h-4" />
+              </Link>
               {/* )} */}
             </Button>
           </TooltipProviderPage>

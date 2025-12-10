@@ -16,6 +16,7 @@ import {
   LucideIcon,
   Pencil,
   PlusCircle,
+  Printer,
   ReceiptText,
   Trash2,
   XCircle,
@@ -278,6 +279,10 @@ export const columnRackStaging = ({
   handleDelete,
   handleSubmit,
   setIsOpen,
+  setSelectedBarcode,
+  setSelectedNameRack,
+  setSelectedTotalProduct,
+  setBarcodeOpen,
 }: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -351,6 +356,19 @@ export const columnRackStaging = ({
             setIsOpen("create-edit");
           }}
           label="Edit Rack"
+        />
+        <ButtonAction
+          label="Print QR"
+          onClick={(e) => {
+            e.preventDefault();
+            setSelectedBarcode(row.original.barcode);
+            setSelectedNameRack(row.original.name);
+            setSelectedTotalProduct(row.original.total_data);
+            setBarcodeOpen(true);
+          }}
+          isLoading={false}
+          icon={Printer}
+          type="sky"
         />
         <ButtonAction
           label="Delete"

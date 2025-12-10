@@ -8,10 +8,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
+  Drill,
   FileDown,
   Loader2,
   Pencil,
   PlusCircle,
+  Printer,
   ReceiptText,
   RefreshCw,
   Trash2,
@@ -48,6 +50,8 @@ import { useGetProductCategoryDetail } from "../_api/use-get-product-category-de
 import { DialogDetail } from "./dialog-detail";
 import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDryScrap } from "../_api/use-dry-scrap";
+import DialogBarcode from "./dialog-barcode";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -77,6 +81,11 @@ export const Client = () => {
     defaultValue: "",
   });
   const [isMounted, setIsMounted] = useState(false);
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
+  const [selectedNameRack, setSelectedNameRack] = useState("");
+  const [selectedBarcode, setSelectedBarcode] = useState("");
+  const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+
   const {
     search: searchRack,
     searchValue: searchValueRack,
@@ -135,6 +144,12 @@ export const Client = () => {
     "liquid"
   );
 
+  const [DialogDryScrap, confirmDryScrap] = useConfirm(
+    "Dry Scrap Product Display",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   // mutate DELETE, UPDATE, CREATE, EXPORT
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteRack();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateRack();
@@ -143,6 +158,8 @@ export const Client = () => {
     useDeleteProductCategory();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportProductCategory();
+  const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
+    useDryScrap();
 
   const {
     mutate: updateProduct,
@@ -361,6 +378,13 @@ export const Client = () => {
     );
   };
 
+  const handleDryScrap = async (id: any) => {
+    const ok = await confirmDryScrap();
+
+    if (!ok) return;
+    mutateDryScrap({ id });
+  };
+
   useEffect(() => {
     setSearchRackInput((searchRack as string) ?? "");
   }, [searchRack]);
@@ -535,6 +559,23 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Scrapt</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDryScrap}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDryScrap(row.original.id);
+              }}
+            >
+              {isPendingDryScrap ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Drill className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -619,6 +660,26 @@ export const Client = () => {
               <Pencil className="w-4 h-4" />
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Print</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedBarcode(row.original.barcode);
+                setSelectedNameRack(row.original.name);
+                setSelectedTotalProduct(row.original.total_data);
+                setBarcodeOpen(true);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Printer className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
           <TooltipProviderPage value={<p>Delete</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
@@ -663,6 +724,21 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <DialogDryScrap />
+      <DialogBarcode
+        onCloseModal={() => {
+          if (barcodeOpen) {
+            setBarcodeOpen(false);
+          }
+        }}
+        open={barcodeOpen}
+        barcode={selectedBarcode}
+        qty={selectedTotalProduct}
+        name={selectedNameRack}
+        handleCancel={() => {
+          setBarcodeOpen(false);
+        }}
+      />
       <DialogCreateEdit
         open={openCreateEdit} // open modal
         onCloseModal={() => {
@@ -955,6 +1031,10 @@ export const Client = () => {
                 setRackId,
                 setInput,
                 handleDelete,
+                setSelectedBarcode,
+                setSelectedNameRack,
+                setSelectedTotalProduct,
+                setBarcodeOpen,
               })}
               data={racksData?.data ?? []}
             />
