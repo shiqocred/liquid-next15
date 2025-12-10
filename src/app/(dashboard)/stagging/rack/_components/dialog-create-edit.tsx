@@ -54,37 +54,35 @@ const DialogCreateEdit = ({
                   open={isOpenCategory}
                   setIsOpen={setIsOpenCategory}
                   data={categories ?? []}
-                  dataId={input?.category?.id ?? input?.categoryId}
+                  dataId={input?.display?.id ?? input?.displayId}
                   // trigger={
-                  //   input?.category?.name_category
-                  //     ? input.category.name_category
+                  //   input?.display?.name_display
+                  //     ? input.display.name_display
                   //     : "Select Category..."
                   // }
                   trigger={
                     input && typeof input === "object"
                       ? input.name?.trim()
                         ? input.name
-                        : input.category?.name_category?.trim()
-                        ? input.category.name_category
+                        : input.display?.name?.trim()
+                        ? input.display.name
                         : "Select Category..."
                       : "Select Category..."
                   }
                   onSelect={(item: any) => {
                     setInput({
-                      categoryId: String(item.id ?? ""),
-                      name: item.name_category ?? "",
+                      displayId: String(item.id ?? ""),
+                      name: item.name ?? "",
                       source: input.source ?? "staging",
-                      category: {
+                      display: {
                         id: item.id ?? "",
-                        name_category: item.name_category ?? "",
+                        name: item.name ?? "",
                       },
                     });
                     setIsOpenCategory(false);
                   }}
                   itemSelect={(item: any) => (
-                    <div className="w-full font-medium">
-                      {item.name_category}
-                    </div>
+                    <div className="w-full font-medium">{item.name}</div>
                   )}
                 />
               </div>
@@ -106,7 +104,7 @@ const DialogCreateEdit = ({
                 )}
                 type="submit"
                 disabled={
-                  isPendingCreate || isPendingUpdate || !input?.categoryId
+                  isPendingCreate || isPendingUpdate || !input?.displayId
                 }
               >
                 {rackId ? "Update" : "Create"}

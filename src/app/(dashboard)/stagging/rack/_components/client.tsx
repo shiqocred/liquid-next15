@@ -9,14 +9,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   ArrowRightCircle,
-  Boxes,
-  Edit3,
   FileDown,
   Loader2,
   PlusCircle,
-  ReceiptText,
   RefreshCw,
-  Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -26,7 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
@@ -40,7 +35,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteRack } from "../_api/use-delete-rack";
 import { useGetListProduct } from "../_api/use-get-list-product";
 import Pagination from "@/components/pagination";
-import { columnProductStaging } from "./columns";
+import { columnProductStaging, columnRackStaging } from "./columns";
 import { useAddFilterProductStaging } from "../_api/use-add-filter-product-staging";
 import { useExportStagingProduct } from "../_api/use-export-staging-product";
 import { DialogDetail } from "./dialog-detail";
@@ -110,17 +105,17 @@ export const Client = () => {
 
   // data form create edit
   type InputState = {
-    categoryId: string;
+    displayId: string;
     source: string;
     name: string;
-    category: { id: string; name_category: string };
+    display: { id: string; name: string };
   };
 
   const [input, setInput] = useState<InputState>({
-    categoryId: "",
+    displayId: "",
     source: "staging",
     name: "",
-    category: { id: "", name_category: "" },
+    display: { id: "", name: "" },
   });
 
   // confirm delete
@@ -199,76 +194,6 @@ export const Client = () => {
     return dataCategories?.data.data.resource;
   }, [dataCategories]);
 
-  // function uniqueCategories(CategoriesData: any[]) {
-  //   const map = new Map();
-
-  //   CategoriesData.forEach((cat) => {
-  //     // Ambil nama sebelum "("
-  //     const baseName = cat.name_category.split("(")[0].trim();
-
-  //     // Hanya masukkan pertama kali
-  //     if (!map.has(baseName)) {
-  //       map.set(baseName, {
-  //         ...cat,
-  //         name_category: baseName, // ubah menjadi nama tanpa range
-  //       });
-  //     }
-  //   });
-
-  //   return Array.from(map.values());
-  // }
-
-  function uniqueCategories(CategoriesData: any[] = []) {
-    if (!Array.isArray(CategoriesData)) return [];
-
-    const map = new Map();
-
-    CategoriesData.forEach((cat) => {
-      if (!cat?.name_category) return;
-
-      // 1. Buang kurung
-      const cleaned = cat.name_category.split("(")[0].trim();
-
-      // 2. Pecah kata
-      const parts = cleaned.split(" ");
-
-      let baseName = "";
-
-      // --- RULE ---
-      // Jika minimal ada 2 kata → ambil 2 kata pertama
-      if (parts.length >= 2) {
-        const first = parts[0];
-        const second = parts[1];
-
-        // Jika kata kedua itu kode pendek (HV/LV/XX)
-        if (second.length <= 5) {
-          // maka ambil hanya 1 kata
-          baseName = first;
-        } else {
-          // selain itu ambil 2 kata
-          baseName = `${first} ${second}`;
-        }
-      } else {
-        // Hanya 1 kata
-        baseName = parts[0];
-      }
-
-      // Masukkan hanya pertama kali
-      if (!map.has(baseName)) {
-        map.set(baseName, {
-          ...cat,
-          name_category: baseName,
-        });
-      }
-    });
-
-    return Array.from(map.values());
-  }
-
-  const uniqueCategoryList = useMemo(() => {
-    return uniqueCategories(CategoriesData);
-  }, [CategoriesData]);
-
   const loading =
     isLoadingProducts ||
     isRefetchingProducts ||
@@ -281,9 +206,9 @@ export const Client = () => {
     setRackId("");
     setInput((prev) => ({
       ...prev,
-      categoryId: "",
+      displayId: "",
       name: "",
-      category: { id: "", name_category: "" },
+      display: { id: "", name: "" },
     }));
   };
 
@@ -307,9 +232,9 @@ export const Client = () => {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      category_id: input.categoryId,
+      display_rack_id: input.displayId,
       source: input.source ?? "staging",
-      name: input.category.name_category,
+      name: input.display.name,
     };
     mutateCreate(
       { body },
@@ -325,8 +250,8 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      category_id: input.categoryId,
-      name: input.category.name_category,
+      display_rack_id: input.displayId,
+      name: input.display.name,
     };
     mutateUpdate(
       { id: rackId, body },
@@ -408,8 +333,8 @@ export const Client = () => {
         rackId={rackId} // rackId
         input={input} // input form
         setInput={setInput} // setInput Form
-        // categories={CategoriesData?.data ?? CategoriesData}
-        categories={uniqueCategoryList} // unique categories
+        categories={CategoriesData?.data ?? CategoriesData}
+        // categories={uniqueCategoryList} // unique categories
         handleCreate={handleCreate} // handle create rack
         handleUpdate={handleUpdate} // handle update rack
         isPendingCreate={isPendingCreate} // loading create
@@ -527,7 +452,7 @@ export const Client = () => {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-4 w-full p-4">
+            {/* <div className="grid grid-cols-4 gap-4 w-full p-4">
               {searchValueRack ? (
                 racksData?.data.filter((item: any) =>
                   (item.name ?? "")
@@ -545,7 +470,6 @@ export const Client = () => {
                         key={`${item.code_document_sale}-${i}`}
                         className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                       >
-                        {/* CONTENT */}
                         <div className="flex w-full items-center gap-4">
                           <p className="text-sm font-bold text-black w-full">
                             {item.name}
@@ -559,8 +483,6 @@ export const Client = () => {
                             {item.total_data}
                           </p>
                         </div>
-
-                        {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                         <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                           <TooltipProviderPage value={<p>Detail</p>}>
                             <Button
@@ -632,7 +554,6 @@ export const Client = () => {
                     key={`${item.code_document_sale}-${i}`}
                     className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                   >
-                    {/* CONTENT */}
                     <div className="flex w-full items-center gap-4">
                       <p className="text-sm font-bold text-black w-full">
                         {item.name}
@@ -647,7 +568,6 @@ export const Client = () => {
                       </p>
                     </div>
 
-                    {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                     <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                       <TooltipProviderPage value={<p>Detail</p>}>
                         <Button
@@ -668,16 +588,15 @@ export const Client = () => {
                             setRackId(item.id);
                             setInput((prev) => ({
                               ...prev,
-                              categoryId:
-                                item.category_id ?? item.category?.id ?? "",
-                              category: {
-                                id: item.category_id ?? item.category?.id ?? "",
-                                name_category:
-                                  item.category?.name_category ??
-                                  item.name_category ??
+                              displayId:
+                                item.display_rack_id ?? item.display?.id ?? "",
+                              display: {
+                                id: item.display_rack_id ?? item.display?.id ?? "",
+                                name:
+                                  item.display?.name ??
+                                  item.name ??
                                   "",
                               },
-                              // keep rack name in name field if present
                               name: item.name ?? prev.name,
                             }));
                             setIsOpen("create-edit");
@@ -728,7 +647,22 @@ export const Client = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
+            <DataTable
+              columns={columnRackStaging({
+                metaPage,
+                isLoadingRacks,
+                isPendingSubmit,
+                isPendingDelete,
+                handleUpdate,
+                handleDelete,
+                handleSubmit,
+                setRackId,
+                setInput,
+                setIsOpen,
+              })}
+              data={racksData?.data ?? []}
+            />
 
             <div className="w-full p-4 bg-white">
               <Pagination

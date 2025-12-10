@@ -8,7 +8,7 @@ export const useGetListCategories = ({ q }: any) => {
   const query = useQuery({
     queryKey: ["list-categories", { q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/categories?q=${q}`, {
+      const res = await axios.get(`${baseUrl}/racks/list?source=display&q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

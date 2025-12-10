@@ -8,9 +8,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  Edit3,
   FileDown,
   Loader2,
+  Pencil,
   PlusCircle,
   ReceiptText,
   RefreshCw,
@@ -540,6 +540,107 @@ export const Client = () => {
     },
   ];
 
+  const columnRackDisplay = ({ metaPage }: any): ColumnDef<any>[] => [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPage.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_barcode_product||old_barcode_product",
+      header: "Barcode",
+      cell: ({ row }) => row.original.barcode ?? "-",
+    },
+    {
+      accessorKey: "name",
+      header: () => <div className="text-center">Rack Name</div>,
+      cell: ({ row }) => (
+        <div className="max-w-[400px] break-all">{row.original.name}</div>
+      ),
+    },
+    {
+      accessorKey: "total_data",
+      header: "Total Data",
+      cell: ({ row }) => row.original.total_data ?? "-",
+    },
+    {
+      accessorKey: "total_new_price_product",
+      header: "New Price",
+      cell: ({ row }) => (
+        <div className="tabular-nums">
+          {formatRupiah(row.original.total_new_price_product ?? 0)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+            >
+              <Link href={`/inventory/product/rack/details/${row.original.id}`}>
+                <ReceiptText className="w-4 h-4" />
+              </Link>
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Edit</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setRackId(row.original.id);
+                setInput((prev: any) => ({
+                  ...prev,
+                  displayId:
+                    row.original.display_rack_id ??
+                    row.original.display?.id ??
+                    "",
+                  display: {
+                    id:
+                      row.original.display_rack_id ??
+                      row.original.display?.id ??
+                      "",
+                    name: row.original.display?.name ?? row.original.name ?? "",
+                  },
+                  name: row.original.name ?? prev.name,
+                }));
+                setOpenCreateEdit(true);
+              }}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.original.id);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
+  ];
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -670,23 +771,16 @@ export const Client = () => {
                       e.preventDefault();
                       setOpenCreateEdit(true);
                     }}
-                    // disabled={
-                    //   isLoadingBuyer || isPendingUpdate || isPendingCreate
-                    // }
                     className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                     variant={"outline"}
                   >
-                    {/* {isLoadingBuyer || isPendingUpdate || isPendingCreate ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                  ) : ( */}
                     <PlusCircle className={"w-4 h-4 mr-1"} />
-                    {/* )} */}
                     Add Rack
                   </Button>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-4 w-full p-4">
+            {/* <div className="grid grid-cols-4 gap-4 w-full p-4">
               {searchValueRack ? (
                 racksData?.data.filter((item: any) =>
                   (item.name ?? "")
@@ -704,7 +798,6 @@ export const Client = () => {
                         key={`${item.code_document_sale}-${i}`}
                         className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                       >
-                        {/* CONTENT */}
                         <div className="flex w-full items-center gap-4">
                           <p className="text-sm font-bold text-black w-full">
                             {item.name}
@@ -718,8 +811,6 @@ export const Client = () => {
                             {item.total_data}
                           </p>
                         </div>
-
-                        {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                         <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                           <TooltipProviderPage value={<p>Detail</p>}>
                             <Button
@@ -782,7 +873,6 @@ export const Client = () => {
                     key={`${item.code_document_sale}-${i}`}
                     className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                   >
-                    {/* CONTENT */}
                     <div className="flex w-full items-center gap-4">
                       <p className="text-sm font-bold text-black w-full">
                         {item.name}
@@ -797,7 +887,6 @@ export const Client = () => {
                       </p>
                     </div>
 
-                    {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                     <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                       <TooltipProviderPage value={<p>Detail</p>}>
                         <Button
@@ -856,8 +945,18 @@ export const Client = () => {
                   </div>
                 </div>
               )}
-            </div>
-
+            </div> */}
+            <DataTable
+              columns={columnRackDisplay({
+                metaPage,
+                setPage,
+                setOpenCreateEdit,
+                setRackId,
+                setInput,
+                handleDelete,
+              })}
+              data={racksData?.data ?? []}
+            />
             <div className="w-full p-4 bg-white">
               <Pagination
                 pagination={{ ...metaPage, current: page }}
