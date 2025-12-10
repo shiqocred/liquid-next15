@@ -678,6 +678,7 @@ export const Client = () => {
         handleUpdate={handleUpdate} // handle update rack
         isPendingCreate={isPendingCreate} // loading create
         isPendingUpdate={isPendingUpdate} // loading update
+        data={racksData}
       />
       <DeleteDialogProduct />
       <DialogDetail
