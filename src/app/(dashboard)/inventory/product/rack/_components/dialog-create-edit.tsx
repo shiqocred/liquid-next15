@@ -7,14 +7,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-
-import Image from "next/image";
-import { X, ArrowRight, SquareArrowOutUpRight } from "lucide-react";
+import { X } from "lucide-react";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 
 const DialogCreateEdit = ({

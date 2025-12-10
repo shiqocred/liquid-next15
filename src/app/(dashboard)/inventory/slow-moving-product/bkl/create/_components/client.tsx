@@ -35,26 +35,10 @@ export const Client = () => {
   const searchValue = useDebounce(dataSearch);
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateBKL();
 
-  const {
-    data,
-    // refetch,
-    // isLoading,
-    // isRefetching,
-    // isPending,
-    // error,
-    // isError,
-    // isSuccess,
-  } = useGetListTagColorWMS({ q: searchValue });
+  const { data } = useGetListTagColorWMS({ q: searchValue });
 
   const {
     data: dataBKL,
-    refetch: refetchBKL,
-    // isLoading,
-    // isRefetching,
-    // isPending,
-    error: errorBKL,
-    isError: isErrorBKL,
-    isSuccess: isSuccessBKL,
   } = useGetListBKL({ q: searchValue });
 
   const dataListColor: any[] = useMemo(() => {
@@ -181,7 +165,11 @@ export const Client = () => {
           <div className="flex flex-col gap-4">
             <div className="w-full flex items-start justify-between">
               <h2 className="text-lg font-semibold">Create BKL</h2>
-              <Button onClick={handleCreate} className="bg-sky-500 text-white">
+              <Button
+                onClick={handleCreate}
+                disabled={isPendingCreate}
+                className="bg-sky-500 text-white"
+              >
                 Submit
               </Button>
             </div>

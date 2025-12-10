@@ -47,9 +47,6 @@ export const Client = () => {
   const {
     data: detailBKL,
     refetch: refetchBKL,
-    error: errorBKL,
-    isError: isErrorBKL,
-    isSuccess: isSuccessBKL,
   } = useGetDetailBKL({ id: BKLId });
 
   const dataListColor: any[] = useMemo(() => {
@@ -204,6 +201,7 @@ export const Client = () => {
               <div className="flex items-center gap-2 ml-auto">
                 <Button
                   onClick={handleToEdit}
+                  disabled={isPendingToEdit}
                   className="bg-sky-500 text-white disabled:bg-gray-400"
                 >
                   To Edit
@@ -355,7 +353,7 @@ export const Client = () => {
                 </Button>
                 <Button
                   onClick={handleUpdate}
-                  disabled={isDisabled}
+                  disabled={isDisabled || isPendingUpdate}
                   className=" bg-yellow-400 text-white disabled:bg-gray-400"
                 >
                   Update
