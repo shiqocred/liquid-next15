@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { baseUrl } from "@/lib/baseUrl";
+import { baseUrlApiBulky } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListBKL = ({ p, q }: any) => {
+export const useGetCategoryBulky = () => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-list-bkl", { p, q }],
+    queryKey: ["list-categories-create-palet"],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/bkl/list-bklDocument?page=${p}&q=${q}`,
+        `${baseUrlApiBulky}/products/filter/categories`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

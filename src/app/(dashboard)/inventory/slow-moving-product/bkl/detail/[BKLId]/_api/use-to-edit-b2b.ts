@@ -5,23 +5,23 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
-type RequestType = {
-  body: any;
-};
-
 type Error = AxiosError;
 
-export const useCreateBKL = () => {
+export const useToEditBKL = ({ id }: any) => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/bkl/add-bklDocument`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+  const mutation = useMutation<AxiosResponse, Error, any>({
+    mutationFn: async () => {
+      const res = await axios.post(
+        `${baseUrl}/bkl/${id}/to-edit`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: () => {

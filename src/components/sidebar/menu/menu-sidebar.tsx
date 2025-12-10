@@ -176,18 +176,18 @@ const sidebarMenu = [
         href: undefined,
         icon: <Boxes className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
-          {
-            title: "by category",
-            href: "/inventory/product/category",
-          },
+          // {
+          //   title: "by category",
+          //   href: "/inventory/product/category",
+          // },
           {
             title: "by color",
             href: "/inventory/product/color",
           },
-          // {
-          //   title: "by category",
-          //   href: "/inventory/product/rack",
-          // },
+          {
+            title: "by category",
+            href: "/inventory/product/rack",
+          },
         ],
       },
       {

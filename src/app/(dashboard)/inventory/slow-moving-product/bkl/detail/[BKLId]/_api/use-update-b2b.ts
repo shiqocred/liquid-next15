@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useCreateBKL = () => {
+export const useUpdateBKL = ({ id }: any) => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/bkl/add-bklDocument`, body, {
+      const res = await axios.put(`${baseUrl}/bkl/${id}/bklDocument`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

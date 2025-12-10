@@ -1,8 +1,8 @@
 "use client";
 
-import { PlusCircle, RefreshCw } from "lucide-react";
+import { Edit2, PlusCircle, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
+import { alertError, cn, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -90,46 +90,53 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "code_document_bulky",
+      accessorKey: "code_document_bkl",
       header: "Code Document",
     },
     {
-      accessorKey: "name_document",
-      header: "Name Document",
-    },
-    {
-      accessorKey: "total_product_bulky",
-      header: () => <div className="text-center">Total Product</div>,
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {row.original.total_product_bulky}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "total_old_price_bulky",
-      header: () => <div className="text-center">Total Old Price</div>,
-      cell: ({ row }) => (
-        <div className="text-center tabular-nums">
-          {formatRupiah(row.original.total_old_price_bulky)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status_bulky",
+      accessorKey: "status",
       header: () => <div className="text-center">Status</div>,
       cell: ({ row }) => (
         <div className="flex justify-center">
           <Badge
             className={cn(
               "rounded w-20 px-0 justify-center text-black font-normal capitalize",
-              row.original.status_bulky.toLowerCase() === "selesai"
+              row.original.status.toLowerCase() === "done"
                 ? "bg-green-400 hover:bg-green-400"
                 : "bg-yellow-400 hover:bg-yellow-400"
             )}
           >
-            {row.original.status_bulky}
+            {row.original.status}
           </Badge>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Edit</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   setProductId(row.original.id);
+              //   setIsOpenDetailProduct(true);
+              // }}
+            >
+              {/* {isLoadingDetailProduct ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : ( */}
+              <Link
+                href={`/inventory/slow-moving-product/bkl/detail/${row.original.id}`}
+              >
+                <Edit2 className="w-4 h-4" />
+              </Link>
+              {/* )} */}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },

@@ -8,10 +8,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  Edit3,
+  Drill,
   FileDown,
   Loader2,
+  Pencil,
   PlusCircle,
+  Printer,
   ReceiptText,
   RefreshCw,
   Trash2,
@@ -48,6 +50,8 @@ import { useGetProductCategoryDetail } from "../_api/use-get-product-category-de
 import { DialogDetail } from "./dialog-detail";
 import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDryScrap } from "../_api/use-dry-scrap";
+import DialogBarcode from "./dialog-barcode";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -77,6 +81,11 @@ export const Client = () => {
     defaultValue: "",
   });
   const [isMounted, setIsMounted] = useState(false);
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
+  const [selectedNameRack, setSelectedNameRack] = useState("");
+  const [selectedBarcode, setSelectedBarcode] = useState("");
+  const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+
   const {
     search: searchRack,
     searchValue: searchValueRack,
@@ -135,6 +144,12 @@ export const Client = () => {
     "liquid"
   );
 
+  const [DialogDryScrap, confirmDryScrap] = useConfirm(
+    "Dry Scrap Product Display",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   // mutate DELETE, UPDATE, CREATE, EXPORT
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteRack();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateRack();
@@ -143,6 +158,8 @@ export const Client = () => {
     useDeleteProductCategory();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportProductCategory();
+  const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
+    useDryScrap();
 
   const {
     mutate: updateProduct,
@@ -361,6 +378,13 @@ export const Client = () => {
     );
   };
 
+  const handleDryScrap = async (id: any) => {
+    const ok = await confirmDryScrap();
+
+    if (!ok) return;
+    mutateDryScrap({ id });
+  };
+
   useEffect(() => {
     setSearchRackInput((searchRack as string) ?? "");
   }, [searchRack]);
@@ -535,6 +559,144 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Scrapt</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDryScrap}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDryScrap(row.original.id);
+              }}
+            >
+              {isPendingDryScrap ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Drill className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
+  ];
+
+  const columnRackDisplay = ({ metaPage }: any): ColumnDef<any>[] => [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPage.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_barcode_product||old_barcode_product",
+      header: "Barcode",
+      cell: ({ row }) => row.original.barcode ?? "-",
+    },
+    {
+      accessorKey: "name",
+      header: () => <div className="text-center">Rack Name</div>,
+      cell: ({ row }) => (
+        <div className="max-w-[400px] break-all">{row.original.name}</div>
+      ),
+    },
+    {
+      accessorKey: "total_data",
+      header: "Total Data",
+      cell: ({ row }) => row.original.total_data ?? "-",
+    },
+    {
+      accessorKey: "total_new_price_product",
+      header: "New Price",
+      cell: ({ row }) => (
+        <div className="tabular-nums">
+          {formatRupiah(row.original.total_new_price_product ?? 0)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+            >
+              <Link href={`/inventory/product/rack/details/${row.original.id}`}>
+                <ReceiptText className="w-4 h-4" />
+              </Link>
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Edit</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setRackId(row.original.id);
+                setInput((prev: any) => ({
+                  ...prev,
+                  displayId:
+                    row.original.display_rack_id ??
+                    row.original.display?.id ??
+                    "",
+                  display: {
+                    id:
+                      row.original.display_rack_id ??
+                      row.original.display?.id ??
+                      "",
+                    name: row.original.display?.name ?? row.original.name ?? "",
+                  },
+                  name: row.original.name ?? prev.name,
+                }));
+                setOpenCreateEdit(true);
+              }}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Print</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedBarcode(row.original.barcode);
+                setSelectedNameRack(row.original.name);
+                setSelectedTotalProduct(row.original.total_data);
+                setBarcodeOpen(true);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Printer className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.original.id);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -562,6 +724,21 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <DialogDryScrap />
+      <DialogBarcode
+        onCloseModal={() => {
+          if (barcodeOpen) {
+            setBarcodeOpen(false);
+          }
+        }}
+        open={barcodeOpen}
+        barcode={selectedBarcode}
+        qty={selectedTotalProduct}
+        name={selectedNameRack}
+        handleCancel={() => {
+          setBarcodeOpen(false);
+        }}
+      />
       <DialogCreateEdit
         open={openCreateEdit} // open modal
         onCloseModal={() => {
@@ -577,6 +754,7 @@ export const Client = () => {
         handleUpdate={handleUpdate} // handle update rack
         isPendingCreate={isPendingCreate} // loading create
         isPendingUpdate={isPendingUpdate} // loading update
+        data={racksData}
       />
       <DeleteDialogProduct />
       <DialogDetail
@@ -670,23 +848,16 @@ export const Client = () => {
                       e.preventDefault();
                       setOpenCreateEdit(true);
                     }}
-                    // disabled={
-                    //   isLoadingBuyer || isPendingUpdate || isPendingCreate
-                    // }
                     className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                     variant={"outline"}
                   >
-                    {/* {isLoadingBuyer || isPendingUpdate || isPendingCreate ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                  ) : ( */}
                     <PlusCircle className={"w-4 h-4 mr-1"} />
-                    {/* )} */}
                     Add Rack
                   </Button>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-4 w-full p-4">
+            {/* <div className="grid grid-cols-4 gap-4 w-full p-4">
               {searchValueRack ? (
                 racksData?.data.filter((item: any) =>
                   (item.name ?? "")
@@ -704,7 +875,6 @@ export const Client = () => {
                         key={`${item.code_document_sale}-${i}`}
                         className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                       >
-                        {/* CONTENT */}
                         <div className="flex w-full items-center gap-4">
                           <p className="text-sm font-bold text-black w-full">
                             {item.name}
@@ -718,8 +888,6 @@ export const Client = () => {
                             {item.total_data}
                           </p>
                         </div>
-
-                        {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                         <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                           <TooltipProviderPage value={<p>Detail</p>}>
                             <Button
@@ -782,7 +950,6 @@ export const Client = () => {
                     key={`${item.code_document_sale}-${i}`}
                     className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                   >
-                    {/* CONTENT */}
                     <div className="flex w-full items-center gap-4">
                       <p className="text-sm font-bold text-black w-full">
                         {item.name}
@@ -797,7 +964,6 @@ export const Client = () => {
                       </p>
                     </div>
 
-                    {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                     <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                       <TooltipProviderPage value={<p>Detail</p>}>
                         <Button
@@ -856,8 +1022,22 @@ export const Client = () => {
                   </div>
                 </div>
               )}
-            </div>
-
+            </div> */}
+            <DataTable
+              columns={columnRackDisplay({
+                metaPage,
+                setPage,
+                setOpenCreateEdit,
+                setRackId,
+                setInput,
+                handleDelete,
+                setSelectedBarcode,
+                setSelectedNameRack,
+                setSelectedTotalProduct,
+                setBarcodeOpen,
+              })}
+              data={racksData?.data ?? []}
+            />
             <div className="w-full p-4 bg-white">
               <Pagination
                 pagination={{ ...metaPage, current: page }}

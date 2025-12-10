@@ -5,6 +5,7 @@ import {
   Loader2,
   PlusCircle,
   RefreshCw,
+  ScanBarcode,
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -105,6 +106,10 @@ export const Client = () => {
   // query end ----------------------------------------------------------------
 
   // memeo strat ----------------------------------------------------------------
+
+  const dataDetail: any = useMemo(() => {
+    return data?.data.data.resource.rack_info;
+  }, [data]);
 
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.products;
@@ -213,7 +218,7 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(row.index+1).toLocaleString()}
+          {(row.index + 1).toLocaleString()}
         </div>
       ),
     },
@@ -306,6 +311,15 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "new_category_product",
+      header: "Category",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.new_category_product}
+        </div>
+      ),
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -390,53 +404,112 @@ export const Client = () => {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex w-full gap-4">
-          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5">
-            <div className="w-full flex justify-between items-center">
-              <div
-                className={cn(
-                  "flex items-center gap-2 relative group w-full max-w-xl"
-                )}
-              >
-                <Label
-                  htmlFor="search"
-                  className="flex gap-2 absolute left-2 items-center"
-                >
-                  <Badge className="bg-black text-xs hover:bg-black rounded-full text-white">
-                    Add Product
-                  </Badge>
-                </Label>
-
-                <TooltipProviderPage value={"add product by barcode input"}>
-                  <Input
-                    id="search"
-                    ref={addRef}
-                    className="rounded-r-none border-r-0 pl-28 focus-visible:ring-0 focus-visible:border focus-visible:border-sky-300 border-sky-300/80 disabled:opacity-100 w-full"
-                    autoFocus
-                    autoComplete="off"
-                    value={addProductSearch}
-                    onChange={(e) => setAddProductSearch(e.target.value)}
-                  />
+          <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+            <div className="flex items-center justify-between pb-3 mb-5 border-gray-500 border-b w-full">
+              <div className="flex items-center gap-4">
+                <div className="size-8 rounded-full flex items-center justify-center flex-none bg-sky-100 shadow">
+                  <ScanBarcode className="size-4" />
+                </div>
+                <h5 className="font-bold text-xl">{dataDetail?.barcode}</h5>
+              </div>
+              <div className="flex gap-4 items-center">
+                <TooltipProviderPage value={"Reload Data"}>
+                  <Button
+                    onClick={() => refetch()}
+                    className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                    variant={"outline"}
+                    disabled={isRefetching}
+                  >
+                    <RefreshCw
+                      className={cn(
+                        "w-4 h-4",
+                        isRefetching ? "animate-spin" : ""
+                      )}
+                    />
+                  </Button>
                 </TooltipProviderPage>
+              </div>
+            </div>
+            <div className="flex w-full gap-4">
+              <div className="w-full flex flex-col gap-4">
+                <div className="flex flex-col">
+                  <p className="text-sm">Name</p>
+                  <p className="font-semibold">{dataDetail?.name}</p>
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-sm">Total Data</p>
+                  <p className="font-semibold">{dataDetail?.total_data} </p>
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-sm">Total New Price</p>
+                  <p className="font-semibold">
+                    {formatRupiah(dataDetail?.total_new_price_product)}{" "}
+                  </p>
+                </div>
+              </div>
+              <div className="w-full flex flex-col gap-4">
+                <div className="flex flex-col">
+                  <p className="text-sm">Total Old Price</p>
+                  <p className="font-semibold">
+                    {formatRupiah(dataDetail?.total_old_price_product)}
+                  </p>
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-sm">Total Display Price</p>
+                  <p className="font-semibold">
+                    {formatRupiah(dataDetail?.total_display_price_product)}{" "}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-gray-500 w-full pt-3 mt-5">
+              <div className="w-full flex justify-between items-center">
+                <div
+                  className={cn(
+                    "flex items-center gap-2 relative group w-full max-w-xl"
+                  )}
+                >
+                  <Label
+                    htmlFor="search"
+                    className="flex gap-2 absolute left-2 items-center"
+                  >
+                    <Badge className="bg-black text-xs hover:bg-black rounded-full text-white">
+                      Add Product
+                    </Badge>
+                  </Label>
 
-                <Button
-                  onClick={() => setIsProduct(true)}
-                  className="bg-sky-300/80 w-10 p-0 hover:bg-sky-300 text-black rounded-l-none border border-sky-300/80 hover:border-sky-300 focus-visible:ring-0 disabled:opacity-100"
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={() => refetch()}
-                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
-                  variant={"outline"}
-                  disabled={isRefetching}
-                >
-                  <RefreshCw
-                    className={cn(
-                      "w-4 h-4",
-                      isRefetching ? "animate-spin" : ""
-                    )}
-                  />
-                </Button>
+                  <TooltipProviderPage value={"add product by barcode input"}>
+                    <Input
+                      id="search"
+                      ref={addRef}
+                      className="rounded-r-none border-r-0 pl-28 focus-visible:ring-0 focus-visible:border focus-visible:border-sky-300 border-sky-300/80 disabled:opacity-100 w-full"
+                      autoFocus
+                      autoComplete="off"
+                      value={addProductSearch}
+                      onChange={(e) => setAddProductSearch(e.target.value)}
+                    />
+                  </TooltipProviderPage>
+
+                  <Button
+                    onClick={() => setIsProduct(true)}
+                    className="bg-sky-300/80 w-10 p-0 hover:bg-sky-300 text-black rounded-l-none border border-sky-300/80 hover:border-sky-300 focus-visible:ring-0 disabled:opacity-100"
+                  >
+                    <Search className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={() => refetch()}
+                    className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                    variant={"outline"}
+                    disabled={isRefetching}
+                  >
+                    <RefreshCw
+                      className={cn(
+                        "w-4 h-4",
+                        isRefetching ? "animate-spin" : ""
+                      )}
+                    />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
