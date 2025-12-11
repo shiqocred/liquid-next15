@@ -408,7 +408,7 @@ export const Client = () => {
 
         {/* Card: Total Product */}
         <div className="bg-white shadow rounded-xl p-5 flex flex-col border border-gray-200">
-          <h4 className="text-sm text-gray-500">Total Products</h4>
+          <h4 className="text-sm text-gray-500">Total Products Rack</h4>
           <p className="text-3xl font-bold mt-2">
             {rackData?.total_products_in_racks}{" "}
           </p>

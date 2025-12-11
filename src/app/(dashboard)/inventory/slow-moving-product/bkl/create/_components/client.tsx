@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, RefreshCcw } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import {
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateBKL } from "../_api";
 import { useRouter } from "next/navigation";
-import { useGetListBKL } from "../_api/use-get-list-bkl";
+import { useGetGenerateNameBKL } from "../_api/use-get-generate-name";
 
 export const Client = () => {
   const router = useRouter();
@@ -34,61 +34,60 @@ export const Client = () => {
   const [dataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateBKL();
+  const {
+    data: generatedNameData,
+    refetch: refetchGenerate,
+  } = useGetGenerateNameBKL();
 
   const { data } = useGetListTagColorWMS({ q: searchValue });
-
-  const {
-    data: dataBKL,
-  } = useGetListBKL({ q: searchValue });
 
   const dataListColor: any[] = useMemo(() => {
     return data?.data.data.resource;
   }, [data]);
 
-  const dataListBKL: any[] = useMemo(() => {
-    return dataBKL?.data.data.resource.data;
-  }, [dataBKL]);
+  const dataGenerateName: any = useMemo(() => {
+    return generatedNameData?.data.data.resource;
+  }, [generatedNameData]);
 
-  type ColorItem = { color: string; qty: string };
+  type ColorItem = { color: string; qty: number };
   const [formState, setFormState] = useState<{
     name: string;
     damaged: string;
-    quantity: string;
+    quantity: number;
     colors: ColorItem[];
   }>({
     name: "",
     damaged: "",
-    quantity: "",
-    colors: [{ color: "", qty: "" }],
+    quantity: 0,
+    colors: [{ color: "", qty: 0 }],
   });
 
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
 
     if (!dataListColor) return;
-
-    // Mapping warna → format API
     const mappedColors = formState.colors
-      .filter((c) => c.color && c.qty) // hanya yang terisi
+      .filter((c) => c.color && c.qty)
       .map((c) => {
         const found = dataListColor.find(
           (item: any) => item.name_color === c.color
         );
 
         return {
-          color_tag_id: found?.id, // sesuaikan jika API pakai field lain
+          color_tag_id: found?.id,
           qty: Number(c.qty),
         };
       })
-      .filter((c) => c.color_tag_id); // buang jika id tidak ada
-
-    // Body API
-    const body = {
-      name_document: formState.name,
+      .filter((c) => c.color_tag_id);
+    const body: Record<string, any> = {
+      name_document: dataGenerateName?.code_document_bkl,
       type: "in",
-      damage_qty: formState.quantity,
       colors: mappedColors,
     };
+
+    if (formState.quantity > 0) {
+      body.damage_qty = formState.quantity;
+    }
 
     mutateCreate(
       { body },
@@ -99,31 +98,6 @@ export const Client = () => {
       }
     );
   };
-
-  useEffect(() => {
-    if (!dataListBKL) return;
-
-    // Ambil nama yang formatnya BKL-XXXXXX (6 digit)
-    const names = dataListBKL
-      .map((item) => item?.code_document_bkl)
-      .filter(
-        (v) => typeof v === "string" && /^BKL-\d{6}$/.test(v) // hanya BKL-000001 format 6 digit
-      );
-
-    const numbers = names
-      .map((n) => parseInt(n.replace("BKL-", ""), 10))
-      .filter((num) => !isNaN(num));
-
-    const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
-
-    const nextNumber = maxNumber + 1;
-    const padded = String(nextNumber).padStart(6, "0");
-
-    setFormState((s) => ({
-      ...s,
-      name: `BKL-${padded}`,
-    }));
-  }, [dataListBKL]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -180,17 +154,25 @@ export const Client = () => {
               }}
               className="flex flex-col gap-4"
             >
-              <div className="flex gap-4 items-center">
+              <div className="flex gap-2 items-center">
                 <Input
                   disabled
                   placeholder="Nama"
-                  value={formState.name}
+                  value={dataGenerateName?.code_document_bkl || ""}
                   onChange={(e) =>
                     setFormState((s) => ({ ...s, name: e.target.value }))
                   }
-                  className="px-3 py-2 border rounded w-1/3 border-sky-400/80 focus-visible:ring-sky-400 "
+                  className="px-3 py-2 border rounded w-1/3 border-sky-400/80 focus-visible:ring-sky-400"
                 />
+                <button
+                  type="button"
+                  onClick={() => refetchGenerate()}
+                  className="w-8 h-8 flex items-center justify-center border border-l-none rounded border-gray-500 hover:bg-sky-100"
+                >
+                  <RefreshCcw className="w-4 h-4" />
+                </button>
               </div>
+
               <div className="flex gap-3 items-center">
                 <Input
                   placeholder="Damaged"
@@ -202,10 +184,14 @@ export const Client = () => {
                   disabled
                 />
                 <Input
+                  type="number"
                   placeholder="Quantity"
                   value={formState.quantity}
                   onChange={(e) =>
-                    setFormState((s) => ({ ...s, quantity: e.target.value }))
+                    setFormState((s) => ({
+                      ...s,
+                      quantity: Number(e.target.value),
+                    }))
                   }
                   className="px-3 py-2 border rounded w-1/2 border-sky-400/80 focus-visible:ring-sky-400"
                 />
@@ -240,12 +226,13 @@ export const Client = () => {
                     </Select>
 
                     <Input
+                      type="number"
                       placeholder="Quantity"
                       value={c.qty}
                       onChange={(e) =>
                         setFormState((s) => {
                           const next = { ...s };
-                          next.colors[idx].qty = e.target.value;
+                          next.colors[idx].qty = Number(e.target.value);
                           return next;
                         })
                       }
@@ -275,7 +262,7 @@ export const Client = () => {
                   onClick={() =>
                     setFormState((s) => ({
                       ...s,
-                      colors: [...s.colors, { color: "", qty: "" }],
+                      colors: [...s.colors, { color: "", qty: 0 }],
                     }))
                   }
                 >

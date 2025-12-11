@@ -44,10 +44,9 @@ export const Client = () => {
 
   const { data } = useGetListTagColorWMS({ q: searchValue });
 
-  const {
-    data: detailBKL,
-    refetch: refetchBKL,
-  } = useGetDetailBKL({ id: BKLId });
+  const { data: detailBKL, refetch: refetchBKL } = useGetDetailBKL({
+    id: BKLId,
+  });
 
   const dataListColor: any[] = useMemo(() => {
     return data?.data.data.resource;
@@ -62,18 +61,18 @@ export const Client = () => {
   // ⬇⬇ DISABLE SEMUA INPUT JIKA STATUS DONE
   const isDisabled = dataDetailBKL?.status === "done";
 
-  type ColorItem = { color: string; qty: string };
+  type ColorItem = { color: string; qty: number };
 
   const [formState, setFormState] = useState<{
     name: string;
     damaged: string;
-    quantity: string;
+    quantity: number;
     colors: ColorItem[];
   }>({
     name: "",
     damaged: "",
-    quantity: "",
-    colors: [{ color: "", qty: "" }],
+    quantity: 0,
+    colors: [{ color: "", qty: 0 }],
   });
 
   // ⬇ AUTO FILL
@@ -95,7 +94,7 @@ export const Client = () => {
     setFormState({
       name: dataDetailBKL.code_document_bkl ?? "",
       damaged: "damaged",
-      quantity: damagedItem.qty,
+      quantity: damagedItem?.qty || 0,
       colors: colorItems.length > 0 ? colorItems : [{ color: "", qty: "" }],
     });
   }, [dataDetailBKL]);
@@ -133,12 +132,16 @@ export const Client = () => {
       })
       .filter((c) => c.color_tag_id);
 
-    const body = {
+     const body: Record<string, any> = {
       name_document: formState.name,
       type: "in",
-      damage_qty: formState.quantity,
       colors: mappedColors,
     };
+
+    // hanya kirim jika quantity > 0
+    if (formState.quantity > 0) {
+      body.damage_qty = formState.quantity;
+    }
 
     mutateUpdate(
       { body },
@@ -231,10 +234,14 @@ export const Client = () => {
                 />
 
                 <Input
+                  type="number"
                   placeholder="Quantity"
-                  value={formState.quantity}
+                  value={formState?.quantity || 0}
                   onChange={(e) =>
-                    setFormState((s) => ({ ...s, quantity: e.target.value }))
+                    setFormState((s) => ({
+                      ...s,
+                      quantity: Number(e.target.value),
+                    }))
                   }
                   disabled={isDisabled}
                   className="px-3 py-2 border rounded w-1/2"
@@ -306,13 +313,14 @@ export const Client = () => {
                     </Select>
 
                     <Input
+                      type="number"
                       placeholder="Quantity"
                       value={c.qty}
                       disabled={isDisabled}
                       onChange={(e) =>
                         setFormState((s) => {
                           const next = { ...s };
-                          next.colors[idx].qty = e.target.value;
+                          next.colors[idx].qty = Number(e.target.value);
                           return next;
                         })
                       }
@@ -345,7 +353,7 @@ export const Client = () => {
                   onClick={() =>
                     setFormState((s) => ({
                       ...s,
-                      colors: [...s.colors, { color: "", qty: "" }],
+                      colors: [...s.colors, { color: "", qty: 0 }],
                     }))
                   }
                 >

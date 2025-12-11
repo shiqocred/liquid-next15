@@ -267,21 +267,23 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
-          <Button
-            className="items-center border-sky-400 text-sky-500 hover:bg-sky-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-            variant={"outline"}
-            type="button"
-            disabled={isPendingRemoveProduct}
-            onClick={() => {
-              handleRemoveProduct(rackId, row.original.id);
-            }}
-          >
-            {isPendingRemoveProduct ? (
-              <Loader2 className="w-4 h-4 mr-1" />
-            ) : (
-              <ArrowRightFromLine className="w-4 h-4 mr-1" />
-            )}
-          </Button>
+          <TooltipProviderPage value={"remove it"}>
+            <Button
+              className="items-center border-red-400 text-red-500 hover:bg-red-50 p-0 w-9 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              type="button"
+              disabled={isPendingRemoveProduct}
+              onClick={() => {
+                handleRemoveProduct(rackId, row.original.id);
+              }}
+            >
+              {isPendingRemoveProduct ? (
+                <Loader2 className="w-4 h-4 mr-1" />
+              ) : (
+                <ArrowRightFromLine className="w-4 h-4 mr-1" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
