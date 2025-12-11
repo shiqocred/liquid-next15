@@ -300,7 +300,7 @@ export const columnRackStaging = ({
   },
   {
     accessorKey: "name",
-    header: () => <div className="text-center">Nama Rack</div>,
+    header: "Name Rack",
     cell: ({ row }) => (
       <div className="max-w-[300px] break-all">{row.original.name}</div>
     ),
