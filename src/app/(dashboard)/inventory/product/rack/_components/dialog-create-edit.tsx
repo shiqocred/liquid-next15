@@ -39,7 +39,6 @@ const DialogCreateEdit = ({
   isPendingUpdate: boolean;
   data: any;
 }) => {
-  console.log("data rak di dialog create edit:", data);
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [hintOpen, setHintOpen] = useState(false);
   useEffect(() => {
@@ -154,20 +153,12 @@ const DialogCreateEdit = ({
 
           {/* CONTENT */}
           <div className="flex flex-col gap-2 text-sm">
-            <ul className="list-disc pl-5 gap-2 flex flex-col text-sm leading-relaxed text-justify">
-              <li>
-                Ketika mengubah nama rak, pastikan untuk menekan tombol{" "}
-                <strong>Update</strong> agar perubahan tersimpan dengan benar.
-              </li>
-              <li>
-                Nama yang sudah diubah tidak akan mempengaruhi data produk yang
-                sudah ada di dalam rak tersebut.
-              </li>
-              <li>
-                Nama yang sudah diubah tidak akan mengubah data nama list rak di
-                staging
-              </li>
-            </ul>
+            <p>
+              Jika Anda mengedit nama rak <strong>display</strong>, perubahan
+              tersebut <strong>tidak</strong> {" "}
+              akan mempengaruhi nama rak yang terkait di{" "}
+              <strong>staging.</strong>
+            </p>
           </div>
         </DialogContent>
       </Dialog>
