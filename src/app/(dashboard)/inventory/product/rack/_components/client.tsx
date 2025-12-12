@@ -12,7 +12,6 @@ import {
   FileDown,
   Loader2,
   Pencil,
-  PlusCircle,
   Printer,
   ReceiptText,
   RefreshCw,
@@ -842,7 +841,7 @@ export const Client = () => {
                     />
                   </Button>
                 </TooltipProviderPage>
-                <div className="flex gap-4 items-center ml-auto">
+                {/* <div className="flex gap-4 items-center ml-auto">
                   <Button
                     onClick={(e) => {
                       e.preventDefault();
@@ -854,7 +853,7 @@ export const Client = () => {
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                     Add Rack
                   </Button>
-                </div>
+                </div> */}
               </div>
             </div>
             {/* <div className="grid grid-cols-4 gap-4 w-full p-4">

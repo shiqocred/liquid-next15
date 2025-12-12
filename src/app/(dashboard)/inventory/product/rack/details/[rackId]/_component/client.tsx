@@ -101,7 +101,7 @@ export const Client = () => {
     error: errorProduct,
     isError: isErrorProduct,
     isSuccess: isSuccessProduct,
-  } = useGetListProduct({ p: pageProduct, q: searchProductValue });
+  } = useGetListProduct({ id: rackId, p: pageProduct, q: searchProductValue });
 
   // query end ----------------------------------------------------------------
 

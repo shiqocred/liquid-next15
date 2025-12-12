@@ -34,10 +34,8 @@ export const Client = () => {
   const [dataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateBKL();
-  const {
-    data: generatedNameData,
-    refetch: refetchGenerate,
-  } = useGetGenerateNameBKL();
+  const { data: generatedNameData, refetch: refetchGenerate } =
+    useGetGenerateNameBKL();
 
   const { data } = useGetListTagColorWMS({ q: searchValue });
 
@@ -49,17 +47,17 @@ export const Client = () => {
     return generatedNameData?.data.data.resource;
   }, [generatedNameData]);
 
-  type ColorItem = { color: string; qty: number };
+  type ColorItem = { color: string; qty: string };
   const [formState, setFormState] = useState<{
     name: string;
     damaged: string;
-    quantity: number;
+    quantity: string;
     colors: ColorItem[];
   }>({
     name: "",
     damaged: "",
-    quantity: 0,
-    colors: [{ color: "", qty: 0 }],
+    quantity: "0",
+    colors: [{ color: "", qty: "0" }],
   });
 
   const handleCreate = (e: FormEvent) => {
@@ -85,8 +83,10 @@ export const Client = () => {
       colors: mappedColors,
     };
 
-    if (formState.quantity > 0) {
-      body.damage_qty = formState.quantity;
+    const qty = Number(formState.quantity);
+
+    if (qty > 0) {
+      body.damage_qty = qty;
     }
 
     mutateCreate(
@@ -188,10 +188,20 @@ export const Client = () => {
                   placeholder="Quantity"
                   value={formState.quantity}
                   onChange={(e) =>
-                    setFormState((s) => ({
-                      ...s,
-                      quantity: Number(e.target.value),
-                    }))
+                    setFormState((s) => {
+                      let val = e.target.value;
+
+                      // Hilangkan leading zero (contoh: 001 → 1)
+                      if (val.startsWith("0")) val = val.replace(/^0+/, "");
+
+                      // Jika kosong, jadikan "0"
+                      if (val === "") val = "0";
+
+                      return {
+                        ...s,
+                        quantity: val,
+                      };
+                    })
                   }
                   className="px-3 py-2 border rounded w-1/2 border-sky-400/80 focus-visible:ring-sky-400"
                 />
@@ -232,12 +242,19 @@ export const Client = () => {
                       onChange={(e) =>
                         setFormState((s) => {
                           const next = { ...s };
-                          next.colors[idx].qty = Number(e.target.value);
+                          let val = e.target.value;
+
+                          // sama seperti manual inbound
+                          if (val.startsWith("0")) val = val.replace(/^0+/, "");
+                          if (val === "") val = "0";
+
+                          next.colors[idx].qty = val;
                           return next;
                         })
                       }
                       className="px-3 py-2 border rounded w-1/3 border-sky-400/80 focus-visible:ring-sky-400"
                     />
+
                     <Button
                       type="button"
                       variant={"outline"}
@@ -262,7 +279,7 @@ export const Client = () => {
                   onClick={() =>
                     setFormState((s) => ({
                       ...s,
-                      colors: [...s.colors, { color: "", qty: 0 }],
+                      colors: [...s.colors, { color: "", qty: "0" }],
                     }))
                   }
                 >
