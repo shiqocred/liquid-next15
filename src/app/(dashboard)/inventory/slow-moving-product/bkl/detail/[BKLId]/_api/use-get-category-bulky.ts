@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { baseUrl } from "@/lib/baseUrl";
+import { baseUrlApiBulky } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListProduct = ({ id, p, q }: any) => {
+export const useGetCategoryBulky = () => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-product-staging-detail", { id, p, q }],
+    queryKey: ["list-categories-create-palet"],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/racks/list-product-staging?rack_id=${id}&page=${p}&q=${q}`,
+        `${baseUrlApiBulky}/products/filter/categories`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

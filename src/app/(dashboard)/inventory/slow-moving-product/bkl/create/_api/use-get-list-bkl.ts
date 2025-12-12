@@ -9,7 +9,7 @@ export const useGetListBKL = ({ p, q }: any) => {
     queryKey: ["list-list-bkl", { p, q }],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/bulky-documents?page=${p}&q=${q}`,
+        `${baseUrl}/bkl/list-bklDocument?page=${p}&q=${q}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

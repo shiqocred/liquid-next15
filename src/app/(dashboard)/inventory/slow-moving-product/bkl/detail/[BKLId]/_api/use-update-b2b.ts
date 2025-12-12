@@ -4,40 +4,38 @@ import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
-import { invalidateQuery } from "@/lib/query";
 
 type RequestType = {
-  id: string;
+  body: any;
 };
+
 type Error = AxiosError;
 
-export const useSubmit = () => {
+export const useUpdateBKL = ({ id }: any) => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.post(
-        `${baseUrl}/racks/${id}/move-to-display`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+    mutationFn: async ({ body }) => {
+      const res = await axios.put(`${baseUrl}/bkl/${id}/bklDocument`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
     onSuccess: () => {
-      toast.success("successfully updated rack to display");
-      invalidateQuery(queryClient, [["list-detail-rack"]]);
+      toast.success("BKL successfully created");
+      queryClient.invalidateQueries({
+        queryKey: ["list-list-bkl"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Rack failed update to display`);
-        console.log("ERROR_UPDATE_TO_DISPLAY:", err);
+        toast.error(`ERROR ${err?.status}: BKL failed to create`);
+        console.log("ERROR_CREATE_BKL:", err);
       }
     },
   });

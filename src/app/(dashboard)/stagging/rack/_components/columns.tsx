@@ -10,13 +10,18 @@ import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import {
+  Boxes,
   Drill,
   Loader2,
   LucideIcon,
+  Pencil,
   PlusCircle,
+  Printer,
   ReceiptText,
+  Trash2,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { MouseEvent } from "react";
 
 const ButtonAction = ({
@@ -260,6 +265,130 @@ export const columnFilteredProductStaging = ({
           isLoading={isLoading}
           icon={XCircle}
           type="red"
+        />
+      </div>
+    ),
+  },
+];
+
+export const columnRackStaging = ({
+  metaPage,
+  isLoading,
+  setRackId,
+  setInput,
+  handleDelete,
+  handleSubmit,
+  setIsOpen,
+  setSelectedBarcode,
+  setSelectedNameRack,
+  setSelectedTotalProduct,
+  setBarcodeOpen,
+}: any): ColumnDef<any>[] => [
+  {
+    header: () => <div className="text-center">No</div>,
+    id: "id",
+    cell: ({ row }) => (
+      <div className="text-center tabular-nums">
+        {(metaPage.from + row.index).toLocaleString()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "new_barcode_product||old_barcode_product",
+    header: "Barcode",
+    cell: ({ row }) => row.original.barcode ?? "-",
+  },
+  {
+    accessorKey: "name",
+    header: "Name Rack",
+    cell: ({ row }) => (
+      <div className="max-w-[300px] break-all">{row.original.name}</div>
+    ),
+  },
+  {
+    accessorKey: "total_data",
+    header: "Total Data",
+    cell: ({ row }) => row.original.total_data ?? "-",
+  },
+  {
+    accessorKey: "total_new_price_product",
+    header: "New Price",
+    cell: ({ row }) => (
+      <div className="tabular-nums">
+        {formatRupiah(row.original.total_new_price_product ?? 0)}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "action",
+    header: () => <div className="text-center">Action</div>,
+    cell: ({ row }) => (
+      <div className="flex gap-4 justify-center items-center">
+        <Link href={`/stagging/rack/details/${row.original.id}`}>
+          <ButtonAction
+            icon={ReceiptText}
+            type="sky"
+            label="Detail"
+            isLoading={false}
+            onClick={() => {}}
+          />
+        </Link>
+        <ButtonAction
+          icon={Pencil}
+          isLoading={isLoading}
+          type="yellow"
+          onClick={(e) => {
+            e.preventDefault();
+            setRackId(row.original.id);
+            setInput((prev: any) => ({
+              ...prev,
+              displayId:
+                row.original.display_rack_id ?? row.original.display?.id ?? "",
+              display: {
+                id:
+                  row.original.display_rack_id ??
+                  row.original.display?.id ??
+                  "",
+                name: row.original.display?.name ?? row.original.name ?? "",
+              },
+              name: row.original.name ?? prev.name,
+            }));
+            setIsOpen("create-edit");
+          }}
+          label="Edit Rack"
+        />
+        <ButtonAction
+          label="Print QR"
+          onClick={(e) => {
+            e.preventDefault();
+            setSelectedBarcode(row.original.barcode);
+            setSelectedNameRack(row.original.name);
+            setSelectedTotalProduct(row.original.total_data);
+            setBarcodeOpen(true);
+          }}
+          isLoading={false}
+          icon={Printer}
+          type="sky"
+        />
+        <ButtonAction
+          label="Delete"
+          onClick={(e) => {
+            e.preventDefault();
+            handleDelete(row.original.id);
+          }}
+          isLoading={isLoading}
+          icon={Trash2}
+          type="red"
+        />
+        <ButtonAction
+          label="To Display"
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubmit(row.original.id);
+          }}
+          isLoading={isLoading}
+          icon={Boxes}
+          type="sky"
         />
       </div>
     ),

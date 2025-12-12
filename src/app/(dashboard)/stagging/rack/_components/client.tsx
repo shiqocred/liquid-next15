@@ -9,14 +9,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   ArrowRightCircle,
-  Boxes,
-  Edit3,
   FileDown,
   Loader2,
   PlusCircle,
-  ReceiptText,
   RefreshCw,
-  Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -26,7 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AxiosError } from "axios";
 import Forbidden from "@/components/403";
 import Loading from "@/app/(dashboard)/loading";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
@@ -40,7 +35,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteRack } from "../_api/use-delete-rack";
 import { useGetListProduct } from "../_api/use-get-list-product";
 import Pagination from "@/components/pagination";
-import { columnProductStaging } from "./columns";
+import { columnProductStaging, columnRackStaging } from "./columns";
 import { useAddFilterProductStaging } from "../_api/use-add-filter-product-staging";
 import { useExportStagingProduct } from "../_api/use-export-staging-product";
 import { DialogDetail } from "./dialog-detail";
@@ -49,6 +44,7 @@ import { DialogFiltered } from "./dialog-filtered";
 import { useGetListCategories } from "../_api/use-get-list-categories";
 import { useSubmit } from "../_api/use-submit";
 import { useDryScrap } from "../_api/use-dry-scrap";
+import DialogBarcode from "./dialog-barcode";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -67,6 +63,11 @@ export const Client = () => {
     defaultValue: "",
   });
   const [isMounted, setIsMounted] = useState(false);
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
+  const [selectedNameRack, setSelectedNameRack] = useState("");
+  const [selectedBarcode, setSelectedBarcode] = useState("");
+  const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+
   // separate search states for rack and product so values don't collide
   const {
     search: searchRack,
@@ -110,17 +111,17 @@ export const Client = () => {
 
   // data form create edit
   type InputState = {
-    categoryId: string;
+    displayId: string;
     source: string;
     name: string;
-    category: { id: string; name_category: string };
+    display: { id: string; name: string };
   };
 
   const [input, setInput] = useState<InputState>({
-    categoryId: "",
+    displayId: "",
     source: "staging",
     name: "",
-    category: { id: "", name_category: "" },
+    display: { id: "", name: "" },
   });
 
   // confirm delete
@@ -211,9 +212,9 @@ export const Client = () => {
     setRackId("");
     setInput((prev) => ({
       ...prev,
-      categoryId: "",
+      displayId: "",
       name: "",
-      category: { id: "", name_category: "" },
+      display: { id: "", name: "" },
     }));
   };
 
@@ -237,8 +238,9 @@ export const Client = () => {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      category_id: input.categoryId,
+      display_rack_id: input.displayId,
       source: input.source ?? "staging",
+      name: input.display.name,
     };
     mutateCreate(
       { body },
@@ -254,7 +256,8 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      category_id: input.categoryId,
+      display_rack_id: input.displayId,
+      name: input.display.name,
     };
     mutateUpdate(
       { id: rackId, body },
@@ -325,6 +328,20 @@ export const Client = () => {
       <DeleteDialog />
       <ToDisplayDialog />
       <DialogDryScrap />
+      <DialogBarcode
+        onCloseModal={() => {
+          if (barcodeOpen) {
+            setBarcodeOpen(false);
+          }
+        }}
+        open={barcodeOpen}
+        barcode={selectedBarcode}
+        qty={selectedTotalProduct}
+        name={selectedNameRack}
+        handleCancel={() => {
+          setBarcodeOpen(false);
+        }}
+      />
       <DialogCreateEdit
         open={isOpen === "create-edit"}
         onOpenChange={() => {
@@ -337,6 +354,7 @@ export const Client = () => {
         input={input} // input form
         setInput={setInput} // setInput Form
         categories={CategoriesData?.data ?? CategoriesData}
+        // categories={uniqueCategoryList} // unique categories
         handleCreate={handleCreate} // handle create rack
         handleUpdate={handleUpdate} // handle update rack
         isPendingCreate={isPendingCreate} // loading create
@@ -390,7 +408,7 @@ export const Client = () => {
 
         {/* Card: Total Product */}
         <div className="bg-white shadow rounded-xl p-5 flex flex-col border border-gray-200">
-          <h4 className="text-sm text-gray-500">Total Products</h4>
+          <h4 className="text-sm text-gray-500">Total Products Rack</h4>
           <p className="text-3xl font-bold mt-2">
             {rackData?.total_products_in_racks}{" "}
           </p>
@@ -454,7 +472,7 @@ export const Client = () => {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-4 w-full p-4">
+            {/* <div className="grid grid-cols-4 gap-4 w-full p-4">
               {searchValueRack ? (
                 racksData?.data.filter((item: any) =>
                   (item.name ?? "")
@@ -472,7 +490,6 @@ export const Client = () => {
                         key={`${item.code_document_sale}-${i}`}
                         className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                       >
-                        {/* CONTENT */}
                         <div className="flex w-full items-center gap-4">
                           <p className="text-sm font-bold text-black w-full">
                             {item.name}
@@ -486,8 +503,6 @@ export const Client = () => {
                             {item.total_data}
                           </p>
                         </div>
-
-                        {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                         <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                           <TooltipProviderPage value={<p>Detail</p>}>
                             <Button
@@ -559,7 +574,6 @@ export const Client = () => {
                     key={`${item.code_document_sale}-${i}`}
                     className="relative flex w-full bg-white rounded-md overflow-hidden shadow p-5 justify-center flex-col border border-transparent transition-all hover:border-sky-300 box-border"
                   >
-                    {/* CONTENT */}
                     <div className="flex w-full items-center gap-4">
                       <p className="text-sm font-bold text-black w-full">
                         {item.name}
@@ -574,7 +588,6 @@ export const Client = () => {
                       </p>
                     </div>
 
-                    {/* --- ACTION BUTTONS (ICON ONLY) --- */}
                     <div className="flex flex-col sm:flex-row gap-3 justify-end items-end sm:items-center">
                       <TooltipProviderPage value={<p>Detail</p>}>
                         <Button
@@ -595,16 +608,15 @@ export const Client = () => {
                             setRackId(item.id);
                             setInput((prev) => ({
                               ...prev,
-                              categoryId:
-                                item.category_id ?? item.category?.id ?? "",
-                              category: {
-                                id: item.category_id ?? item.category?.id ?? "",
-                                name_category:
-                                  item.category?.name_category ??
-                                  item.name_category ??
+                              displayId:
+                                item.display_rack_id ?? item.display?.id ?? "",
+                              display: {
+                                id: item.display_rack_id ?? item.display?.id ?? "",
+                                name:
+                                  item.display?.name ??
+                                  item.name ??
                                   "",
                               },
-                              // keep rack name in name field if present
                               name: item.name ?? prev.name,
                             }));
                             setIsOpen("create-edit");
@@ -655,7 +667,26 @@ export const Client = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
+            <DataTable
+              columns={columnRackStaging({
+                metaPage,
+                isLoadingRacks,
+                isPendingSubmit,
+                isPendingDelete,
+                handleUpdate,
+                handleDelete,
+                handleSubmit,
+                setRackId,
+                setInput,
+                setIsOpen,
+                setSelectedBarcode,
+                setSelectedNameRack,
+                setSelectedTotalProduct,
+                setBarcodeOpen,
+              })}
+              data={racksData?.data ?? []}
+            />
 
             <div className="w-full p-4 bg-white">
               <Pagination
