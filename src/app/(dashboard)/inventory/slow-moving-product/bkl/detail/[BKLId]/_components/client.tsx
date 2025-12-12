@@ -61,18 +61,18 @@ export const Client = () => {
   // ⬇⬇ DISABLE SEMUA INPUT JIKA STATUS DONE
   const isDisabled = dataDetailBKL?.status === "done";
 
-  type ColorItem = { color: string; qty: number };
+  type ColorItem = { color: string; qty: string };
 
   const [formState, setFormState] = useState<{
     name: string;
     damaged: string;
-    quantity: number;
+    quantity: string;
     colors: ColorItem[];
   }>({
     name: "",
     damaged: "",
-    quantity: 0,
-    colors: [{ color: "", qty: 0 }],
+    quantity: "0",
+    colors: [{ color: "", qty: "0" }],
   });
 
   // ⬇ AUTO FILL
@@ -132,15 +132,14 @@ export const Client = () => {
       })
       .filter((c) => c.color_tag_id);
 
-     const body: Record<string, any> = {
+    const body: Record<string, any> = {
       name_document: formState.name,
       type: "in",
       colors: mappedColors,
     };
-
-    // hanya kirim jika quantity > 0
-    if (formState.quantity > 0) {
-      body.damage_qty = formState.quantity;
+    const qty = Number(formState.quantity);
+    if (qty > 0) {
+      body.damage_qty = qty;
     }
 
     mutateUpdate(
@@ -236,12 +235,17 @@ export const Client = () => {
                 <Input
                   type="number"
                   placeholder="Quantity"
-                  value={formState?.quantity || 0}
+                  value={formState?.quantity || "0"}
                   onChange={(e) =>
-                    setFormState((s) => ({
-                      ...s,
-                      quantity: Number(e.target.value),
-                    }))
+                    setFormState((s) => {
+                      let val = e.target.value;
+                      if (val.startsWith("0")) val = val.replace(/^0+/, "");
+                      if (val === "") val = "0";
+                      return {
+                        ...s,
+                        quantity: val,
+                      };
+                    })
                   }
                   disabled={isDisabled}
                   className="px-3 py-2 border rounded w-1/2"
@@ -320,7 +324,11 @@ export const Client = () => {
                       onChange={(e) =>
                         setFormState((s) => {
                           const next = { ...s };
-                          next.colors[idx].qty = Number(e.target.value);
+                          let val = e.target.value;
+                          if (val.startsWith("0")) val = val.replace(/^0+/, "");
+                          if (val === "") val = "0";
+
+                          next.colors[idx].qty = val;
                           return next;
                         })
                       }
@@ -353,7 +361,7 @@ export const Client = () => {
                   onClick={() =>
                     setFormState((s) => ({
                       ...s,
-                      colors: [...s.colors, { color: "", qty: 0 }],
+                      colors: [...s.colors, { color: "", qty: "0" }],
                     }))
                   }
                 >
