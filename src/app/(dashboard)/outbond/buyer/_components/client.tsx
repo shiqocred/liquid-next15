@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  CalendarIcon,
+  Crown,
   Edit3,
   Loader2,
+  Medal,
   PlusCircle,
   RefreshCw,
   Trash2,
@@ -36,12 +39,21 @@ import dynamic from "next/dynamic";
 import { useSearchQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
 import Link from "next/link";
+import { useGetTopBuyer } from "../_api/use-get-top-buyer";
+import { format } from "date-fns";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
 
 export const Client = () => {
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth() + 1
+  );
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
+
   // dialog create edit
   const [openCreateEdit, setOpenCreateEdit] = useQueryState(
     "dialog",
@@ -103,10 +115,26 @@ export const Client = () => {
     error: errorBuyer,
   } = useGetDetailBuyer({ id: buyerId });
 
+  const {
+    data: dataTopBuyer,
+    isFetching,
+  } = useGetTopBuyer({
+    month: selectedMonth,
+    year: selectedYear,
+  });
+
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
+
+  const topBuyers = useMemo(() => {
+    return dataTopBuyer?.data?.data?.resource ?? [];
+  }, [dataTopBuyer]);
+
+  const rank1 = topBuyers.find((b: any) => b.rank === 1);
+  const rank2 = topBuyers.find((b: any) => b.rank === 2);
+  const rank3 = topBuyers.find((b: any) => b.rank === 3);
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -114,7 +142,7 @@ export const Client = () => {
   // get pagetination
   useEffect(() => {
     if (data && isSuccess) {
-      setPagination(data?.data.data.resource.data);
+      setPagination(data?.data.data.resource);
     }
   }, [data]);
 
@@ -235,7 +263,7 @@ export const Client = () => {
       accessorKey: "name_buyer",
       header: "Name Buyer",
     },
-     {
+    {
       accessorKey: "email",
       header: "Email",
     },
@@ -264,11 +292,7 @@ export const Client = () => {
     {
       accessorKey: "rank",
       header: () => <div className="text-center">Rank</div>,
-      cell: ({ row }) => (
-        <div className="text-center">
-          {row.original.rank}
-        </div>
-      ),
+      cell: ({ row }) => <div className="text-center">{row.original.rank}</div>,
     },
     {
       accessorKey: "action",
@@ -357,6 +381,107 @@ export const Client = () => {
           <BreadcrumbItem>Buyer</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      {/* Buyer of the Month */}
+      <div className="w-full bg-white rounded-md shadow px-6 py-4">
+        <div className="w-full bg-white rounded-md shadow px-6 py-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold">Buyer of the Month</h2>
+
+            <div className="flex items-center gap-4">
+              {/* Select Month */}
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isFetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {format(new Date(2025, i, 1), "MMMM")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Select Year */}
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isFetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Loader kecil */}
+              {isFetching && (
+                <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          {isFetching ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+              {/* Rank 2 */}
+              <div className="flex flex-col items-center border rounded-lg py-4">
+                <Medal className="w-6 h-6 text-gray-400 mb-1" />
+                <span className="text-sm text-gray-500">2</span>
+                <p className="font-semibold">{rank2?.buyer_name ?? "-"}</p>{" "}
+                <p className="text-sm text-gray-500 mt-1">
+                  Point :{" "}
+                  <span className="font-medium">
+                    {rank2?.total_points?.toLocaleString() ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              {/* Rank 1 */}
+              <div className="flex flex-col items-center border-2 border-sky-400 rounded-lg py-6 -translate-y-9">
+                <Crown className="w-7 h-7 text-yellow-500 mb-1" />
+                <span className="text-sm text-sky-600">1</span>
+                <p className="font-semibold">{rank1?.buyer_name ?? "-"}</p>{" "}
+                <p className="text-sm text-gray-500 mt-1">
+                  Point :{" "}
+                  <span className="font-medium">
+                    {rank1?.total_points?.toLocaleString() ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              {/* Rank 3 */}
+              <div className="flex flex-col items-center border rounded-lg py-4">
+                <Medal className="w-6 h-6 text-amber-700 mb-1" />
+                <span className="text-sm text-gray-500">3</span>
+                <p className="font-semibold">{rank3?.buyer_name ?? "-"}</p>{" "}
+                <p className="text-sm text-gray-500 mt-1">
+                  Point :{" "}
+                  <span className="font-medium">
+                    {rank3?.total_points?.toLocaleString() ?? 0}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Buyers</h2>
         <div className="flex flex-col w-full gap-4">
