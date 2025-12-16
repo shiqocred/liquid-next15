@@ -3,13 +3,14 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailABN = ({ barcode }: any) => {
+export const useGetTopBuyer = ({ month, year }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["detail-abn", barcode],
+    queryKey: ["list-top-buyer", month, year],
+    enabled: !!month && !!year,
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/new_products/barcode/${barcode}`,
+        `${baseUrl}/top-buyers?month=${month}&year=${year}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -18,7 +19,6 @@ export const useGetDetailABN = ({ barcode }: any) => {
       );
       return res;
     },
-    enabled: !!barcode,
   });
   return query;
 };
