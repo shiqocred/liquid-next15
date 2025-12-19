@@ -301,11 +301,11 @@ export const Client = () => {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Outbond</BreadcrumbItem>
+          <BreadcrumbItem>Repair Station</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/outbond/migrate-category">
-              Migrate Category
+            <BreadcrumbLink href="/repair-station/migrate-to-repair">
+              Migrate To Category
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -313,7 +313,7 @@ export const Client = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
-        <Link href="/outbond/migrate-category">
+        <Link href="/repair-station/migrate-to-repair">
           <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
             <ArrowLeft className="w-5 h-5 text-black" />
           </Button>

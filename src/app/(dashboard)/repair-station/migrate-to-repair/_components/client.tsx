@@ -20,12 +20,12 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useGetListMigrateCategory } from "../_api/use-get-list-migrate-category";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import dynamic from "next/dynamic";
-import { useGetDetailMigrateCategory } from "../_api/use-get-detail-migrate-category";
+import { useGetListMigrateToRepair } from "../_api/use-get-list-migrate-to-repair";
+import { useGetDetailMigrateToRepair } from "../_api/use-get-detail-migrate-to-repair";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -38,9 +38,9 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
 
-  // migrateCategoryId for detail
-  const [migrateCategoryId, setMigrateCategoryId] = useQueryState(
-    "migrateCategoryId",
+  // MigrateToRepairId for detail
+  const [MigrateToRepairId, setMigrateToRepairId] = useQueryState(
+    "MigrateToRepairId",
     {
       defaultValue: "",
     }
@@ -67,17 +67,17 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListMigrateCategory({ p: page, q: searchValue });
+  } = useGetListMigrateToRepair({ p: page, q: searchValue });
 
   // get detail data
   const {
-    data: dataMigrateCategory,
-    isLoading: isLoadingMigrateCategory,
-    refetch: refetchMigrateCategory,
-    isRefetching: isRefetchingMigrateCategory,
-    isError: isErrorMigrateCategory,
-    error: errorMigrateCategory,
-  } = useGetDetailMigrateCategory({ id: migrateCategoryId });
+    data: dataMigrateToRepair,
+    isLoading: isLoadingMigrateToRepair,
+    refetch: refetchMigrateToRepair,
+    isRefetching: isRefetchingMigrateToRepair,
+    isError: isErrorMigrateToRepair,
+    error: errorMigrateToRepair,
+  } = useGetDetailMigrateToRepair({ id: MigrateToRepairId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -89,13 +89,13 @@ export const Client = () => {
 
   // memo product detail list
   const dataListDetail: any[] = useMemo(() => {
-    return dataMigrateCategory?.data.data.resource.migrate_bulky_products;
-  }, [dataMigrateCategory]);
+    return dataMigrateToRepair?.data.data.resource.migrate_bulky_products;
+  }, [dataMigrateToRepair]);
 
   // memo product detail list
   const dataMetaDetail: any = useMemo(() => {
-    return dataMigrateCategory?.data.data.resource;
-  }, [dataMigrateCategory]);
+    return dataMigrateToRepair?.data.data.resource;
+  }, [dataMigrateToRepair]);
 
   // get pagetination
   useEffect(() => {
@@ -120,22 +120,22 @@ export const Client = () => {
 
   useEffect(() => {
     alertError({
-      isError: isErrorMigrateCategory,
-      error: errorMigrateCategory as AxiosError,
+      isError: isErrorMigrateToRepair,
+      error: errorMigrateToRepair as AxiosError,
       data: "Data",
       action: "get data",
       method: "GET",
     });
-  }, [isErrorMigrateCategory, errorMigrateCategory]);
+  }, [isErrorMigrateToRepair, errorMigrateToRepair]);
 
   // handle close
   const handleClose = () => {
     setOpenDetail(false);
-    setMigrateCategoryId("");
+    setMigrateToRepairId("");
   };
 
   // column data
-  const columnListMigrateCategory: ColumnDef<any>[] = [
+  const columnListMigrateToRepair: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -176,7 +176,7 @@ export const Client = () => {
               onClick={(e) => {
                 e.preventDefault();
                 setOpenDetail(true);
-                setMigrateCategoryId(row.original.id);
+                setMigrateToRepairId(row.original.id);
               }}
             >
               <ReceiptText className="w-4 h-4" />
@@ -188,7 +188,7 @@ export const Client = () => {
   ];
 
   // column data detail
-  const columnMigrateCategoryDetail: ColumnDef<any>[] = [
+  const columnMigrateToRepairDetail: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -255,10 +255,10 @@ export const Client = () => {
           }
         }}
         data={dataMetaDetail}
-        isLoading={isLoadingMigrateCategory}
-        refetch={refetchMigrateCategory}
-        isRefetching={isRefetchingMigrateCategory}
-        columns={columnMigrateCategoryDetail}
+        isLoading={isLoadingMigrateToRepair}
+        refetch={refetchMigrateToRepair}
+        isRefetching={isRefetchingMigrateToRepair}
+        columns={columnMigrateToRepairDetail}
         dataTable={dataListDetail ?? []}
       />
       <Breadcrumb>
@@ -267,13 +267,13 @@ export const Client = () => {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Outbond</BreadcrumbItem>
+          <BreadcrumbItem>Repair Station</BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Migrate Category</BreadcrumbItem>
+          <BreadcrumbItem>Migrate To Repair</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Migrate Category</h2>
+        <h2 className="text-xl font-bold">List Migrate To Repair</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -301,7 +301,7 @@ export const Client = () => {
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  <Link href={"/outbond/migrate-category/create"}>
+                  <Link href={"/repair-station/migrate-to-repair/create"}>
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                     New Migrate
                   </Link>
@@ -310,7 +310,7 @@ export const Client = () => {
             </div>
           </div>
           <DataTable
-            columns={columnListMigrateCategory}
+            columns={columnListMigrateToRepair}
             data={dataList ?? []}
           />
           <Pagination

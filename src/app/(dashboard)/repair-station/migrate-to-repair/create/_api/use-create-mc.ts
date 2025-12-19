@@ -25,7 +25,7 @@ export const useCreateMC = () => {
     },
     onSuccess: () => {
       toast.success("Migrate Category successfully created");
-      window.location.href = "/outbond/migrate-category";
+      window.location.href = "/repair-station/migrate-to-repair";
     },
     onError: (err) => {
       if (err.status === 403) {

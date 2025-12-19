@@ -11,7 +11,6 @@ import {
   Boxes,
   CandlestickChart,
   ClipboardMinus,
-  Container,
   Drill,
   FileCog,
   FolderClock,
@@ -265,9 +264,15 @@ const sidebarMenu = [
     title: "Repair Station",
     href: undefined,
     menu: [
+      // {
+      //   title: "List Product Repair",
+      //   href: "/repair-station/list-product-repair",
+      //   icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
+      //   sub_menu: [],
+      // },
       {
-        title: "List Product Repair",
-        href: "/repair-station/list-product-repair",
+        title: "migrate To Repair",
+        href: "/repair-station/migrate-to-repair",
         icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
@@ -304,12 +309,6 @@ const sidebarMenu = [
             href: "/outbond/migrate-color/destination",
           },
         ],
-      },
-      {
-        title: "migrate category",
-        href: "/outbond/migrate-category",
-        icon: <Container className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [],
       },
       {
         title: "sale",
