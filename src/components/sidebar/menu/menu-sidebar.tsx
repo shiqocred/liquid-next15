@@ -70,7 +70,7 @@ const sidebarMenu = [
         href: undefined,
         icon: <ClipboardMinus className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
-           {
+          {
             title: "Product combined",
             href: "/dashboard/summary-report/product-combined",
           },
@@ -244,37 +244,6 @@ const sidebarMenu = [
         ],
       },
       {
-        title: "Pallet Bulky",
-        href: undefined,
-        icon: <SwatchBook className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [
-          {
-            title: "list Pallet",
-            href: "/inventory/pallet/list",
-          },
-          {
-            title: "Category Pallet",
-            href: "/inventory/pallet/category-pallet",
-          },
-          {
-            title: "Warehouse",
-            href: "/inventory/pallet/warehouse",
-          },
-          {
-            title: "Condition",
-            href: "/inventory/pallet/condition",
-          },
-          {
-            title: "Status",
-            href: "/inventory/pallet/status",
-          },
-          {
-            title: "Brand",
-            href: "/inventory/pallet/brand",
-          },
-        ],
-      },
-      {
         title: "Stock Opname",
         href: undefined,
         icon: <BookMarked className="w-5 h-5 stroke-[1.5]" />,
@@ -366,11 +335,42 @@ const sidebarMenu = [
         icon: <Award className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-       {
+      {
         title: "QCD",
         href: "/outbond/qcd",
         icon: <Recycle className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
+      },
+      {
+        title: "Pallet Bulky",
+        href: undefined,
+        icon: <SwatchBook className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [
+          {
+            title: "list Pallet",
+            href: "/outbond/pallet/list",
+          },
+          {
+            title: "Category Pallet",
+            href: "/outbond/pallet/category-pallet",
+          },
+          {
+            title: "Warehouse",
+            href: "/outbond/pallet/warehouse",
+          },
+          {
+            title: "Condition",
+            href: "/outbond/pallet/condition",
+          },
+          {
+            title: "Status",
+            href: "/outbond/pallet/status",
+          },
+          {
+            title: "Brand",
+            href: "/outbond/pallet/brand",
+          },
+        ],
       },
     ],
   },

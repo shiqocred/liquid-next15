@@ -198,7 +198,7 @@ export const Client = () => {
               variant={"outline"}
               asChild
             >
-              <Link href={`/inventory/pallet/list/detail/${row.original.id}`}>
+              <Link href={`/outbond/pallet/list/detail/${row.original.id}`}>
                 <ReceiptText className="w-4 h-4" />
               </Link>
             </Button>
@@ -298,7 +298,7 @@ export const Client = () => {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Inventory</BreadcrumbItem>
+          <BreadcrumbItem>Outbond</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>Palet</BreadcrumbItem>
         </BreadcrumbList>
@@ -332,7 +332,7 @@ export const Client = () => {
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  <Link href={"/inventory/pallet/list/create"}>
+                  <Link href={"/outbond/pallet/list/create"}>
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                     Add Palet
                   </Link>

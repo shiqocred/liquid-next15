@@ -753,10 +753,10 @@ export const Client = () => {
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>Inventory</BreadcrumbItem>
+            <BreadcrumbItem>Outbound</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink className="z-10" href="/inventory/pallet/list">
+              <BreadcrumbLink className="z-10" href="/outbond/pallet/list">
                 Palet
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -769,7 +769,7 @@ export const Client = () => {
             asChild
             className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none z-10"
           >
-            <Link href="/inventory/pallet/list">
+            <Link href="/outbond/pallet/list">
               <ArrowLeft className="w-5 h-5 text-black" />
             </Link>
           </Button>

@@ -24,7 +24,7 @@ export const useSubmit = () => {
     },
     onSuccess: () => {
       toast.success("Palet successfully created");
-      window.location.href = "/inventory/pallet/list";
+      window.location.href = "/outbond/pallet/list";
     },
     onError: (err) => {
       if (err.status === 403) {

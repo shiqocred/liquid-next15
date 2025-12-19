@@ -436,10 +436,10 @@ export const Client = () => {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Inventory</BreadcrumbItem>
+          <BreadcrumbItem>Outbound</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/inventory/pallet/list">
+            <BreadcrumbLink href="/outbond/pallet/list">
               Pallet
             </BreadcrumbLink>
           </BreadcrumbItem>

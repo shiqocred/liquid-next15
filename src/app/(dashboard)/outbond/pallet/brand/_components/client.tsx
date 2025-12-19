@@ -21,12 +21,12 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useGetListConditionPalet } from "../_api/use-get-list-condition-palet";
-import { useDeleteConditionPalet } from "../_api/use-delete-condition-palet";
+import { useGetListBrandPalet } from "../_api/use-get-list-brand-palet";
+import { useDeleteBrandPalet } from "../_api/use-delete-brand-palet";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateConditionPalet } from "../_api/use-update-condition-palet";
-import { useGetDetailConditionPalet } from "../_api/use-get-detail-condition-palet";
-import { useCreateConditionPalet } from "../_api/use-create-condition-palet";
+import { useUpdateBrandPalet } from "../_api/use-update-brand-palet";
+import { useGetDetailBrandPalet } from "../_api/use-get-detail-brand-palet";
+import { useCreateBrandPalet } from "../_api/use-create-brand-palet";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 
@@ -43,8 +43,8 @@ export const Client = () => {
     parseAsBoolean.withDefault(false)
   );
 
-  // condition Id for Edit
-  const [conditionId, setConditionId] = useQueryState("conditionId", {
+  // brand Id for Edit
+  const [brandId, setBrandId] = useQueryState("brandId", {
     defaultValue: "",
   });
 
@@ -67,18 +67,18 @@ export const Client = () => {
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Condition",
+    "Delete Brand",
     "This action cannot be undone",
     "destructive"
   );
 
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } =
-    useDeleteConditionPalet();
+    useDeleteBrandPalet();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } =
-    useUpdateConditionPalet();
+    useUpdateBrandPalet();
   const { mutate: mutateCreate, isPending: isPendingCreate } =
-    useCreateConditionPalet();
+    useCreateBrandPalet();
 
   // get data utama
   const {
@@ -90,16 +90,16 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListConditionPalet({ p: page, q: searchValue });
+  } = useGetListBrandPalet({ p: page, q: searchValue });
 
   // get detail data
   const {
-    data: dataCondition,
-    isLoading: isLoadingCondition,
-    isSuccess: isSuccessCondition,
-    isError: isErrorCondition,
-    error: errorCondition,
-  } = useGetDetailConditionPalet({ id: conditionId });
+    data: dataBrand,
+    isLoading: isLoadingBrand,
+    isSuccess: isSuccessBrand,
+    isError: isErrorBrand,
+    error: errorBrand,
+  } = useGetDetailBrandPalet({ id: brandId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -134,13 +134,13 @@ export const Client = () => {
   // handle error get detail
   useEffect(() => {
     alertError({
-      isError: isErrorCondition,
-      error: errorCondition as AxiosError,
+      isError: isErrorBrand,
+      error: errorBrand as AxiosError,
       data: "Detail Data",
       action: "get data",
       method: "GET",
     });
-  }, [isErrorCondition, errorCondition]);
+  }, [isErrorBrand, errorBrand]);
 
   // handle delete
   const handleDelete = async (id: any) => {
@@ -154,7 +154,7 @@ export const Client = () => {
   // handle close
   const handleClose = () => {
     setOpenCreateEdit(false);
-    setConditionId("");
+    setBrandId("");
     setInput((prev) => ({
       ...prev,
       name: "",
@@ -166,8 +166,8 @@ export const Client = () => {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      condition_name: input.name,
-      condition_slug: input.slug,
+      brand_name: input.name,
+      brand_slug: input.slug,
     };
     mutateCreate(
       { body },
@@ -183,16 +183,16 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      condition_name: input.name,
-      condition_slug: input.slug,
+      brand_name: input.name,
+      brand_slug: input.slug,
     };
     mutateUpdate(
-      { id: conditionId, body },
+      { id: brandId, body },
       {
         onSuccess: (data) => {
           handleClose();
           queryClient.invalidateQueries({
-            queryKey: ["condition-palet-detail", data.data.data.resource.id],
+            queryKey: ["brand-palet-detail", data.data.data.resource.id],
           });
         },
       }
@@ -201,13 +201,13 @@ export const Client = () => {
 
   // set data detail
   useEffect(() => {
-    if (isSuccessCondition && dataCondition) {
+    if (isSuccessBrand && dataBrand) {
       setInput({
-        name: dataCondition.data.data.resource.condition_name ?? "",
-        slug: dataCondition.data.data.resource.condition_slug ?? "",
+        name: dataBrand.data.data.resource.brand_name ?? "",
+        slug: dataBrand.data.data.resource.brand_slug ?? "",
       });
     }
-  }, [dataCondition]);
+  }, [dataBrand]);
 
   // column data
   const columnWarehousePalet: ColumnDef<any>[] = [
@@ -221,17 +221,17 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "condition_name",
+      accessorKey: "brand_name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.condition_name}</div>
+        <div className="break-all">{row.original.brand_name}</div>
       ),
     },
     {
-      accessorKey: "condition_slug",
+      accessorKey: "brand_slug",
       header: "Slug",
       cell: ({ row }) => (
-        <div className="break-all">{row.original.condition_slug}</div>
+        <div className="break-all">{row.original.brand_slug}</div>
       ),
     },
     {
@@ -243,16 +243,14 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={
-                isLoadingCondition || isPendingUpdate || isPendingCreate
-              }
+              disabled={isLoadingBrand || isPendingUpdate || isPendingCreate}
               onClick={(e) => {
                 e.preventDefault();
-                setConditionId(row.original.id);
+                setBrandId(row.original.id);
                 setOpenCreateEdit(true);
               }}
             >
-              {isLoadingCondition || isPendingUpdate || isPendingCreate ? (
+              {isLoadingBrand || isPendingUpdate || isPendingCreate ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Edit3 className="w-4 h-4" />
@@ -310,8 +308,8 @@ export const Client = () => {
             handleClose();
           }
         }} // handle close modal
-        conditionId={conditionId} // conditionId
-        isLoading={isLoadingCondition}
+        isLoading={isLoadingBrand}
+        brandId={brandId} // brandId
         input={input} // input form
         setInput={setInput} // setInput Form
         handleClose={handleClose} // handle close for cancel
@@ -324,19 +322,19 @@ export const Client = () => {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Inventory</BreadcrumbItem>
+          <BreadcrumbItem>Outbound</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/inventory/pallet/list">
+            <BreadcrumbLink href="/outbond/pallet/list">
               Pallet
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Condition</BreadcrumbItem>
+          <BreadcrumbItem>Brand</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Condition Palet</h2>
+        <h2 className="text-xl font-bold">List Brand Palet</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -365,17 +363,17 @@ export const Client = () => {
                     setOpenCreateEdit(true);
                   }}
                   disabled={
-                    isLoadingCondition || isPendingUpdate || isPendingCreate
+                    isLoadingBrand || isPendingUpdate || isPendingCreate
                   }
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingCondition || isPendingUpdate || isPendingCreate ? (
+                  {isLoadingBrand || isPendingUpdate || isPendingCreate ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                   )}
-                  Add Condition
+                  Add Brand
                 </Button>
               </div>
             </div>

@@ -319,6 +319,8 @@ export const Client = () => {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
+          <BreadcrumbItem>Outbound</BreadcrumbItem>
+          <BreadcrumbSeparator />
           <BreadcrumbItem>Category Pallet</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
