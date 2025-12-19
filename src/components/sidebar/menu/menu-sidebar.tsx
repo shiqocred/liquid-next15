@@ -70,6 +70,10 @@ const sidebarMenu = [
         href: undefined,
         icon: <ClipboardMinus className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
+           {
+            title: "Product combined",
+            href: "/dashboard/summary-report/product-combined",
+          },
           {
             title: "Product Inbound",
             href: "/dashboard/summary-report/product-inbound",
@@ -310,12 +314,6 @@ const sidebarMenu = [
         icon: <Shield className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-      {
-        title: "QCD",
-        href: "/repair-station/qcd",
-        icon: <Recycle className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [],
-      },
     ],
   },
   {
@@ -366,6 +364,12 @@ const sidebarMenu = [
         title: "rank buyer",
         href: "/outbond/rank-buyer",
         icon: <Award className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
+       {
+        title: "QCD",
+        href: "/outbond/qcd",
+        icon: <Recycle className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
     ],

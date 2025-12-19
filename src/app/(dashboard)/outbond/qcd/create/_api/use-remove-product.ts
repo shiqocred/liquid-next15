@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
@@ -6,17 +6,18 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: any;
+  id: string;
 };
 
 type Error = AxiosError;
 
-export const useExportDetailQCD = () => {
+export const useRemoveProduct = () => {
   const accessToken = getCookie("accessToken");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ id }) => {
-      const res = await axios.get(`${baseUrl}/export-dumps-excel/${id}`, {
+      const res = await axios.delete(`${baseUrl}/sales/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -24,14 +25,18 @@ export const useExportDetailQCD = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("File Successfully Exported");
+      toast.success("Product successfully removed");
+      queryClient.invalidateQueries({ queryKey: ["list-product-qcd"] });
+      queryClient.invalidateQueries({
+        queryKey: ["list-data-qcd"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Detail QCD failed to export`);
-        console.log("ERROR_EXPORT_DETAIL_QCD:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to remove`);
+        console.log("ERROR_REMOVE_PRODUCT:", err);
       }
     },
   });

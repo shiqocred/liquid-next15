@@ -6,35 +6,30 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: string;
-  source: string;
+  body: any;
 };
 
 type Error = AxiosError;
 
-export const useScrapQCD = () => {
+export const useScrapQCDAll = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, source }) => {
-      const res = await axios.post(
-        `${baseUrl}/product-qcd/scrap`,
-        {
-          product_id: id,
-          source: source,
+    mutationFn: async ({ body }) => {
+      const res = await axios.post(`${baseUrl}/scrap/add-all`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      });
       return res;
     },
     onSuccess: () => {
-      toast.success("QCD successfully scrap");
-      queryClient.invalidateQueries({ queryKey: ["list-qcd"] });
+      toast.success("Product successfully added");
+      queryClient.invalidateQueries({ queryKey: ["list-product-qcd"] });
+      queryClient.invalidateQueries({
+        queryKey: ["list-data-qcd"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
@@ -42,10 +37,10 @@ export const useScrapQCD = () => {
       } else {
         toast.error(
           `ERROR ${err?.status}: ${
-            (err?.response?.data as any)?.message || "Product failed to scrap"
+            (err.response?.data as any).data.message || "Product failed to add"
           } `
         );
-        console.log("ERROR_SCRAP_QCD:", err);
+        console.log("ERROR_ADD_PRODUCT:", err);
       }
     },
   });

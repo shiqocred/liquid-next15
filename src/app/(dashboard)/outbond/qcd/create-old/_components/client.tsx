@@ -357,14 +357,14 @@ export const Client = () => {
           <BreadcrumbItem>Repair Station</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/repair-station/qcd">QCD</BreadcrumbLink>
+            <BreadcrumbLink href="/outbond/qcd">QCD</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>Create</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="w-full flex gap-2 justify-start items-center pt-2 pb-1 mb-1 border-b border-gray-500">
-        <Link href="/repair-station/qcd">
+        <Link href="/outbond/qcd">
           <Button className="w-9 h-9 bg-transparent hover:bg-white p-0 shadow-none">
             <ArrowLeft className="w-5 h-5 text-black" />
           </Button>

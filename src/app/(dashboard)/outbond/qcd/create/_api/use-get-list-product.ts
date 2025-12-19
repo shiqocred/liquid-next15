@@ -3,19 +3,18 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailQCD = ({ id }: any) => {
+export const useGetListProductDump = ({ p, q }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["detail-qcd", id],
+    queryKey: ["list-product-dump", { p, q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/bundle/qcd/${id}`, {
+      const res = await axios.get(`${baseUrl}/dumps?page=${p}&q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       return res;
     },
-    enabled: !!id,
   });
   return query;
 };

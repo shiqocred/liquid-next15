@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, RefreshCw, Trash2, Unplug } from "lucide-react";
+import { PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cn, formatRupiah } from "@/lib/utils";
 import {
@@ -20,11 +20,9 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
 import { useGetListQCD } from "../_api/use-get-list-qcd";
-import { useScrapQCD } from "../_api/use-scrap-qcd";
 import Pagination from "@/components/pagination";
-import { useScrapQCDAll } from "../_api/use-scrap-qcd-all";
+import Link from "next/link";
 
 export const Client = () => {
   // data search, page
@@ -37,25 +35,6 @@ export const Client = () => {
     total: 1, //total data
     perPage: 1,
   });
-
-  // donfirm delete
-  const [DeleteDialog, confirmDelete] = useConfirm(
-    "Scrap QCD",
-    "This action cannot be undone",
-    "destructive"
-  );
-
-  // confirm delete
-  const [DeleteDialogAll, confirmDeleteAll] = useConfirm(
-    "Scrap All QCD",
-    "This action cannot be undone",
-    "destructive"
-  );
-
-  // mutate DELETE, UPDATE, CREATE
-  const { mutate: mutateDelete, isPending: isPendingDelete } = useScrapQCD();
-  const { mutate: mutateDeleteAll, isPending: isPendingDeleteAll } =
-    useScrapQCDAll();
 
   // get data utama
   const {
@@ -90,34 +69,6 @@ export const Client = () => {
     }
   }, [data]);
 
-  // handle delete
-  const handleDelete = async (id: any, source: any) => {
-    const ok = await confirmDelete();
-
-    if (!ok) return;
-
-    mutateDelete(
-      { id, source },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-  };
-
-  const handleDeleteAll = async () => {
-    const ok = await confirmDeleteAll();
-
-    if (!ok) return;
-
-    mutateDeleteAll(undefined, {
-      onSuccess: () => {
-        refetch();
-      },
-    });
-  };
-
   // column data
   const columnListQCD: ColumnDef<any>[] = [
     {
@@ -130,39 +81,35 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "new_barcode_product||old_barcode_product",
-      header: "Barcode",
-      cell: ({ row }) =>
-        row.original.new_barcode_product ??
-        row.original.old_barcode_product ??
-        "-",
+      accessorKey: "code_document_scrap",
+      header: "Code Document",
+      cell: ({ row }) => row.original.code_document_scrap,
     },
     {
-      accessorKey: "new_name_product",
-      header: () => <div className="text-center">Product Name</div>,
+      accessorKey: "total_product",
+      header: "Total Product",
       cell: ({ row }) => (
         <div className="max-w-[400px] break-all">
-          {row.original.new_name_product}
+          {row.original.total_product}
         </div>
       ),
     },
     {
-      accessorKey: "new_category_product||new_tag_product",
-      header: "Category",
-      cell: ({ row }) =>
-        row.original.new_category_product ??
-        row.original.new_tag_product ??
-        "-",
-    },
-    {
-      accessorKey: "new_price_product||old_price_product",
+      accessorKey: "total_new_price||total_old_price",
       header: "Price",
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.new_price_product ?? row.original.old_price_product
+            row.original.total_new_price ?? row.original.total_old_price
           )}
         </div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <div className="max-w-[400px] break-all">{row.original.status}</div>
       ),
     },
     {
@@ -170,21 +117,15 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>To Scrap</p>}>
+          <TooltipProviderPage value={<p>Detail</p>}>
             <Button
-              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingDelete}
-              onClick={(e) => {
-                e.preventDefault();
-                handleDelete(row.original.id, row.original.source);
-              }}
+              asChild
             >
-              {isPendingDelete ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Unplug className="w-4 h-4" />
-              )}
+              <Link href={`/outbond/qcd/detail/${row.original.id}`}>
+                <ReceiptText className="w-4 h-4" />
+              </Link>
             </Button>
           </TooltipProviderPage>
         </div>
@@ -213,15 +154,13 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <DeleteDialog />
-      <DeleteDialogAll />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Repair Station</BreadcrumbItem>
+          <BreadcrumbItem>Outbound</BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>QCD</BreadcrumbItem>
         </BreadcrumbList>
@@ -251,16 +190,14 @@ export const Client = () => {
               </TooltipProviderPage>
               <div className="flex gap-4 items-center ml-auto">
                 <Button
-                  className="items-center flex-none h-9 bg-red-500/80 hover:bg-red-500 text-black disabled:opacity-100 disabled:hover:bg-red-500 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  asChild
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDeleteAll();
-                  }}
-                  disabled={isPendingDeleteAll}
                 >
-                  <Trash2 className={"w-4 h-4 mr-1"} />
-                  Scrapt All
+                  <Link href={"/outbond/qcd/create"}>
+                    <PlusCircle className={"w-4 h-4 mr-1"} />
+                    Create
+                  </Link>
                 </Button>
               </div>
             </div>
