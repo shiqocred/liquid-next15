@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Create Migrate Category",
+  title: "Create Migrate to Repair",
 };
 
 const CreateMigrateCategoryPage = async () => {

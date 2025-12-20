@@ -45,6 +45,7 @@ import { useGetListCategories } from "../_api/use-get-list-categories";
 import { useSubmit } from "../_api/use-submit";
 import { useDryScrap } from "../_api/use-dry-scrap";
 import DialogBarcode from "./dialog-barcode";
+import { useMigrateToRepair } from "../_api/use-migrate-to-repair";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -143,6 +144,12 @@ export const Client = () => {
     "destructive"
   );
 
+  const [DialogMigrateToRepair, confirmMigrateToRepair] = useConfirm(
+    "Migrate Product Stagging to Repair",
+    "This action cannot be undone",
+    "destructive"
+  );
+
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteRack();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateRack();
@@ -154,6 +161,8 @@ export const Client = () => {
   const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
   const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
     useDryScrap();
+  const { mutate: mutateMigrateToRepair, isPending: isPendingMigrateToRepair } =
+    useMigrateToRepair();
 
   const {
     data: dataRacks,
@@ -292,6 +301,13 @@ export const Client = () => {
     mutateDryScrap({ id });
   };
 
+  const handleMigrateToRepair = async (id: any) => {
+    const ok = await confirmMigrateToRepair();
+
+    if (!ok) return;
+    mutateMigrateToRepair({ id });
+  };
+
   useEffect(() => {
     if (dataProducts && isSuccessProducts) {
       setPaginationProduct(dataProducts?.data.data.resource);
@@ -328,6 +344,7 @@ export const Client = () => {
       <DeleteDialog />
       <ToDisplayDialog />
       <DialogDryScrap />
+      <DialogMigrateToRepair />
       <DialogBarcode
         onCloseModal={() => {
           if (barcodeOpen) {
@@ -763,6 +780,8 @@ export const Client = () => {
                   isPendingDryScrap,
                   handleAddFilter,
                   handleDryScrap,
+                  handleMigrateToRepair,
+                  isPendingMigrateToRepair,
                   setProductId,
                   setIsOpen,
                 })}

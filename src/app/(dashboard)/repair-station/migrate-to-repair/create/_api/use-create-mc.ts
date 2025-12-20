@@ -24,14 +24,14 @@ export const useCreateMC = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Migrate Category successfully created");
+      toast.success("Migrate to Repair successfully created");
       window.location.href = "/repair-station/migrate-to-repair";
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Migrate Category failed to create`);
+        toast.error(`ERROR ${err?.status}: Migrate to Repair failed to create`);
         console.log("ERROR_CREATE_MIGRATE_CATEGORY:", err);
       }
     },

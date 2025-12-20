@@ -62,7 +62,7 @@ export const Client = () => {
   });
 
   const [CreateMigrateDialog, confirmCreateMigrate] = useConfirm(
-    "Create Migrate Category",
+    "Create Migrate to Repair",
     "This action cannot be undone",
     "liquid"
   );
@@ -361,7 +361,7 @@ export const Client = () => {
                 >
                   <DialogHeader>
                     <DialogTitle className="justify-between flex items-center">
-                      List Migrate Category (Filtered)
+                      List Migrate to Repair (Filtered)
                       <TooltipProviderPage value="close" side="left">
                         <button
                           onClick={() => setIsOpenFiltered(false)}

@@ -24,7 +24,7 @@ const DialogDetail = ({
   columns,
   dataTable,
 }: {
-  open: boolean;
+  open: any;
   onCloseModal: () => void;
   data: any;
   isLoading: boolean;
@@ -43,7 +43,7 @@ const DialogDetail = ({
         >
           <DialogHeader>
             <DialogTitle className="justify-between flex items-center">
-              Detail Migrate Category
+              Detail Migrate to Repair
               <TooltipProviderPage value="close" side="left">
                 <button
                   onClick={() => onCloseModal()}

@@ -1,6 +1,12 @@
 "use client";
 
-import { PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
+import {
+  Edit3,
+  PlusCircle,
+  ReceiptText,
+  Recycle,
+  RefreshCw,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
@@ -11,7 +17,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
+import {
+  parseAsInteger,
+  parseAsString,
+  useQueryState,
+} from "nuqs";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
@@ -23,19 +33,28 @@ import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import dynamic from "next/dynamic";
 import { useGetListMigrateToRepair } from "../_api/use-get-list-migrate-to-repair";
 import { useGetDetailMigrateToRepair } from "../_api/use-get-detail-migrate-to-repair";
+import DialogDetail from "./dialog-detail";
+import { DialogToEdit } from "./dialog-to-edit";
+import { DialogToDisplay } from "./dialog-to-display";
+import { useConfirm } from "@/hooks/use-confirm";
+import { useToQcd } from "../_api/use-to-qcd";
 
-const DialogDetail = dynamic(() => import("./dialog-detail"), {
-  ssr: false,
-});
+// const DialogDetail = dynamic(() => import("./dialog-detail"), {
+//   ssr: false,
+// });
 
 export const Client = () => {
   // sheet detail
   const [openDetail, setOpenDetail] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsString.withDefault("")
+  );
+
+  const [productId, setProductId] = useQueryState(
+    "id",
+    parseAsString.withDefault("")
   );
 
   // MigrateToRepairId for detail
@@ -44,6 +63,12 @@ export const Client = () => {
     {
       defaultValue: "",
     }
+  );
+
+  const [DialogDryScrap, confirmToQcd] = useConfirm(
+    "To Qcd Product Migrate To Repair",
+    "This action cannot be undone",
+    "destructive"
   );
 
   // data search, page
@@ -56,6 +81,9 @@ export const Client = () => {
     total: 1, //total data
     perPage: 1,
   });
+
+  // mutate
+  const { mutate: mutateToQcd, isPending: isPendingToQcd } = useToQcd();
 
   // get data utama
   const {
@@ -128,9 +156,16 @@ export const Client = () => {
     });
   }, [isErrorMigrateToRepair, errorMigrateToRepair]);
 
+  const handleToQcd = async (id: any) => {
+    const ok = await confirmToQcd();
+
+    if (!ok) return;
+    mutateToQcd({ id });
+  };
+
   // handle close
   const handleClose = () => {
-    setOpenDetail(false);
+    setOpenDetail("");
     setMigrateToRepairId("");
   };
 
@@ -175,7 +210,7 @@ export const Client = () => {
               variant={"outline"}
               onClick={(e) => {
                 e.preventDefault();
-                setOpenDetail(true);
+                setOpenDetail("detail");
                 setMigrateToRepairId(row.original.id);
               }}
             >
@@ -224,6 +259,52 @@ export const Client = () => {
       header: "Price",
       cell: ({ row }) => formatRupiah(row.original.new_price_product),
     },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Edit</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setOpenDetail("detail-to-edit");
+                setProductId(row.original.id);
+              }}
+            >
+              <Edit3 className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setOpenDetail("detail-to-display");
+                setProductId(row.original.id);
+              }}
+            >
+              <ReceiptText className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>To Qcd</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={() => {
+                handleToQcd(row.original.id);
+              }}
+              disabled={isPendingToQcd}
+            >
+              <Recycle className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
   ];
 
   // loading
@@ -247,10 +328,11 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <DialogDryScrap />
       <DialogDetail
-        open={openDetail}
+        open={openDetail === "detail"}
         onCloseModal={() => {
-          if (openDetail) {
+          if (openDetail === "detail") {
             handleClose();
           }
         }}
@@ -260,6 +342,26 @@ export const Client = () => {
         isRefetching={isRefetchingMigrateToRepair}
         columns={columnMigrateToRepairDetail}
         dataTable={dataListDetail ?? []}
+      />
+      <DialogToEdit
+        open={openDetail === "detail-to-edit"}
+        onOpenChange={() => {
+          if (openDetail === "detail-to-edit") {
+            setOpenDetail("detail");
+            setProductId("");
+          }
+        }}
+        productId={productId}
+      />
+      <DialogToDisplay
+        open={openDetail === "detail-to-display"}
+        onOpenChange={() => {
+          if (openDetail === "detail-to-display") {
+            setOpenDetail("detail");
+            setProductId("");
+          }
+        }}
+        productId={productId}
       />
       <Breadcrumb>
         <BreadcrumbList>
