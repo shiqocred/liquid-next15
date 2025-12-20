@@ -71,6 +71,8 @@ export const columnProductStaging = ({
   isLoading,
   handleAddFilter,
   handleDryScrap,
+  handleMigrateToRepair,
+  isPendingMigrateToRepair,
   setProductId,
   setIsOpen,
   isPendingDryScrap,
@@ -174,7 +176,7 @@ export const columnProductStaging = ({
           label="Detail"
         />
         <Popover>
-          <TooltipProviderPage value={<p>To LPR / Dry Scrap</p>}>
+          <TooltipProviderPage value={<p>Migrate To Repair / Dry Scrap</p>}>
             <PopoverTrigger asChild>
               <Button
                 className={cn(
@@ -191,7 +193,7 @@ export const columnProductStaging = ({
 
           <PopoverContent className="w-auto py-2">
             <div className="flex flex-col gap-2">
-              <Button
+              {/* <Button
                 variant="ghost"
                 className="justify-start px-3 text-sm"
                 onClick={(e) => {
@@ -201,6 +203,16 @@ export const columnProductStaging = ({
                 }}
               >
                 To LPR
+              </Button> */}
+              <Button
+                variant="ghost"
+                className="justify-start px-3 text-sm"
+                onClick={() => {
+                  handleMigrateToRepair(row.original.id);
+                }}
+                disabled={isPendingMigrateToRepair}
+              >
+                Migrate to Repair
               </Button>
               <Button
                 variant="ghost"
