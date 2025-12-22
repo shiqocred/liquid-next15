@@ -165,6 +165,14 @@ export const Client = () => {
     return data?.data.data.resource.chart_staging.category;
   }, [data]);
 
+  const dataChartDump: ChartData[] = useMemo(() => {
+    return data?.data.data.resource.chart_dump.category;
+  }, [data]);
+
+  const dataChartScrapQcd: ChartData[] = useMemo(() => {
+    return data?.data.data.resource.chart_scrap_qcd.category;
+  }, [data]);
+
   const clearSearch = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setDataSearch("");
@@ -452,6 +460,138 @@ export const Client = () => {
             </ResponsiveContainer>
           )}
         </div>
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">Report Product Dump</h2>
+        </div>
+        <div className="h-[300px] w-full relative">
+          {loading ? (
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChartDump}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">Report Product Scrap Qcd</h2>
+        </div>
+        <div className="h-[300px] w-full relative">
+          {loading ? (
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChartScrapQcd}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
       <div className="flex flex-col w-full gap-4">
         <Card className="w-full bg-blue-200 rounded-md overflow-hidden shadow border-0">
@@ -615,6 +755,120 @@ export const Client = () => {
                 </div>
                 <Progress
                   value={dataStorage?.percentage_product_staging_price}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="w-full flex gap-4">
+          <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+            <CardHeader>
+              <CardTitle>Product Dump</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <Package className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Quantity
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {dataStorage?.total_product_dump.toLocaleString()}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>{dataStorage?.percentage_product_dump}%</span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_dump}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <DollarSign className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Price
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {formatRupiah(dataStorage?.total_product_dump_price)}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>{dataStorage?.percentage_product_dump_price}%</span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_dump_price}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="w-full bg-white rounded-md overflow-hidden shadow border-0">
+            <CardHeader>
+              <CardTitle>Product Scrap Qcd</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <Package className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Quantity
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {dataStorage?.total_product_scrap_qcd.toLocaleString()}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>{dataStorage?.percentage_product_scrap_qcd}%</span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_scrap_qcd}
+                  className="h-1.5 bg-gray-200"
+                />
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-sky-100">
+                      <DollarSign className="h-4 w-4 text-gray-700" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Price
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">
+                      {formatRupiah(dataStorage?.total_product_scrap_qcd_price)}
+                    </span>
+                    <div className="flex items-center text-sky-600 text-xs font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                      <span>
+                        {dataStorage?.percentage_product_scrap_qcd_price}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={dataStorage?.percentage_product_scrap_qcd_price}
                   className="h-1.5 bg-gray-200"
                 />
               </div>
