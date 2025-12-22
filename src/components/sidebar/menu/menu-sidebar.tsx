@@ -73,14 +73,14 @@ const sidebarMenu = [
             title: "Product combined",
             href: "/dashboard/summary-report/product-combined",
           },
-          {
-            title: "Product Inbound",
-            href: "/dashboard/summary-report/product-inbound",
-          },
-          {
-            title: "Product Outbound",
-            href: "/dashboard/summary-report/product-outbound",
-          },
+          // {
+          //   title: "Product Inbound",
+          //   href: "/dashboard/summary-report/product-inbound",
+          // },
+          // {
+          //   title: "Product Outbound",
+          //   href: "/dashboard/summary-report/product-outbound",
+          // },
         ],
       },
     ],

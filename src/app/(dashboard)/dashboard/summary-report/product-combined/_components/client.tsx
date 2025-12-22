@@ -174,7 +174,37 @@ export const Client = () => {
       dataBoth?.outbound ?? []
     );
   }, [dataBoth]);
-  console.log("tableData", tableData);
+
+  const SummaryCard = ({
+    title,
+    value,
+    qty,
+    className,
+  }: {
+    title: string;
+    value?: string | number;
+    qty?: string | number;
+    className?: string;
+  }) => (
+    <div
+      className={cn(
+        "rounded-md border border-gray-300 bg-white p-4 flex flex-col justify-between",
+        className
+      )}
+    >
+      <p className="text-sm text-gray-500">{title}</p>
+
+      <div className="mt-1">
+        <p className="text-xl font-semibold">{value ?? "-"}</p>
+
+        {qty !== undefined && (
+          <p className="text-sm text-gray-600 mt-1">
+            Qty: <span className="font-medium">{qty}</span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
 
   // column data
   const columnDestinationMC: ColumnDef<DestinationMC>[] = [
@@ -353,7 +383,52 @@ export const Client = () => {
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">Summary Report</h2>
+        {/* SUMMARY CARDS */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Saldo */}
+          <SummaryCard
+            title="Saldo Awal"
+            value={formatRupiah(dataBoth?.data_before?.inbound?.saldo_awal)}
+            qty={dataBoth?.data_before?.inbound?.qty}
+            className="bg-sky-200"
+          />
+
+          <SummaryCard
+            title="Saldo Akhir"
+            value={formatRupiah(dataBoth?.saldo_akhir)}
+            qty={dataBoth?.data_before?.outbound?.qty}
+            className="bg-sky-200"
+          />
+
+          {/* Qty */}
+          <div className="grid grid-cols-2 gap-4">
+            <SummaryCard
+              title="Qty Masuk"
+              value={dataBoth?.data_before?.inbound?.qty}
+            />
+            <SummaryCard
+              title="Qty Keluar"
+              value={dataBoth?.data_before?.outbound?.qty}
+            />
+          </div>
+
+          {/* Price */}
+          <div className="grid grid-cols-2 gap-4">
+            <SummaryCard
+              title="Price Masuk"
+              value={formatRupiah(
+                dataBoth?.data_before?.inbound?.display_price
+              )}
+            />
+            <SummaryCard
+              title="Price Keluar"
+              value={formatRupiah(dataBoth?.data_before?.outbound?.price_sale)}
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col w-full gap-4">
+          <h2 className="text-xl font-bold mt-4">List Summary Report</h2>
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
               <Input
