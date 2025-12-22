@@ -201,12 +201,12 @@ export const Client = () => {
   }, [isErrorCategory, errorCategory]);
 
   // handle delete
-  const handleDelete = async (id: any) => {
+  const handleDelete = async (id: any, source: any) => {
     const ok = await confirmDelete();
 
     if (!ok) return;
 
-    mutateDelete({ id });
+    mutateDelete({ id, source });
   };
 
   const handleExport = async () => {
@@ -356,7 +356,7 @@ export const Client = () => {
               disabled={isPendingToDisplay || isPendingDelete}
               onClick={(e) => {
                 e.preventDefault();
-                handleDelete(row.original.id);
+                handleDelete(row.original.id, row.original.source);
               }}
             >
               {isPendingDelete ? (
