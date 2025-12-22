@@ -305,7 +305,7 @@ export const Client = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink href="/repair-station/migrate-to-repair">
-              Migrate To Category
+              Migrate to Repair
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
