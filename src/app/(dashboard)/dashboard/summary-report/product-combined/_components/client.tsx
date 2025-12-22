@@ -49,9 +49,11 @@ import {
 } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
-import { useExportSelectedDataday } from "../_api/use-export-summary-both-day";
-import { useExportSelectedData } from "../_api/use-export-summary-both";
 import { useGetListSummaryBoth } from "../_api/use-get-list-summary-both";
+import { useExportInboundDataDay } from "../_api/use-export-summary-inbound-day";
+import { useExportOutboundDataDay } from "../_api/use-export-summary-outbound-day";
+import { useExportInboundData } from "../_api/use-export-summary-inbound";
+import { useExportOutboundData } from "../_api/use-export-summary-outbound";
 
 type DestinationMC = {
   date: string;
@@ -67,10 +69,15 @@ export const Client = () => {
     from: undefined,
     to: today,
   });
-  const { mutate: mutateExport, isPending: isPendingExport } =
-    useExportSelectedData();
-  const { mutate: mutateExportDay, isPending: isPendingExportDay } =
-    useExportSelectedDataday();
+  const { mutate: mutateExportInbound, isPending: isPendingExportInbound } =
+    useExportInboundData();
+  const { mutate: mutateExportOutbound, isPending: isPendingExportOutbound } =
+    useExportOutboundData();
+  const { mutate: exportInboundDay, isPending: isPendingInbound } =
+    useExportInboundDataDay();
+  const { mutate: exportOutboundDay, isPending: isPendingOutbound } =
+    useExportOutboundDataDay();
+
   // data search, page
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
@@ -282,35 +289,87 @@ export const Client = () => {
       ),
     },
 
+    // {
+    //   id: "action",
+    //   header: () => <div className="text-center">Action</div>,
+    //   cell: ({ row }) => (
+    //     <div className="flex gap-4 justify-center items-center">
+    //       <TooltipProviderPage value={<p>Export Data</p>}>
+    //         <Button
+    //           className="items-center w-9 px-0 h-9"
+    //           variant="outline"
+    //           disabled={isPendingExportDay}
+    //           onClick={(e) => {
+    //             e.preventDefault();
+    //             handleExportDay(row.original.date);
+    //           }}
+    //         >
+    //           {isPendingExportDay ? (
+    //             <Loader2 className="w-4 h-4 animate-spin" />
+    //           ) : (
+    //             <FileDown className="w-4 h-4" />
+    //           )}
+    //         </Button>
+    //       </TooltipProviderPage>
+    //     </div>
+    //   ),
+    // },
     {
       id: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
-        <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>Export Data</p>}>
-            <Button
-              className="items-center w-9 px-0 h-9"
-              variant="outline"
-              disabled={isPendingExportDay}
-              onClick={(e) => {
-                e.preventDefault();
-                handleExportDay(row.original.date);
-              }}
-            >
-              {isPendingExportDay ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <FileDown className="w-4 h-4" />
-              )}
-            </Button>
-          </TooltipProviderPage>
+        <div className="flex justify-center">
+          <Popover>
+            <TooltipProviderPage value={<p>Export Data</p>}>
+              <PopoverTrigger asChild>
+                <Button
+                  className={cn(
+                    "items-center p-0 w-9 h-9",
+                    "border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50",
+                    "disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  )}
+                  variant="outline"
+                  type="button"
+                  disabled={isPendingInbound || isPendingOutbound}
+                >
+                  {isPendingInbound || isPendingOutbound ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <FileDown className="w-4 h-4" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+            </TooltipProviderPage>
+
+            <PopoverContent className="w-auto py-2">
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="ghost"
+                  className="justify-start px-3 text-sm"
+                  onClick={() => handleExportInboundDay(row.original.date)}
+                  disabled={!row.original.inbound || isPendingInbound}
+                >
+                  Export Inbound
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="justify-start px-3 text-sm"
+                  onClick={() => handleExportOutboundDay(row.original.date)}
+                  disabled={!row.original.outbound || isPendingOutbound}
+                >
+                  Export Outbound
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       ),
     },
   ];
 
-  const handleExport = async () => {
-    mutateExport(
+  const handleExportInbound = async () => {
+    mutateExportInbound(
       {
         searchParams: {
           date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
@@ -329,11 +388,50 @@ export const Client = () => {
     );
   };
 
-  const handleExportDay = async (dateInbound: string) => {
-    mutateExportDay(
+  const handleExportOutbound = async () => {
+    mutateExportOutbound(
       {
         searchParams: {
-          date_from: format(new Date(dateInbound), "yyyy-MM-dd"),
+          date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+          date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
+        },
+      },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
+  const handleExportInboundDay = (date: string) => {
+    exportInboundDay(
+      {
+        searchParams: {
+          date_from: format(new Date(date), "yyyy-MM-dd"),
+        },
+      },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
+  const handleExportOutboundDay = (date: string) => {
+    exportOutboundDay(
+      {
+        searchParams: {
+          date_from: format(new Date(date), "yyyy-MM-dd"),
         },
       },
       {
@@ -573,22 +671,40 @@ export const Client = () => {
                   </DialogContent>
                 </Dialog>
               </div>
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleExport();
-                }}
-                className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                disabled={isPendingExport}
-                variant={"outline"}
-              >
-                {isPendingExport ? (
-                  <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
-                ) : (
-                  <FileDown className={"w-4 h-4 mr-1"} />
-                )}
-                Export Data
-              </Button>
+              <div className="flex gap-2 ml-auto">
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleExportInbound();
+                  }}
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  disabled={isPendingExportInbound}
+                  variant={"outline"}
+                >
+                  {isPendingExportInbound ? (
+                    <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+                  ) : (
+                    <FileDown className={"w-4 h-4 mr-1"} />
+                  )}
+                  Export Inbound
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleExportOutbound();
+                  }}
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  disabled={isPendingExportOutbound}
+                  variant={"outline"}
+                >
+                  {isPendingExportOutbound ? (
+                    <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+                  ) : (
+                    <FileDown className={"w-4 h-4 mr-1"} />
+                  )}
+                  Export Outbound
+                </Button>
+              </div>
             </div>
           </div>
           {dataBoth?.status === false ? (

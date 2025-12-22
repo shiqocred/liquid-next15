@@ -4,11 +4,12 @@ import { useMutate } from "@/lib/query";
 
 type SearchParams = {
   date_from: any;
+  date_to: any;
 };
 
-export const useExportSelectedDataday = () => {
+export const useExportOutboundData = () => {
   const mutation = useMutate<undefined, undefined, SearchParams>({
-    endpoint: "/export-combined-summary-both",
+    endpoint: "/export-combined-summary-outbound",
     method: "get",
     onSuccess: () => {
       toast.success("File Successfully Exported");
