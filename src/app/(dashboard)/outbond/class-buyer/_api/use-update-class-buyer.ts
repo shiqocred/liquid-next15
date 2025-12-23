@@ -6,18 +6,19 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
+  id: string;
   body: any;
 };
 
 type Error = AxiosError;
 
-export const useCreateRankBuyer = () => {
+export const useUpdateClassBuyer = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/loyalty_ranks`, body, {
+    mutationFn: async ({ id, body }) => {
+      const res = await axios.put(`${baseUrl}/loyalty_ranks/${id}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -25,18 +26,18 @@ export const useCreateRankBuyer = () => {
       return res;
     },
     onSuccess: (res) => {
-      toast.success("Rank buyer successfully created");
-      queryClient.invalidateQueries({ queryKey: ["list-rank-buyer"] });
+      toast.success("Class Buyer successfully updated");
+      queryClient.invalidateQueries({ queryKey: ["list-class-buyer"] });
       queryClient.invalidateQueries({
-        queryKey: ["rank-buyer-detail", res.data.data.resource.id],
+        queryKey: ["class-buyer-detail", res.data.data.resource.id],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Rank buyer failed to create`);
-        console.log("ERROR_CREATE_RANK_BUYER:", err);
+        toast.error(`ERROR ${err?.status}: Class Buyer failed to update`);
+        console.log("ERROR_UPDATE_CLASS_BUYER:", err);
       }
     },
   });

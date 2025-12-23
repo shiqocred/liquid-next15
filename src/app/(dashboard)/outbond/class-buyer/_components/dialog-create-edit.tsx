@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const DialogCreateEdit = ({
   open,
   onCloseModal,
-  rankBuyerId,
+  classBuyerId,
   input,
   setInput,
   handleClose,
@@ -23,7 +23,7 @@ const DialogCreateEdit = ({
 }: {
   open: boolean;
   onCloseModal: () => void;
-  rankBuyerId: any;
+  classBuyerId: any;
   input: any;
   setInput: any;
   handleClose: () => void;
@@ -35,25 +35,25 @@ const DialogCreateEdit = ({
       <DialogContent className="max-w-5xl">
         <DialogHeader>
           <DialogTitle>
-            {rankBuyerId ? "Edit Rank Buyer" : "Create Rank Buyer"}
+            {classBuyerId ? "Edit Class Buyer" : "Create Class Buyer"}
           </DialogTitle>
         </DialogHeader>
         <div className="flex w-full gap-4">
           <form
-            onSubmit={!rankBuyerId ? handleCreate : handleUpdate}
+            onSubmit={!classBuyerId ? handleCreate : handleUpdate}
             className="w-full flex flex-col gap-4"
           >
             <div className="border p-4 rounded border-sky-500 gap-4 flex flex-col">
               <div className="flex flex-col gap-1 w-full">
-                <Label>Rank</Label>
+                <Label>Class</Label>
                 <Input
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
-                  placeholder="Rank..."
-                  value={input.rank}
+                  placeholder="Class..."
+                  value={input.class}
                   onChange={(e) =>
                     setInput((prev: any) => ({
                       ...prev,
-                      rank: e.target.value,
+                      class: e.target.value,
                     }))
                   }
                 />
@@ -133,14 +133,14 @@ const DialogCreateEdit = ({
               <Button
                 className={cn(
                   "text-black w-full",
-                  rankBuyerId
+                  classBuyerId
                     ? "bg-yellow-400 hover:bg-yellow-400/80"
                     : "bg-sky-400 hover:bg-sky-400/80"
                 )}
                 type="submit"
                 // disabled={!input.name || !input.address || !input.phone}
               >
-                {rankBuyerId ? "Update" : "Create"}
+                {classBuyerId ? "Update" : "Create"}
               </Button>
             </div>
           </form>

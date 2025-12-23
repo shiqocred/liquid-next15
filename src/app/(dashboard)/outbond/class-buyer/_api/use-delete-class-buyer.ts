@@ -11,7 +11,7 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useDeleteRankBuyer = () => {
+export const useDeleteClassBuyer = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
@@ -25,18 +25,18 @@ export const useDeleteRankBuyer = () => {
       return res;
     },
     onSuccess: (data) => {
-      toast.success("Rank buyer successfully Deleted");
-      queryClient.invalidateQueries({ queryKey: ["list-rank-buyer"] });
+      toast.success("Class buyer successfully Deleted");
+      queryClient.invalidateQueries({ queryKey: ["list-class-buyer"] });
       queryClient.invalidateQueries({
-        queryKey: ["rank-buyer-detail", data.data.data.resource.id],
+        queryKey: ["class-buyer-detail", data.data.data.resource.id],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Rank buyer failed to delete`);
-        console.log("ERROR_DELETE_RANK_BUYER:", err);
+        toast.error(`ERROR ${err?.status}: Class buyer failed to delete`);
+        console.log("ERROR_DELETE_CLASS_BUYER:", err);
       }
     },
   });

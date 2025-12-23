@@ -329,7 +329,7 @@ const sidebarMenu = [
         sub_menu: [],
       },
       {
-        title: "rank buyer",
+        title: "Class buyer",
         href: "/outbond/rank-buyer",
         icon: <Award className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
