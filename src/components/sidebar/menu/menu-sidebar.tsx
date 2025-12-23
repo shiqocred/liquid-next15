@@ -330,7 +330,7 @@ const sidebarMenu = [
       },
       {
         title: "Class buyer",
-        href: "/outbond/rank-buyer",
+        href: "/outbond/class-buyer",
         icon: <Award className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
