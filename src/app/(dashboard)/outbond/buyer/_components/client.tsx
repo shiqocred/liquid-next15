@@ -4,6 +4,7 @@ import {
   CalendarIcon,
   Crown,
   Edit3,
+  FileDown,
   Loader2,
   Medal,
   PlusCircle,
@@ -20,7 +21,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { parseAsBoolean, useQueryState } from "nuqs";
+import { parseAsString, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import Forbidden from "@/components/403";
@@ -41,23 +42,23 @@ import { usePagination } from "@/lib/pagination";
 import Link from "next/link";
 import { useGetTopBuyer } from "../_api/use-get-top-buyer";
 import { format } from "date-fns";
+import { DialogFiltered } from "./dialog-filtered";
+import { useExportBuyer } from "../_api/use-export-buyer";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
 
 export const Client = () => {
+  const [isOpen, setIsOpen] = useQueryState(
+    "dialog",
+    parseAsString.withDefault("")
+  );
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1
   );
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
-  );
-
-  // dialog create edit
-  const [openCreateEdit, setOpenCreateEdit] = useQueryState(
-    "dialog",
-    parseAsBoolean.withDefault(false)
   );
 
   // buyer Id for Edit
@@ -93,6 +94,8 @@ export const Client = () => {
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteBuyer();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateBuyer();
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateBuyer();
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportBuyer();
 
   // get data utama
   const {
@@ -153,9 +156,33 @@ export const Client = () => {
     mutateDelete({ id });
   };
 
+  const handleExport = async () => {
+    const body: {
+      month: number;
+      year: number;
+    } = {
+      month: selectedMonth,
+      year: selectedYear,
+    };
+
+    mutateExport(
+      { body },
+      {
+        onSuccess: (res) => {
+          console.log("RES_EXPORT_BUYER:", res);
+          const link = document.createElement("a");
+          link.href = res.data.data.resource.download_url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
   // handle close
   const handleClose = () => {
-    setOpenCreateEdit(false);
+    setIsOpen("");
     setBuyerId("");
     setInput((prev) => ({
       ...prev,
@@ -390,12 +417,8 @@ export const Client = () => {
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
       <DialogCreateEdit
-        open={openCreateEdit} // open modal
-        onCloseModal={() => {
-          if (openCreateEdit) {
-            handleClose();
-          }
-        }} // handle close modal
+        open={isOpen === "create-edit"}
+        onCloseModal={handleClose}
         buyerId={buyerId} // buyerId
         address={address} // address gmaps
         setAddress={setAddress} // set address gmaps
@@ -404,6 +427,14 @@ export const Client = () => {
         handleClose={handleClose} // handle close for cancel
         handleCreate={handleCreate} // handle create warehouse
         handleUpdate={handleUpdate} // handle update warehouse
+      />
+      <DialogFiltered
+        open={isOpen === "filtered"}
+        onOpenChange={() => {
+          if (isOpen === "filtered") {
+            setIsOpen("");
+          }
+        }}
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -533,10 +564,42 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
               <div className="flex gap-4 items-center ml-auto">
+                <TooltipProviderPage value={"Export Data"} side="left">
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleExport();
+                    }}
+                    className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black bg-sky-100 hover:bg-sky-200 disabled:opacity-100 disabled:hover:bg-sky-200 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                    disabled={isPendingExport}
+                    variant={"outline"}
+                  >
+                    {isPendingExport ? (
+                      <Loader2 className={cn("w-4 h-4 animate-spin")} />
+                    ) : (
+                      <FileDown className={cn("w-4 h-4")} />
+                    )}
+                  </Button>
+                </TooltipProviderPage>
+                <Button
+                  onClick={() => setIsOpen("filtered")}
+                  disabled={
+                    isLoadingBuyer || isPendingUpdate || isPendingCreate
+                  }
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  variant={"outline"}
+                >
+                  {isLoadingBuyer || isPendingUpdate || isPendingCreate ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                  ) : (
+                    <PlusCircle className={"w-4 h-4 mr-1"} />
+                  )}
+                  Filtered
+                </Button>
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    setOpenCreateEdit(true);
+                    setIsOpen("create-edit");
                   }}
                   disabled={
                     isLoadingBuyer || isPendingUpdate || isPendingCreate
