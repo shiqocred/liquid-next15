@@ -7,6 +7,7 @@ import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: string;
+  source: string
 };
 
 type Error = AxiosError;
@@ -16,8 +17,8 @@ export const useDeleteDMG = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(`${baseUrl}/new_products/${id}`, {
+    mutationFn: async ({ id, source }) => {
+      const res = await axios.delete(`${baseUrl}/new_products/${id}?source=${source}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

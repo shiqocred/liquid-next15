@@ -104,7 +104,12 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListBuyer({ p: page, q: searchValue });
+  } = useGetListBuyer({
+    p: page,
+    q: searchValue,
+    month: selectedMonth,
+    year: selectedYear,
+  });
 
   // get detail data
   const {
@@ -115,10 +120,7 @@ export const Client = () => {
     error: errorBuyer,
   } = useGetDetailBuyer({ id: buyerId });
 
-  const {
-    data: dataTopBuyer,
-    isFetching,
-  } = useGetTopBuyer({
+  const { data: dataTopBuyer, isFetching } = useGetTopBuyer({
     month: selectedMonth,
     year: selectedYear,
   });
@@ -131,10 +133,6 @@ export const Client = () => {
   const topBuyers = useMemo(() => {
     return dataTopBuyer?.data?.data?.resource ?? [];
   }, [dataTopBuyer]);
-
-  const rank1 = topBuyers.find((b: any) => b.rank === 1);
-  const rank2 = topBuyers.find((b: any) => b.rank === 2);
-  const rank3 = topBuyers.find((b: any) => b.rank === 3);
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -206,6 +204,28 @@ export const Client = () => {
     );
   };
 
+  const getRankIcon = (rank: number) => {
+    if (rank === 1) return <Crown className="w-7 h-7 text-yellow-500 mb-1" />;
+    if (rank === 2) return <Medal className="w-6 h-6 text-gray-400 mb-1" />;
+    if (rank === 3) return <Medal className="w-6 h-6 text-amber-700 mb-1" />;
+    return <Medal className="w-5 h-5 text-gray-300 mb-1" />;
+  };
+
+  const getRankStyle = (rank: number) => {
+    if (rank === 1) return "border-2 border-sky-400 py-6 -translate-y-6";
+    return "border py-4";
+  };
+
+  const orderedTopBuyers = useMemo(() => {
+    if (!topBuyers?.length) return [];
+
+    const byRank = (r: number) => topBuyers.find((b: any) => b.rank === r);
+
+    return [byRank(4), byRank(2), byRank(1), byRank(3), byRank(5)].filter(
+      Boolean
+    );
+  }, [topBuyers]);
+
   // update from gmaps to state
   useEffect(() => {
     setInput((prev) => ({
@@ -268,32 +288,47 @@ export const Client = () => {
       header: "Email",
     },
     {
-      accessorKey: "phone_buyer",
+      accessorKey: "no_hp",
       header: "No. Hp",
     },
     {
-      accessorKey: "address_buyer",
+      accessorKey: "address",
       header: "Address",
     },
     {
-      accessorKey: "amount_transaction_buyer",
-      header: () => <div className="text-center">Transaction</div>,
+      accessorKey: "monthly_transaction",
+      header: () => <div className="text-center">Monthly Transaction</div>,
       cell: ({ row }) => (
         <div className="text-center">
-          {row.original.amount_transaction_buyer.toLocaleString()}
+          {row.original.monthly_transaction.toLocaleString()}
         </div>
       ),
     },
     {
-      accessorKey: "amount_purchase_buyer",
+      accessorKey: "monthly_total_purchase",
       header: "Total Purchase",
-      cell: ({ row }) => formatRupiah(row.original.amount_purchase_buyer),
+      cell: ({ row }) => formatRupiah(row.original.monthly_total_purchase),
+    },
+    {
+      accessorKey: "total_points",
+      header: () => <div className="text-center">Total Points</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.total_points}</div>
+      ),
+    },
+    {
+      accessorKey: "monthly_points",
+      header: () => <div className="text-center">Monthly Points</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.monthly_points}</div>
+      ),
     },
     {
       accessorKey: "rank",
       header: () => <div className="text-center">Rank</div>,
       cell: ({ row }) => <div className="text-center">{row.original.rank}</div>,
     },
+
     {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
@@ -383,7 +418,7 @@ export const Client = () => {
       </Breadcrumb>
       {/* Buyer of the Month */}
       <div className="w-full bg-white rounded-md shadow px-6 py-4">
-        <div className="w-full bg-white rounded-md shadow px-6 py-4">
+        <div>
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold">Buyer of the Month</h2>
@@ -433,51 +468,43 @@ export const Client = () => {
             </div>
           </div>
 
-          {/* Content */}
           {isFetching ? (
             <div className="flex justify-center py-10">
               <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-              {/* Rank 2 */}
-              <div className="flex flex-col items-center border rounded-lg py-4">
-                <Medal className="w-6 h-6 text-gray-400 mb-1" />
-                <span className="text-sm text-gray-500">2</span>
-                <p className="font-semibold">{rank2?.buyer_name ?? "-"}</p>{" "}
-                <p className="text-sm text-gray-500 mt-1">
-                  Point :{" "}
-                  <span className="font-medium">
-                    {rank2?.total_points?.toLocaleString() ?? 0}
-                  </span>
-                </p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
+              {orderedTopBuyers.map((buyer: any) => (
+                <div
+                  key={buyer.rank}
+                  className={cn(
+                    "flex flex-col items-center rounded-lg transition-all",
+                    getRankStyle(buyer.rank)
+                  )}
+                >
+                  {getRankIcon(buyer.rank)}
 
-              {/* Rank 1 */}
-              <div className="flex flex-col items-center border-2 border-sky-400 rounded-lg py-6 -translate-y-9">
-                <Crown className="w-7 h-7 text-yellow-500 mb-1" />
-                <span className="text-sm text-sky-600">1</span>
-                <p className="font-semibold">{rank1?.buyer_name ?? "-"}</p>{" "}
-                <p className="text-sm text-gray-500 mt-1">
-                  Point :{" "}
-                  <span className="font-medium">
-                    {rank1?.total_points?.toLocaleString() ?? 0}
+                  <span
+                    className={cn(
+                      "text-sm",
+                      buyer.rank === 1 ? "text-sky-600" : "text-gray-500"
+                    )}
+                  >
+                    {buyer.rank}
                   </span>
-                </p>
-              </div>
 
-              {/* Rank 3 */}
-              <div className="flex flex-col items-center border rounded-lg py-4">
-                <Medal className="w-6 h-6 text-amber-700 mb-1" />
-                <span className="text-sm text-gray-500">3</span>
-                <p className="font-semibold">{rank3?.buyer_name ?? "-"}</p>{" "}
-                <p className="text-sm text-gray-500 mt-1">
-                  Point :{" "}
-                  <span className="font-medium">
-                    {rank3?.total_points?.toLocaleString() ?? 0}
-                  </span>
-                </p>
-              </div>
+                  <p className="font-semibold text-center">
+                    {buyer.buyer_name ?? "-"}
+                  </p>
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Point :{" "}
+                    <span className="font-medium">
+                      {buyer.total_points?.toLocaleString() ?? 0}
+                    </span>
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </div>
