@@ -94,8 +94,7 @@ export const Client = () => {
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteBuyer();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateBuyer();
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateBuyer();
-  const { mutate: mutateExport, isPending: isPendingExport } =
-    useExportBuyer();
+  const { mutate: mutateExport, isPending: isPendingExport } = useExportBuyer();
 
   // get data utama
   const {

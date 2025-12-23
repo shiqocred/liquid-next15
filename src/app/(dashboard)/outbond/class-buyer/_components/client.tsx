@@ -21,13 +21,13 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useDeleteRankBuyer } from "../_api/use-delete-rank-buyer";
-import { useUpdateRankBuyer } from "../_api/use-update-rank-buyer";
-import { useGetDetailRankBuyer } from "../_api/use-get-detail-rank-buyer";
-import { useCreateRankBuyer } from "../_api/use-create-rank-buyer";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
-import { useGetListRankBuyer } from "../_api/use-get-list-rank-buyer";
+import { useDeleteClassBuyer } from "../_api/use-delete-class-buyer";
+import { useUpdateClassBuyer } from "../_api/use-update-class-buyer";
+import { useCreateClassBuyer } from "../_api/use-create-class-buyer";
+import { useGetListClassBuyer } from "../_api/use-get-list-class-buyer";
+import { useGetDetailClassBuyer } from "../_api/use-get-detail-class-buyer";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
@@ -41,13 +41,13 @@ export const Client = () => {
   );
 
   // warehouse Id for Edit
-  const [rankBuyerId, setRankBuyerId] = useQueryState("rankBuyerId", {
+  const [classBuyerId, setClassBuyerId] = useQueryState("classBuyerId", {
     defaultValue: "",
   });
 
   // data form create edit
   const [input, setInput] = useState({
-    rank: "",
+    class: "",
     min_transactions: 0,
     min_amount_transaction: 0,
     percentage_discount: 0,
@@ -67,18 +67,18 @@ export const Client = () => {
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Rank Buyer",
+    "Delete Class Buyer",
     "This action cannot be undone",
     "destructive"
   );
 
   // mutate DELETE, UPDATE, CREATE
   const { mutate: mutateDelete, isPending: isPendingDelete } =
-    useDeleteRankBuyer();
+    useDeleteClassBuyer();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } =
-    useUpdateRankBuyer();
+    useUpdateClassBuyer();
   const { mutate: mutateCreate, isPending: isPendingCreate } =
-    useCreateRankBuyer();
+    useCreateClassBuyer();
 
   // get data utama
   const {
@@ -90,16 +90,16 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListRankBuyer({ p: page, q: searchValue });
+  } = useGetListClassBuyer({ p: page, q: searchValue });
 
   // get detail data
   const {
-    data: dataRankBuyer,
-    isLoading: isLoadingRankBuyer,
-    isSuccess: isSuccessRankBuyer,
-    isError: isErrorRankBuyer,
-    error: errorRankBuyer,
-  } = useGetDetailRankBuyer({ id: rankBuyerId });
+    data: dataClassBuyer,
+    isLoading: isLoadingClassBuyer,
+    isSuccess: isSuccessClassBuyer,
+    isError: isErrorClassBuyer,
+    error: errorClassBuyer,
+  } = useGetDetailClassBuyer({ id: classBuyerId });
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -132,10 +132,10 @@ export const Client = () => {
   // handle close
   const handleClose = () => {
     setOpenCreateEdit(false);
-    setRankBuyerId("");
+    setClassBuyerId("");
     setInput((prev) => ({
       ...prev,
-      rank: "",
+      class: "",
       min_transactions: 0,
       min_amount_transaction: 0,
       percentage_discount: 0,
@@ -147,7 +147,7 @@ export const Client = () => {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      rank: input.rank,
+      class: input.class,
       min_transactions: input.min_transactions,
       min_amount_transaction: input.min_amount_transaction,
       percentage_discount: input.percentage_discount,
@@ -167,14 +167,14 @@ export const Client = () => {
   const handleUpdate = (e: FormEvent) => {
     e.preventDefault();
     const body = {
-      rank: input.rank,
+      class: input.class,
       min_transactions: input.min_transactions,
       min_amount_transaction: input.min_amount_transaction,
       percentage_discount: input.percentage_discount,
       expired_weeks: input.expired_weeks,
     };
     mutateUpdate(
-      { id: rankBuyerId, body },
+      { id: classBuyerId, body },
       {
         onSuccess: () => {
           handleClose();
@@ -185,18 +185,18 @@ export const Client = () => {
 
   // set data detail
   useEffect(() => {
-    if (isSuccessRankBuyer && dataRankBuyer) {
+    if (isSuccessClassBuyer && dataClassBuyer) {
       setInput({
-        rank: dataRankBuyer.data.data.resource.rank ?? "",
-        min_transactions: dataRankBuyer.data.data.resource.min_transactions ?? 0,
+        class: dataClassBuyer.data.data.resource.class ?? "",
+        min_transactions: dataClassBuyer.data.data.resource.min_transactions ?? 0,
         min_amount_transaction:
-          dataRankBuyer.data.data.resource.min_amount_transaction ?? 0,
+          dataClassBuyer.data.data.resource.min_amount_transaction ?? 0,
         percentage_discount:
-          dataRankBuyer.data.data.resource.percentage_discount ?? 0,
-        expired_weeks: dataRankBuyer.data.data.resource.expired_weeks ?? 0,
+          dataClassBuyer.data.data.resource.percentage_discount ?? 0,
+        expired_weeks: dataClassBuyer.data.data.resource.expired_weeks ?? 0,
       });
     }
-  }, [dataRankBuyer]);
+  }, [dataClassBuyer]);
 
   // isError get data
   useEffect(() => {
@@ -212,13 +212,13 @@ export const Client = () => {
   // isError get Detail
   useEffect(() => {
     alertError({
-      isError: isErrorRankBuyer,
-      error: errorRankBuyer as AxiosError,
+      isError: isErrorClassBuyer,
+      error: errorClassBuyer as AxiosError,
       action: "get data",
-      data: "Rank Buyer",
+      data: "Class Buyer",
       method: "GET",
     });
-  }, [isErrorRankBuyer, errorRankBuyer]);
+  }, [isErrorClassBuyer, errorClassBuyer]);
 
   // column data
   const columnDestinationMC: ColumnDef<any>[] = [
@@ -232,8 +232,8 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "rank",
-      header: "Rank",
+      accessorKey: "class",
+      header: "Class",
     },
     {
       accessorKey: "min_amount_transaction",
@@ -260,14 +260,14 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isLoadingRankBuyer || isPendingUpdate || isPendingCreate}
+              disabled={isLoadingClassBuyer || isPendingUpdate || isPendingCreate}
               onClick={(e) => {
                 e.preventDefault();
-                setRankBuyerId(row.original.id);
+                setClassBuyerId(row.original.id);
                 setOpenCreateEdit(true);
               }}
             >
-              {isLoadingRankBuyer || isPendingUpdate || isPendingCreate ? (
+              {isLoadingClassBuyer || isPendingUpdate || isPendingCreate ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Edit3 className="w-4 h-4" />
@@ -325,7 +325,7 @@ export const Client = () => {
             handleClose();
           }
         }} // handle close modal
-        rankBuyerId={rankBuyerId} // rankBuyerId
+        classBuyerId={classBuyerId} // classBuyerId
         input={input} // input form
         setInput={setInput} // setInput Form
         handleClose={handleClose} // handle close for cancel
@@ -340,11 +340,11 @@ export const Client = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>Outbond</BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>Rank Buyer</BreadcrumbItem>
+          <BreadcrumbItem>Class Buyer</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Rank Buyers</h2>
+        <h2 className="text-xl font-bold">List Class Buyers</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -373,17 +373,17 @@ export const Client = () => {
                     setOpenCreateEdit(true);
                   }}
                   disabled={
-                    isLoadingRankBuyer || isPendingUpdate || isPendingCreate
+                    isLoadingClassBuyer || isPendingUpdate || isPendingCreate
                   }
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
-                  {isLoadingRankBuyer || isPendingUpdate || isPendingCreate ? (
+                  {isLoadingClassBuyer || isPendingUpdate || isPendingCreate ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-1" />
                   ) : (
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                   )}
-                  Add Rank Buyer
+                  Add Class Buyer
                 </Button>
               </div>
             </div>

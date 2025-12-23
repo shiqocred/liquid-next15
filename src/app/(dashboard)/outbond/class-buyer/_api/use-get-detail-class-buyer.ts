@@ -3,10 +3,10 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailRankBuyer = ({ id }: any) => {
+export const useGetDetailClassBuyer = ({ id }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["rank-buyer-detail", id],
+    queryKey: ["class-buyer-detail", id],
     queryFn: async () => {
       const res = await axios.get(`${baseUrl}/loyalty_ranks/${id}`, {
         headers: {
