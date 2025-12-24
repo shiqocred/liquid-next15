@@ -455,11 +455,7 @@ const DialogExportProduct = ({
                       </p>
                     </div>
                     <div className="flex">
-                      <p className="px-3">
-                        Kardus @
-                        {formatRupiah(data?.buyer?.cardbox_unit_price) ??
-                          "Rp 0"}
-                      </p>
+                      <p className="px-3">Kardus</p>
                       <p className="w-12 flex-none text-center">
                         {data?.buyer?.cardbox_qty}
                       </p>
