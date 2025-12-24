@@ -1481,7 +1481,7 @@ export const Client = () => {
                 </p>
               </div>
               <div className="flex flex-col">
-                <p className="text-sm">Montly Class Position</p>
+                <p className="text-sm">Montly Rank Position</p>
                 <div className="flex items-center gap-2 font-semibold">
                   <p>
                     {input.monthlyClassPosition
