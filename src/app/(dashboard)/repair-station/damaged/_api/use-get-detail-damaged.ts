@@ -3,13 +3,13 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailDMG = ({ id }: any) => {
+export const useGetDetailDMG = ({ barcode }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["detail-dmg", id],
+    queryKey: ["detail-dmg", barcode],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/new_products/${id}`,
+        `${baseUrl}/new_products/barcode/${barcode}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -18,7 +18,7 @@ export const useGetDetailDMG = ({ id }: any) => {
       );
       return res;
     },
-    enabled: !!id,
+    enabled: !!barcode,
   });
   return query;
 };

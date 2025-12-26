@@ -820,6 +820,12 @@ export const Client = () => {
                   <p>{dataRes?.buyer?.next_rank || "-"}</p>
                 </div>
               </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Monthly Point</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <p>{dataRes?.buyer?.monthly_point || "0"}</p>
+                </div>
+              </div>
             </div>
             <div className="w-full flex flex-col gap-4">
               <div className="flex flex-col">
@@ -855,6 +861,12 @@ export const Client = () => {
                 <p className="font-semibold">
                   {dataRes?.buyer?.current_transaction}
                 </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Monthly Rank Position</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <p>{dataRes?.buyer?.monthly_rank_position || "-"}</p>
+                </div>
               </div>
               {/* <div className="flex flex-col">
                 <p className="text-sm">Points Awarded</p>

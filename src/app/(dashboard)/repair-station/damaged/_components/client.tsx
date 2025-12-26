@@ -48,7 +48,7 @@ export const Client = () => {
   const queryClient = useQueryClient();
   const [openDisplay, setOpenDisplay] = useState(false);
   const [documentDetail, setDocumentDetail] = useState({
-    id: 0,
+    barcode: "",
   });
 
   const [input, setInput] = useState({
@@ -109,7 +109,7 @@ export const Client = () => {
     isError: isErrorDetail,
     isSuccess: isSuccessDetail,
   } = useGetDetailDMG({
-    id: documentDetail.id,
+    barcode: documentDetail.barcode,
   });
 
   // get data category
@@ -201,12 +201,12 @@ export const Client = () => {
   }, [isErrorCategory, errorCategory]);
 
   // handle delete
-  const handleDelete = async (id: any) => {
+  const handleDelete = async (id: any, source: any) => {
     const ok = await confirmDelete();
 
     if (!ok) return;
 
-    mutateDelete({ id });
+    mutateDelete({ id, source});
   };
 
   const handleExport = async () => {
@@ -234,7 +234,7 @@ export const Client = () => {
       new_tag_product: input.new_tag_product ?? null,
     };
     mutateToDisplay(
-      { id: dataResDetail?.id, body },
+      { id: dataResDetail?.id, source: dataResDetail?.source, body },
       {
         onSuccess: () => {
           toast.success("Successfully updated to display");
@@ -292,6 +292,11 @@ export const Client = () => {
         "-",
     },
     {
+      accessorKey: "source",
+      header: "Source",
+      cell: ({ row }) => row.original.source,
+    },
+    {
       accessorKey: "new_price_product||old_price_product",
       header: "Price",
       cell: ({ row }) => (
@@ -328,7 +333,7 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>To Display</p>}>
+          <TooltipProviderPage value={<p>To ${row.original.source}</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -337,7 +342,7 @@ export const Client = () => {
                 e.preventDefault();
                 setOpenDisplay(true);
                 setDocumentDetail({
-                  id: row.original.id,
+                  barcode: row.original.new_barcode_product,
                 });
               }}
             >
@@ -351,7 +356,7 @@ export const Client = () => {
               disabled={isPendingToDisplay || isPendingDelete}
               onClick={(e) => {
                 e.preventDefault();
-                handleDelete(row.original.id);
+                handleDelete(row.original.id, row.original.source);
               }}
             >
               {isPendingDelete ? (

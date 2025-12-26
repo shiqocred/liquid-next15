@@ -11,12 +11,11 @@ import {
   Boxes,
   CandlestickChart,
   ClipboardMinus,
-  Container,
   Drill,
   FileCog,
   FolderClock,
   IdCard,
-  Layers3,
+  LibraryBigIcon,
   LineChart,
   PackageSearch,
   RailSymbol,
@@ -71,13 +70,17 @@ const sidebarMenu = [
         icon: <ClipboardMinus className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
           {
-            title: "Product Inbound",
-            href: "/dashboard/summary-report/product-inbound",
+            title: "Product combined",
+            href: "/dashboard/summary-report/product-combined",
           },
-          {
-            title: "Product Outbound",
-            href: "/dashboard/summary-report/product-outbound",
-          },
+          // {
+          //   title: "Product Inbound",
+          //   href: "/dashboard/summary-report/product-inbound",
+          // },
+          // {
+          //   title: "Product Outbound",
+          //   href: "/dashboard/summary-report/product-outbound",
+          // },
         ],
       },
     ],
@@ -146,24 +149,24 @@ const sidebarMenu = [
     title: "Stagging",
     href: undefined,
     menu: [
-      {
-        title: "Product Stagging",
-        href: "/stagging/product",
-        icon: <Layers3 className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [],
-      },
+      // {
+      //   title: "Product Stagging",
+      //   href: "/stagging/product",
+      //   icon: <Layers3 className="w-5 h-5 stroke-[1.5]" />,
+      //   sub_menu: [],
+      // },
       {
         title: "Approvement Stagging",
         href: "/stagging/approvement",
         icon: <SquareLibrary className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-      // {
-      //   title: "Stagging",
-      //   href: "/stagging/rack",
-      //   icon: <LibraryBigIcon className="w-5 h-5 stroke-[1.5]" />,
-      //   sub_menu: [],
-      // },
+      {
+        title: "Stagging",
+        href: "/stagging/rack",
+        icon: <LibraryBigIcon className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
     ],
   },
   {
@@ -176,18 +179,18 @@ const sidebarMenu = [
         href: undefined,
         icon: <Boxes className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [
-          {
-            title: "by category",
-            href: "/inventory/product/category",
-          },
+          // {
+          //   title: "by category",
+          //   href: "/inventory/product/category",
+          // },
           {
             title: "by color",
             href: "/inventory/product/color",
           },
-          // {
-          //   title: "by category",
-          //   href: "/inventory/product/rack",
-          // },
+          {
+            title: "by category",
+            href: "/inventory/product/rack",
+          },
         ],
       },
       {
@@ -240,37 +243,6 @@ const sidebarMenu = [
         ],
       },
       {
-        title: "Pallet Bulky",
-        href: undefined,
-        icon: <SwatchBook className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [
-          {
-            title: "list Pallet",
-            href: "/inventory/pallet/list",
-          },
-          {
-            title: "Category Pallet",
-            href: "/inventory/pallet/category-pallet",
-          },
-          {
-            title: "Warehouse",
-            href: "/inventory/pallet/warehouse",
-          },
-          {
-            title: "Condition",
-            href: "/inventory/pallet/condition",
-          },
-          {
-            title: "Status",
-            href: "/inventory/pallet/status",
-          },
-          {
-            title: "Brand",
-            href: "/inventory/pallet/brand",
-          },
-        ],
-      },
-      {
         title: "Stock Opname",
         href: undefined,
         icon: <BookMarked className="w-5 h-5 stroke-[1.5]" />,
@@ -292,9 +264,15 @@ const sidebarMenu = [
     title: "Repair Station",
     href: undefined,
     menu: [
+      // {
+      //   title: "List Product Repair",
+      //   href: "/repair-station/list-product-repair",
+      //   icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
+      //   sub_menu: [],
+      // },
       {
-        title: "List Product Repair",
-        href: "/repair-station/list-product-repair",
+        title: "migrate To Repair",
+        href: "/repair-station/migrate-to-repair",
         icon: <Drill className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
@@ -308,12 +286,6 @@ const sidebarMenu = [
         title: "Damaged",
         href: "/repair-station/damaged",
         icon: <Shield className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [],
-      },
-      {
-        title: "QCD",
-        href: "/repair-station/qcd",
-        icon: <Recycle className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
     ],
@@ -339,12 +311,6 @@ const sidebarMenu = [
         ],
       },
       {
-        title: "migrate category",
-        href: "/outbond/migrate-category",
-        icon: <Container className="w-5 h-5 stroke-[1.5]" />,
-        sub_menu: [],
-      },
-      {
         title: "sale",
         href: "/outbond/sale",
         icon: <ShoppingBasket className="w-5 h-5 stroke-[1.5]" />,
@@ -363,10 +329,47 @@ const sidebarMenu = [
         sub_menu: [],
       },
       {
-        title: "rank buyer",
-        href: "/outbond/rank-buyer",
+        title: "Class buyer",
+        href: "/outbond/class-buyer",
         icon: <Award className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
+      },
+      {
+        title: "QCD",
+        href: "/outbond/qcd",
+        icon: <Recycle className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
+      {
+        title: "Pallet Bulky",
+        href: undefined,
+        icon: <SwatchBook className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [
+          {
+            title: "list Pallet",
+            href: "/outbond/pallet/list",
+          },
+          {
+            title: "Category Pallet",
+            href: "/outbond/pallet/category-pallet",
+          },
+          {
+            title: "Warehouse",
+            href: "/outbond/pallet/warehouse",
+          },
+          {
+            title: "Condition",
+            href: "/outbond/pallet/condition",
+          },
+          {
+            title: "Status",
+            href: "/outbond/pallet/status",
+          },
+          {
+            title: "Brand",
+            href: "/outbond/pallet/brand",
+          },
+        ],
       },
     ],
   },

@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import PopoverWithTrigger from "@/app/(dashboard)/inventory/pallet/list/create/_components/popover-with-trigger";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { X } from "lucide-react";
+import PopoverWithTrigger from "@/app/(dashboard)/outbond/pallet/list/create/_components/popover-with-trigger";
 
 const DialogCreateEdit = ({
   open,

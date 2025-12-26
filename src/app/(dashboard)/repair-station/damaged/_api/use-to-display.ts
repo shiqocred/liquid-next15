@@ -7,7 +7,9 @@ import { getCookie } from "cookies-next/client";
 
 type RequestType = {
   id: any;
+  barcode?: string;
   body: any;
+  source?: string;
 };
 type Error = AxiosError;
 
@@ -16,8 +18,8 @@ export const useToDisplay = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body, id }) => {
-      const res = await axios.put(`${baseUrl}/repair/update/${id}`, body, {
+    mutationFn: async ({ body, id, source }) => {
+      const res = await axios.put(`${baseUrl}/repair/update/${id}?source=${source}`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

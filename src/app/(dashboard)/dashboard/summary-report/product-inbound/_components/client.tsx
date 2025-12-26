@@ -51,6 +51,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
 import { useExportSelectedData } from "../_api/use-export-summary-inbound";
+import { useExportSelectedDataday } from "../_api/use-export-summary-inbound-day";
 export const Client = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +61,8 @@ export const Client = () => {
   });
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportSelectedData();
+  const { mutate: mutateExportDay, isPending: isPendingExportDay } =
+    useExportSelectedDataday();
   // data search, page
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
@@ -135,17 +138,6 @@ export const Client = () => {
         <div className="text-center tabular-nums">{row.index + 1}</div>
       ),
     },
-    // {
-    //   accessorKey: "rank",
-    //   header: "Barcode",
-    // },
-    // {
-    //   accessorKey: "rank1",
-    //   header: "Product Name",
-    //   cell: ({ row }) => (
-    //     <div className="break-all max-w-[500px]">{row.original.rank}</div>
-    //   ),
-    // },
     {
       accessorKey: "qty",
       header: "Qty",
@@ -188,6 +180,31 @@ export const Client = () => {
         return <div className="tabular-nums">{formated}</div>;
       },
     },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Export Data</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingExportDay}
+              onClick={(e) => {
+                e.preventDefault();
+                handleExportDay(row.original.inbound_date);
+              }}
+            >
+              {isPendingExportDay ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileDown className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
   ];
 
   const handleExport = async () => {
@@ -196,6 +213,25 @@ export const Client = () => {
         searchParams: {
           date_from: date?.from ? format(date.from, "yyyy-MM-dd") : "",
           date_to: date?.to ? format(date.to, "yyyy-MM-dd") : "",
+        },
+      },
+      {
+        onSuccess: (res) => {
+          const link = document.createElement("a");
+          link.href = res.data.data.resource;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
+
+  const handleExportDay = async (dateInbound: string) => {
+    mutateExportDay(
+      {
+        searchParams: {
+          date_from: format(new Date(dateInbound), "yyyy-MM-dd"),
         },
       },
       {
