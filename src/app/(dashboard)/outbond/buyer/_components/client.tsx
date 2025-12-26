@@ -455,100 +455,104 @@ export const Client = () => {
         </BreadcrumbList>
       </Breadcrumb>
       {/* Buyer of the Month */}
-      {!isTopBuyerForbidden && (
-        <div className="w-full bg-white rounded-md shadow px-6 py-4">
-          <div>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold">Buyer of the Month</h2>
+      <div className="w-full bg-white rounded-md shadow px-6 py-4">
+        <div>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold">Buyer of the Month</h2>
 
-              <div className="flex items-center gap-4">
-                {/* Select Month */}
-                <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  <select
-                    disabled={isFetching}
-                    className="outline-none bg-transparent text-sm disabled:opacity-60"
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  >
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {format(new Date(2025, i, 1), "MMMM")}
+            <div className="flex items-center gap-4">
+              {/* Select Month */}
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isFetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {format(new Date(2025, i, 1), "MMMM")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Select Year */}
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isFetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
                       </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Select Year */}
-                <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  <select
-                    disabled={isFetching}
-                    className="outline-none bg-transparent text-sm disabled:opacity-60"
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  >
-                    {Array.from({ length: 5 }, (_, i) => {
-                      const year = new Date().getFullYear() - i;
-                      return (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                {/* Loader kecil */}
-                {isFetching && (
-                  <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
-                )}
+                    );
+                  })}
+                </select>
               </div>
+
+              {/* Loader kecil */}
+              {isFetching && (
+                <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
+              )}
             </div>
+          </div>
 
-            {isFetching ? (
-              <div className="flex justify-center py-10">
-                <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
-                {orderedTopBuyers.map((buyer: any) => (
-                  <div
-                    key={buyer.rank}
+          {isTopBuyerForbidden ? (
+            <div className="flex justify-center py-10">
+              <p className="text-sm text-gray-400 italic">
+                Results can only be viewed by spv
+              </p>
+            </div>
+          ) : isFetching ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
+              {orderedTopBuyers.map((buyer: any) => (
+                <div
+                  key={buyer.rank}
+                  className={cn(
+                    "flex flex-col items-center rounded-lg transition-all",
+                    getRankStyle(buyer.rank)
+                  )}
+                >
+                  {getRankIcon(buyer.rank)}
+
+                  <span
                     className={cn(
-                      "flex flex-col items-center rounded-lg transition-all",
-                      getRankStyle(buyer.rank)
+                      "text-sm",
+                      buyer.rank === 1 ? "text-sky-600" : "text-gray-500"
                     )}
                   >
-                    {getRankIcon(buyer.rank)}
+                    {buyer.rank}
+                  </span>
 
-                    <span
-                      className={cn(
-                        "text-sm",
-                        buyer.rank === 1 ? "text-sky-600" : "text-gray-500"
-                      )}
-                    >
-                      {buyer.rank}
+                  <p className="font-semibold text-center">
+                    {buyer.buyer_name ?? "-"}
+                  </p>
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Point :{" "}
+                    <span className="font-medium">
+                      {buyer.total_points?.toLocaleString() ?? 0}
                     </span>
-
-                    <p className="font-semibold text-center">
-                      {buyer.buyer_name ?? "-"}
-                    </p>
-
-                    <p className="text-sm text-gray-500 mt-1">
-                      Point :{" "}
-                      <span className="font-medium">
-                        {buyer.total_points?.toLocaleString() ?? 0}
-                      </span>
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Buyers</h2>
         <div className="flex flex-col w-full gap-4">
