@@ -76,7 +76,7 @@ export const Client = () => {
   // confirm start ----------------------------------------------------------------
 
   const [SubmitDialog, confirmSubmit] = useConfirm(
-    "Create Sale",
+    "Finish Qcd",
     "This action cannot be undone",
     "liquid"
   );
@@ -510,7 +510,7 @@ export const Client = () => {
               className="bg-sky-400/80 hover:bg-sky-400 text-black"
             >
               <Send className="size-4 mr-1" />
-              Create
+              Finish
             </Button>
           </div>
           <div className="flex w-full gap-4">
