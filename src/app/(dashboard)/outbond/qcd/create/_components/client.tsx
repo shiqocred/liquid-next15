@@ -186,7 +186,7 @@ export const Client = () => {
           if (addRef.current) {
             addRef.current.focus();
           }
-          handleCloseProduct();
+          refetchProduct();
         },
         onError: async (err: any) => {
           if (err?.status === 404) {
@@ -198,14 +198,6 @@ export const Client = () => {
       }
     );
   };
-
-  // const handleRemoveProduct = async (id: any) => {
-  //   const ok = await confirmDeleteProduct();
-
-  //   if (!ok) return;
-
-  //   mutateRemoveProduct({ id });
-  // };
 
   const handleSubmit = async () => {
     const ok = await confirmSubmit();
@@ -220,8 +212,6 @@ export const Client = () => {
       { body, id: dataRes?.document?.id },
       {
         onSuccess: (res: any) => {
-          console.log("res", res);
-          // Pastikan id sesuai dengan struktur response Anda
           const id = res?.data?.data?.resource?.id;
           router.push(`/outbond/qcd/detail/${id}`);
         },
