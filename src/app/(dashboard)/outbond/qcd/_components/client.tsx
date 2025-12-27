@@ -1,6 +1,12 @@
 "use client";
 
-import { PlusCircle, ReceiptText, RefreshCw } from "lucide-react";
+import {
+  FileDown,
+  Loader2,
+  PlusCircle,
+  ReceiptText,
+  RefreshCw,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cn, formatRupiah } from "@/lib/utils";
 import {
@@ -23,9 +29,11 @@ import { DataTable } from "@/components/data-table";
 import { useGetListQCD } from "../_api/use-get-list-qcd";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
+import { useExportQcd } from "../_api/use-export-qcd";
 
 export const Client = () => {
   // data search, page
+  const [exportId, setExportId] = useState<number | null>(null);
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -48,10 +56,30 @@ export const Client = () => {
     isSuccess,
   } = useGetListQCD({ p: page, q: searchValue });
 
+  const { mutate: mutateExportQcd, isPending: isPendingQcd } = useExportQcd(
+    exportId ?? 0
+  );
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
+
+  const handleExport = (id: number) => {
+    setExportId(id);
+    mutateExportQcd(
+      {id},
+      {
+        onSuccess: (res) => {
+          const url = res.data.data.resource?.download_url;
+          const link = document.createElement("a");
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      }
+    );
+  };
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -126,6 +154,20 @@ export const Client = () => {
               <Link href={`/outbond/qcd/detail/${row.original.id}`}>
                 <ReceiptText className="w-4 h-4" />
               </Link>
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Export</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={() => handleExport(row.original.id)}
+              disabled={isPendingQcd}
+            >
+              {isPendingQcd ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileDown className="w-4 h-4" />
+              )}
             </Button>
           </TooltipProviderPage>
         </div>
