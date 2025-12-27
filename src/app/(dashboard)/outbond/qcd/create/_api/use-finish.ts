@@ -7,28 +7,31 @@ import { getCookie } from "cookies-next/client";
 import { invalidateQuery } from "@/lib/query";
 
 type RequestType = {
-  body: any;
   id: string;
 };
 type Error = AxiosError;
 
-export const useSubmit = () => {
+export const useFinish = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.post(`${baseUrl}/scrap/${id}/finish`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    mutationFn: async ({ id }) => {
+      const res = await axios.post(
+        `${baseUrl}/scrap/${id}/lock`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
     onSuccess: (res) => {
-      toast.success("Qcd successfully created");
+      toast.success("Qcd successfully locked");
+      invalidateQuery(queryClient, [["list-qcd"]]);
       invalidateQuery(queryClient, [
-        ["list-qcd"],
         ["list-detail-qcd", res.data.data.resource.id],
       ]);
     },
@@ -36,8 +39,8 @@ export const useSubmit = () => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Qcd failed to create`);
-        console.log("ERROR_CREATE_QCD:", err);
+        toast.error(`ERROR ${err?.status}: Qcd failed to finish`);
+        console.log("ERROR_Finish_QCD:", err);
       }
     },
   });

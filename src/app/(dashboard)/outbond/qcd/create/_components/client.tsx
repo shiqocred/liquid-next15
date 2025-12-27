@@ -28,13 +28,13 @@ import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useAddProduct } from "../_api/use-add-product";
-// import { useRemoveProduct } from "../_api/use-remove-product";
 import { useSubmit } from "../_api/use-submit";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useGetListProductDump } from "../_api/use-get-list-product";
 import { useGetListQcd } from "../_api/use-get-list-qcd";
+import { useFinish } from "../_api/use-finish";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -76,6 +76,12 @@ export const Client = () => {
   // confirm start ----------------------------------------------------------------
 
   const [SubmitDialog, confirmSubmit] = useConfirm(
+    "Create Qcd",
+    "This action cannot be undone",
+    "liquid"
+  );
+
+  const [FinishDialog, confirmFinish] = useConfirm(
     "Finish Qcd",
     "This action cannot be undone",
     "liquid"
@@ -100,10 +106,8 @@ export const Client = () => {
   const { mutate: mutateAddProduct, isPending: isPendingAddProduct } =
     useAddProduct();
 
-  // const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
-  //   useRemoveProduct();
-
   const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
+  const { mutate: mutateFinish, isPending: isPendingFinish } = useFinish();
 
   // mutate end ----------------------------------------------------------------
 
@@ -217,6 +221,14 @@ export const Client = () => {
         },
       }
     );
+  };
+
+  const handleFinish = async () => {
+    const ok = await confirmFinish();
+
+    if (!ok) return;
+
+    mutateFinish({ id: dataRes?.document?.id });
   };
 
   // handling action end ----------------------------------------------------------------
@@ -436,6 +448,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
       <SubmitDialog />
+      <FinishDialog />
       <DeleteProductDialog />
       <AddProductDialog />
       <DialogProduct
@@ -500,7 +513,7 @@ export const Client = () => {
               className="bg-sky-400/80 hover:bg-sky-400 text-black"
             >
               <Send className="size-4 mr-1" />
-              Finish
+              Create
             </Button>
           </div>
           <div className="flex w-full gap-4">
@@ -536,6 +549,18 @@ export const Client = () => {
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
               <div className="flex gap-4 items-center ml-auto">
+                <Button
+                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  variant={"outline"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleFinish();
+                  }}
+                  disabled={isPendingSubmit || isPendingFinish}
+                >
+                  {/* <PlusCircle className={"w-4 h-4 mr-1"} /> */}
+                  Finish
+                </Button>
                 <Button
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
