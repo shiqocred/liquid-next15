@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarIcon,
   Edit3,
   FileDown,
   Loader2,
@@ -39,6 +40,8 @@ import { usePagination } from "@/lib/pagination";
 import Link from "next/link";
 import { DialogFiltered } from "./dialog-filtered";
 import { useExportBuyer } from "../_api/use-export-buyer";
+import { format } from "date-fns";
+import { useGetSummaryBuyer } from "../_api/use-get-summary-buyer";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
@@ -49,10 +52,10 @@ export const Client = () => {
     "dialog",
     parseAsString.withDefault("")
   );
-  const [selectedMonth] = useState<number>(
+  const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1
   );
-  const [selectedYear] = useState<number>(
+  const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   );
 
@@ -127,6 +130,16 @@ export const Client = () => {
   //   year: selectedYear,
   // });
 
+  const {
+    data: dataSummaryBuyer,
+    isFetching: isFetchingSummaryBuyer,
+    isError: isErrorSummaryBuyer,
+    error: errorSummaryBuyer,
+  } = useGetSummaryBuyer({
+    month: selectedMonth,
+    year: selectedYear,
+  });
+
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
@@ -135,6 +148,10 @@ export const Client = () => {
   // const topBuyers = useMemo(() => {
   //   return dataTopBuyer?.data?.data?.resource ?? [];
   // }, [dataTopBuyer]);
+
+  const summaryBuyers = useMemo(() => {
+    return dataSummaryBuyer?.data?.data?.resource;
+  }, [dataSummaryBuyer]);
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -296,6 +313,17 @@ export const Client = () => {
       method: "GET",
     });
   }, [isErrorBuyer, errorBuyer]);
+
+  // isError get Detail
+  useEffect(() => {
+    alertError({
+      isError: isErrorSummaryBuyer,
+      error: errorSummaryBuyer as AxiosError,
+      action: "get data",
+      data: "SummaryBuyer",
+      method: "GET",
+    });
+  }, [isErrorSummaryBuyer, errorSummaryBuyer]);
 
   // column data
   const columnDestinationMC: ColumnDef<any>[] = [
@@ -544,6 +572,93 @@ export const Client = () => {
           )}
         </div>
       </div> */}
+      <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+        <div className="flex items-center justify-between pb-3 mb-5 border-gray-500 border-b w-full">
+          <div className="flex items-center gap-4">
+            <h5 className="font-bold text-xl">Detail Buyer</h5>
+          </div>
+          <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isRefetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {format(new Date(2025, i, 1), "MMMM")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isRefetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {isFetchingSummaryBuyer && (
+                <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex w-full gap-4">
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col">
+              <p className="text-sm">Total Buyer</p>
+              <p className="font-semibold">
+                {summaryBuyers?.total_registered_buyer}
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm">Total Point Buyer</p>
+              <p className="font-semibold">
+                {summaryBuyers?.total_point_monthly}
+              </p>
+            </div>
+          </div>
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col">
+              <p className="text-sm">Buyer Active</p>
+              <div className="flex items-center gap-2 font-semibold">
+                <p>{summaryBuyers?.active_buyer_monthly}</p>
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm">New Buyer</p>
+              <p className="font-semibold">
+                {summaryBuyers?.new_buyer_monthly}
+              </p>
+            </div>
+          </div>
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col">
+              <p className="text-sm">Buyer In-Active</p>
+              <div className="flex items-center gap-2 font-semibold">
+                <p>{summaryBuyers?.inactive_buyer_monthly}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Buyers</h2>
         <div className="flex flex-col w-full gap-4">
