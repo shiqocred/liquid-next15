@@ -61,6 +61,7 @@ export const Client = () => {
   const [metaData, setMetaData] = useState({
     abnormal: "",
     damaged: "",
+    // non: "",
     name: "",
     discount: 0,
     qty: "0",
@@ -165,6 +166,7 @@ export const Client = () => {
         setMetaData({
           abnormal: "",
           damaged: "",
+          // non: "",
           discount: 0,
           name: "",
           qty: "0",
@@ -213,6 +215,8 @@ export const Client = () => {
           ? metaData.abnormal
           : type === "damaged"
           ? metaData.damaged
+          // : type === "non"
+          // ? metaData.non
           : "",
     };
 
@@ -224,6 +228,7 @@ export const Client = () => {
           setMetaData({
             abnormal: "",
             damaged: "",
+            // non: "",
             discount: 0,
             name: "",
             qty: "0",
@@ -594,6 +599,9 @@ export const Client = () => {
                   <TabsTrigger className="w-32" value="abnormal">
                     Abnormal
                   </TabsTrigger>
+                  {/* <TabsTrigger className="w-32" value="non">
+                    Non
+                  </TabsTrigger> */}
                 </TabsList>
               </div>
               <TabsContent value="good">
@@ -731,6 +739,33 @@ export const Client = () => {
                   </Button>
                 </form>
               </TabsContent>
+              {/* <TabsContent value="non">
+                <form
+                  onSubmit={(e) => handleSubmit(e, "non")}
+                  className="w-full space-y-6 mt-6"
+                >
+                  <Label>Description:</Label>
+                  <Textarea
+                    rows={6}
+                    className="border-sky-400/80 focus-visible:ring-sky-400"
+                    value={metaData.non}
+                    onChange={(e) =>
+                      setMetaData((prev) => ({
+                        ...prev,
+                        non: e.target.value,
+                      }))
+                    }
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full bg-sky-400/80 hover:bg-sky-400 text-black"
+                    disabled={metaData.qty === "0" || !metaData.non}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Submit
+                  </Button>
+                </form>
+              </TabsContent> */}
             </Tabs>
           </div>
         </div>

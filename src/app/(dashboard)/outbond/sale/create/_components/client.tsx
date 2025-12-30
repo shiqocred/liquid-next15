@@ -133,7 +133,7 @@ export const Client = () => {
   const [dynamicMessage, setDynamicMessage] = useState(
     "This action cannot be undone"
   );
-  const [successMessage, setSuccessMessage] = useState("Sale berhasil dibuat");
+  // const [successMessage, setSuccessMessage] = useState("Sale berhasil dibuat");
 
   const addRef = useRef<HTMLInputElement | null>(null);
   const [direction, setDirection] = useState(0);
@@ -231,11 +231,11 @@ export const Client = () => {
     "liquid"
   );
 
-  const [SuccessDialog, confirmSuccess] = useConfirm(
-    "Information",
-    successMessage,
-    "liquid"
-  );
+  // const [SuccessDialog, confirmSuccess] = useConfirm(
+  //   "Information",
+  //   successMessage,
+  //   "liquid"
+  // );
   // confirm end ----------------------------------------------------------------
 
   // mutate strat ----------------------------------------------------------------
@@ -492,10 +492,9 @@ export const Client = () => {
       {
         onSuccess: async (res: any) => {
           const id = res?.data?.data?.resource?.id;
-          const message = res?.data?.data?.resource?.congratulation_message;
-
-          setSuccessMessage(`${message || "-"}`);
-          await confirmSuccess();
+          // const message = res?.data?.data?.resource?.congratulation_message;
+          // setSuccessMessage(`${message || "-"}`);
+          // await confirmSuccess();
           router.push(`/outbond/sale/detail/${id}`);
         },
       }
@@ -1087,7 +1086,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
-      <SuccessDialog />
+      {/* <SuccessDialog /> */}
       <SubmitDialog />
       <DeletePPNDialog />
       <DeleteProductDialog />
