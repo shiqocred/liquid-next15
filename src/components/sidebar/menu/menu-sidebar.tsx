@@ -9,6 +9,7 @@ import {
   BookMarked,
   Boxes,
   CandlestickChart,
+  CircleDashed,
   ClipboardMinus,
   Drill,
   FileCog,
@@ -287,12 +288,12 @@ const sidebarMenu = [
         icon: <Shield className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
-      //  {
-      //   title: "Non",
-      //   href: "/repair-station/non",
-      //   icon: <CircleDashed  className="w-5 h-5 stroke-[1.5]" />,
-      //   sub_menu: [],
-      // },
+       {
+        title: "Non",
+        href: "/repair-station/non",
+        icon: <CircleDashed  className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
     ],
   },
   {
