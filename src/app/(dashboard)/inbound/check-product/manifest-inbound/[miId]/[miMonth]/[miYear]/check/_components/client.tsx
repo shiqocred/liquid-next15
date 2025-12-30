@@ -61,7 +61,7 @@ export const Client = () => {
   const [metaData, setMetaData] = useState({
     abnormal: "",
     damaged: "",
-    // non: "",
+    non: "",
     name: "",
     discount: 0,
     qty: "0",
@@ -166,7 +166,7 @@ export const Client = () => {
         setMetaData({
           abnormal: "",
           damaged: "",
-          // non: "",
+          non: "",
           discount: 0,
           name: "",
           qty: "0",
@@ -215,8 +215,8 @@ export const Client = () => {
           ? metaData.abnormal
           : type === "damaged"
           ? metaData.damaged
-          // : type === "non"
-          // ? metaData.non
+          : type === "non"
+          ? metaData.non
           : "",
     };
 
@@ -228,7 +228,7 @@ export const Client = () => {
           setMetaData({
             abnormal: "",
             damaged: "",
-            // non: "",
+            non: "",
             discount: 0,
             name: "",
             qty: "0",
@@ -599,9 +599,9 @@ export const Client = () => {
                   <TabsTrigger className="w-32" value="abnormal">
                     Abnormal
                   </TabsTrigger>
-                  {/* <TabsTrigger className="w-32" value="non">
+                  <TabsTrigger className="w-32" value="non">
                     Non
-                  </TabsTrigger> */}
+                  </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="good">
@@ -739,7 +739,7 @@ export const Client = () => {
                   </Button>
                 </form>
               </TabsContent>
-              {/* <TabsContent value="non">
+              <TabsContent value="non">
                 <form
                   onSubmit={(e) => handleSubmit(e, "non")}
                   className="w-full space-y-6 mt-6"
@@ -765,7 +765,7 @@ export const Client = () => {
                     Submit
                   </Button>
                 </form>
-              </TabsContent> */}
+              </TabsContent>
             </Tabs>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { getCookie } from "cookies-next/client";
 export const useGetListCategories = () => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-categories-dmg"],
+    queryKey: ["list-categories-non"],
     queryFn: async () => {
       const res = await axios.get(`${baseUrl}/categories`, {
         headers: {

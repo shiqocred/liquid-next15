@@ -7,13 +7,13 @@ import { getCookie } from "cookies-next/client";
 
 type Error = AxiosError;
 
-export const useExportProductDamaged = () => {
+export const useExportProductNon = () => {
   const accessToken = getCookie("accessToken");
 
   const mutation = useMutation<AxiosResponse, Error, "">({
     mutationFn: async () => {
       const res = await axios.post(
-        `${baseUrl}/export_product_byCategory`,
+        `${baseUrl}/exportNon`,
         {},
         {
           headers: {
@@ -31,9 +31,9 @@ export const useExportProductDamaged = () => {
         toast.error(`Error 403: Restricted Access`);
       } else {
         toast.error(
-          `ERROR ${err?.status}: Product Damaged failed to export`
+          `ERROR ${err?.status}: Product Non failed to export`
         );
-        console.log("ERROR_EXPORT_PRODUCT_CATEGORY:", err);
+        console.log("ERROR_EXPORT_PRODUCT_NON:", err);
       }
     },
   });

@@ -32,13 +32,13 @@ import dynamic from "next/dynamic";
 import { useGetListCategories } from "../_api/use-get-list-categories";
 import { useToDisplay } from "../_api/use-to-display";
 import { useQueryClient } from "@tanstack/react-query";
-import { useGetListDMG } from "../_api/use-get-list-damaged";
-import { useGetDetailDMG } from "../_api/use-get-detail-damaged";
-import { useDeleteDMG } from "../_api/use-delete-damaged";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { useExportProductDamaged } from "../_api/use-export-product-damaged";
 import { toast } from "sonner";
+import { useGetListNon } from "../_api/use-get-list-non";
+import { useDeleteNon } from "../_api/use-delete-non";
+import { useExportProductNon } from "../_api/use-export-product-non";
+import { useGetDetailNon } from "../_api/use-get-detail-non";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -77,17 +77,17 @@ export const Client = () => {
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Product Damaged",
+    "Delete Product Non",
     "This action cannot be undone",
     "destructive"
   );
 
   // mutate DELETE, UPDATE, CREATE
-  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteDMG();
+  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteNon();
   const { mutate: mutateToDisplay, isPending: isPendingToDisplay } =
     useToDisplay();
   const { mutate: mutateExport, isPending: isPendingExport } =
-    useExportProductDamaged();
+    useExportProductNon();
 
   // get data utama
   const {
@@ -99,7 +99,7 @@ export const Client = () => {
     error,
     isError,
     isSuccess,
-  } = useGetListDMG({ p: page, q: searchValue });
+  } = useGetListNon({ p: page, q: searchValue });
 
   // get data detail
   const {
@@ -108,7 +108,7 @@ export const Client = () => {
     error: errorDetail,
     isError: isErrorDetail,
     isSuccess: isSuccessDetail,
-  } = useGetDetailDMG({
+  } = useGetDetailNon({
     barcode: documentDetail.barcode,
   });
 
@@ -239,7 +239,7 @@ export const Client = () => {
         onSuccess: () => {
           toast.success("Successfully updated to display");
           queryClient.invalidateQueries({
-            queryKey: ["list-dmg"],
+            queryKey: ["list-Non"],
           });
           setOpenDisplay(false);
         },

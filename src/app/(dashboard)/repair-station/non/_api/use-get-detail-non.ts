@@ -3,10 +3,10 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailDMG = ({ barcode }: any) => {
+export const useGetDetailNon = ({ barcode }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["detail-dmg", barcode],
+    queryKey: ["detail-non", barcode],
     queryFn: async () => {
       const res = await axios.get(
         `${baseUrl}/new_products/barcode/${barcode}`,

@@ -29,7 +29,7 @@ export const useToDisplay = () => {
     onSuccess: () => {
       toast.success("Product successfully moved");
       queryClient.invalidateQueries({
-        queryKey: ["list-dmg"],
+        queryKey: ["list-non"],
       });
     },
     onError: (err) => {

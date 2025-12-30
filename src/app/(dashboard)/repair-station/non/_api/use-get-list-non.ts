@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListDMG = ({ p, q }: any) => {
+export const useGetListNon = ({ p, q }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-dmg", { p, q }],
+    queryKey: ["list-non", { p, q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/productDamaged?page=${p}&q=${q}`, {
+      const res = await axios.get(`${baseUrl}/productNon?page=${p}&q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

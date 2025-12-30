@@ -12,7 +12,7 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useDeleteDMG = () => {
+export const useDeleteNon = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
@@ -27,7 +27,7 @@ export const useDeleteDMG = () => {
     },
     onSuccess: () => {
       toast.success("Product successfully Deleted");
-      queryClient.invalidateQueries({ queryKey: ["list-dmg"] });
+      queryClient.invalidateQueries({ queryKey: ["list-non"] });
     },
     onError: (err) => {
       if (err.status === 403) {
