@@ -2,11 +2,9 @@
 
 import {
   CalendarIcon,
-  Crown,
   Edit3,
   FileDown,
   Loader2,
-  Medal,
   PlusCircle,
   RefreshCw,
   Trash2,
@@ -40,10 +38,10 @@ import dynamic from "next/dynamic";
 import { useSearchQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
 import Link from "next/link";
-import { useGetTopBuyer } from "../_api/use-get-top-buyer";
-import { format } from "date-fns";
 import { DialogFiltered } from "./dialog-filtered";
 import { useExportBuyer } from "../_api/use-export-buyer";
+import { format } from "date-fns";
+import { useGetSummaryBuyer } from "../_api/use-get-summary-buyer";
 
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
@@ -122,12 +120,22 @@ export const Client = () => {
     error: errorBuyer,
   } = useGetDetailBuyer({ id: buyerId });
 
+  // const {
+  //   data: dataTopBuyer,
+  //   isFetching,
+  //   isError: isErrorTopBuyer,
+  //   error: errorTopBuyer,
+  // } = useGetTopBuyer({
+  //   month: selectedMonth,
+  //   year: selectedYear,
+  // });
+
   const {
-    data: dataTopBuyer,
-    isFetching,
-    isError: isErrorTopBuyer,
-    error: errorTopBuyer,
-  } = useGetTopBuyer({
+    data: dataSummaryBuyer,
+    isFetching: isFetchingSummaryBuyer,
+    isError: isErrorSummaryBuyer,
+    error: errorSummaryBuyer,
+  } = useGetSummaryBuyer({
     month: selectedMonth,
     year: selectedYear,
   });
@@ -137,9 +145,13 @@ export const Client = () => {
     return data?.data.data.resource.data;
   }, [data]);
 
-  const topBuyers = useMemo(() => {
-    return dataTopBuyer?.data?.data?.resource ?? [];
-  }, [dataTopBuyer]);
+  // const topBuyers = useMemo(() => {
+  //   return dataTopBuyer?.data?.data?.resource ?? [];
+  // }, [dataTopBuyer]);
+
+  const summaryBuyers = useMemo(() => {
+    return dataSummaryBuyer?.data?.data?.resource;
+  }, [dataSummaryBuyer]);
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -235,30 +247,30 @@ export const Client = () => {
     );
   };
 
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-7 h-7 text-yellow-500 mb-1" />;
-    if (rank === 2) return <Medal className="w-6 h-6 text-gray-400 mb-1" />;
-    if (rank === 3) return <Medal className="w-6 h-6 text-amber-700 mb-1" />;
-    return <Medal className="w-5 h-5 text-gray-300 mb-1" />;
-  };
+  // const getRankIcon = (rank: number) => {
+  //   if (rank === 1) return <Crown className="w-7 h-7 text-yellow-500 mb-1" />;
+  //   if (rank === 2) return <Medal className="w-6 h-6 text-gray-400 mb-1" />;
+  //   if (rank === 3) return <Medal className="w-6 h-6 text-amber-700 mb-1" />;
+  //   return <Medal className="w-5 h-5 text-gray-300 mb-1" />;
+  // };
 
-  const getRankStyle = (rank: number) => {
-    if (rank === 1) return "border-2 border-sky-400 py-6 -translate-y-6";
-    return "border py-4";
-  };
+  // const getRankStyle = (rank: number) => {
+  //   if (rank === 1) return "border-2 border-sky-400 py-6 -translate-y-6";
+  //   return "border py-4";
+  // };
 
-  const orderedTopBuyers = useMemo(() => {
-    if (!topBuyers?.length) return [];
+  // const orderedTopBuyers = useMemo(() => {
+  //   if (!topBuyers?.length) return [];
 
-    const byRank = (r: number) => topBuyers.find((b: any) => b.rank === r);
+  //   const byRank = (r: number) => topBuyers.find((b: any) => b.rank === r);
 
-    return [byRank(4), byRank(2), byRank(1), byRank(3), byRank(5)].filter(
-      Boolean
-    );
-  }, [topBuyers]);
+  //   return [byRank(4), byRank(2), byRank(1), byRank(3), byRank(5)].filter(
+  //     Boolean
+  //   );
+  // }, [topBuyers]);
 
-  const isTopBuyerForbidden =
-    isErrorTopBuyer && (errorTopBuyer as AxiosError)?.response?.status === 403;
+  // const isTopBuyerForbidden =
+  //   isErrorTopBuyer && (errorTopBuyer as AxiosError)?.response?.status === 403;
 
   // update from gmaps to state
   useEffect(() => {
@@ -301,6 +313,17 @@ export const Client = () => {
       method: "GET",
     });
   }, [isErrorBuyer, errorBuyer]);
+
+  // isError get Detail
+  useEffect(() => {
+    alertError({
+      isError: isErrorSummaryBuyer,
+      error: errorSummaryBuyer as AxiosError,
+      action: "get data",
+      data: "SummaryBuyer",
+      method: "GET",
+    });
+  }, [isErrorSummaryBuyer, errorSummaryBuyer]);
 
   // column data
   const columnDestinationMC: ColumnDef<any>[] = [
@@ -455,14 +478,12 @@ export const Client = () => {
         </BreadcrumbList>
       </Breadcrumb>
       {/* Buyer of the Month */}
-      <div className="w-full bg-white rounded-md shadow px-6 py-4">
+      {/* <div className="w-full bg-white rounded-md shadow px-6 py-4">
         <div>
-          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold">Buyer of the Month</h2>
 
             <div className="flex items-center gap-4">
-              {/* Select Month */}
               <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
                 <CalendarIcon className="w-4 h-4" />
                 <select
@@ -479,7 +500,6 @@ export const Client = () => {
                 </select>
               </div>
 
-              {/* Select Year */}
               <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
                 <CalendarIcon className="w-4 h-4" />
                 <select
@@ -499,7 +519,6 @@ export const Client = () => {
                 </select>
               </div>
 
-              {/* Loader kecil */}
               {isFetching && (
                 <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
               )}
@@ -552,6 +571,93 @@ export const Client = () => {
             </div>
           )}
         </div>
+      </div> */}
+      <div className="flex flex-col w-full bg-white rounded-md overflow-hidden shadow p-5 col-span-3">
+        <div className="flex items-center justify-between pb-3 mb-5 border-gray-500 border-b w-full">
+          <div className="flex items-center gap-4">
+            <h5 className="font-bold text-xl">Detail Buyer</h5>
+          </div>
+          <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isRefetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {format(new Date(2025, i, 1), "MMMM")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                <CalendarIcon className="w-4 h-4" />
+                <select
+                  disabled={isRefetching}
+                  className="outline-none bg-transparent text-sm disabled:opacity-60"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {isFetchingSummaryBuyer && (
+                <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex w-full gap-4">
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col">
+              <p className="text-sm">Total Buyer</p>
+              <p className="font-semibold">
+                {summaryBuyers?.total_registered_buyer}
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm">Total Point Buyer</p>
+              <p className="font-semibold">
+                {summaryBuyers?.total_point_monthly}
+              </p>
+            </div>
+          </div>
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col">
+              <p className="text-sm">Buyer Active</p>
+              <div className="flex items-center gap-2 font-semibold">
+                <p>{summaryBuyers?.active_buyer_monthly}</p>
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm">New Buyer</p>
+              <p className="font-semibold">
+                {summaryBuyers?.new_buyer_monthly}
+              </p>
+            </div>
+          </div>
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col">
+              <p className="text-sm">Buyer In-Active</p>
+              <div className="flex items-center gap-2 font-semibold">
+                <p>{summaryBuyers?.inactive_buyer_monthly}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Buyers</h2>
@@ -584,7 +690,7 @@ export const Client = () => {
                       handleExport();
                     }}
                     className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black bg-sky-100 hover:bg-sky-200 disabled:opacity-100 disabled:hover:bg-sky-200 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                    disabled={isPendingExport}
+                    disabled
                     variant={"outline"}
                   >
                     {isPendingExport ? (
@@ -630,11 +736,23 @@ export const Client = () => {
               </div>
             </div>
           </div>
-          <DataTable columns={columnDestinationMC} data={dataList ?? []} />
-          <Pagination
-            pagination={{ ...metaPage, current: page }}
-            setPagination={setPage}
-          />
+          {searchValue.trim() === "" ? (
+            <p className="text-sm text-gray-400 italic text-center py-6">
+              Type something to search buyers
+            </p>
+          ) : loading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-6 h-6 animate-spin text-sky-500" />
+            </div>
+          ) : (
+            <>
+              <DataTable columns={columnDestinationMC} data={dataList ?? []} />
+              <Pagination
+                pagination={{ ...metaPage, current: page }}
+                setPagination={setPage}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

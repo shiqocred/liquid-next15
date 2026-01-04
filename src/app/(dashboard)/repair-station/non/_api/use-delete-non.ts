@@ -4,40 +4,37 @@ import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
-import { invalidateQuery } from "@/lib/query";
 
 type RequestType = {
-  body: any;
   id: string;
+  source: string
 };
+
 type Error = AxiosError;
 
-export const useSubmit = () => {
+export const useDeleteNon = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, body }) => {
-      const res = await axios.post(`${baseUrl}/scrap/${id}/finish`, body, {
+    mutationFn: async ({ id, source }) => {
+      const res = await axios.delete(`${baseUrl}/new_products/${id}?source=${source}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       return res;
     },
-    onSuccess: (res) => {
-      toast.success("Qcd successfully created");
-      invalidateQuery(queryClient, [
-        ["list-qcd"],
-        ["list-detail-qcd", res.data.data.resource.id],
-      ]);
+    onSuccess: () => {
+      toast.success("Product successfully Deleted");
+      queryClient.invalidateQueries({ queryKey: ["list-non"] });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Qcd failed to create`);
-        console.log("ERROR_CREATE_QCD:", err);
+        toast.error(`ERROR ${err?.status}: Product failed to delete`);
+        console.log("ERROR_DELETE_PRODUCT:", err);
       }
     },
   });
