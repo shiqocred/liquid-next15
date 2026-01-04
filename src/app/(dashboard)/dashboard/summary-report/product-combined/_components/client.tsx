@@ -486,15 +486,15 @@ export const Client = () => {
           {/* Saldo */}
           <SummaryCard
             title="Saldo Awal"
-            value={formatRupiah(dataBoth?.data_before?.inbound?.saldo_awal)}
-            qty={dataBoth?.data_before?.inbound?.qty}
+            value={formatRupiah(dataBoth?.summary_report?.begin_balance)}
+            qty={dataBoth?.summary_report?.qty_in}
             className="bg-sky-200"
           />
 
           <SummaryCard
             title="Saldo Akhir"
-            value={formatRupiah(dataBoth?.saldo_akhir)}
-            qty={dataBoth?.data_before?.outbound?.qty}
+            value={formatRupiah(dataBoth?.summary_report?.end_balance)}
+            qty={dataBoth?.summary_report?.qty_out}
             className="bg-sky-200"
           />
 
@@ -502,11 +502,11 @@ export const Client = () => {
           <div className="grid grid-cols-2 gap-4">
             <SummaryCard
               title="Qty Masuk"
-              value={dataBoth?.data_before?.inbound?.qty}
+              value={dataBoth?.summary_report?.qty_in}
             />
             <SummaryCard
               title="Qty Keluar"
-              value={dataBoth?.data_before?.outbound?.qty}
+              value={dataBoth?.summary_report?.qty_out}
             />
           </div>
 
@@ -514,13 +514,11 @@ export const Client = () => {
           <div className="grid grid-cols-2 gap-4">
             <SummaryCard
               title="Price Masuk"
-              value={formatRupiah(
-                dataBoth?.data_before?.inbound?.display_price
-              )}
+              value={formatRupiah(dataBoth?.summary_report?.price_in)}
             />
             <SummaryCard
               title="Price Keluar"
-              value={formatRupiah(dataBoth?.data_before?.outbound?.price_sale)}
+              value={formatRupiah(dataBoth?.summary_report?.price_out)}
             />
           </div>
         </div>
