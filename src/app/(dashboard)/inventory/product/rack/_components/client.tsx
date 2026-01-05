@@ -8,13 +8,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  Drill,
   FileDown,
   Loader2,
   Pencil,
   Printer,
   ReceiptText,
   RefreshCw,
+  Shield,
   Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -42,15 +42,17 @@ import { useGetListProduct } from "../_api/use-get-list-product";
 import Pagination from "@/components/pagination";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { useDeleteProductCategory } from "../_api/use-delete-product-category";
+// import { useDeleteProductCategory } from "../_api/use-delete-product-category";
 import { useExportProductCategory } from "../_api/use-export-product-category";
 import { useUpdateProductCategory } from "../_api/use-update-product-category";
 import { useGetProductCategoryDetail } from "../_api/use-get-product-category-detail";
 import { DialogDetail } from "./dialog-detail";
 import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDryScrap } from "../_api/use-dry-scrap";
+// import { useDryScrap } from "../_api/use-dry-scrap";
 import DialogBarcode from "./dialog-barcode";
+import { useToDamaged } from "../_api/use-to-damaged";
+import { DialogDamaged } from "./dialog-damaged";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -84,6 +86,11 @@ export const Client = () => {
   const [selectedNameRack, setSelectedNameRack] = useState("");
   const [selectedBarcode, setSelectedBarcode] = useState("");
   const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+  const [isOpenDamaged, setIsOpenDamaged] = useState(false);
+  const [damagedDescription, setDamagedDescription] = useState("");
+  const [damagedProductId, setDamagedProductId] = useState("");
+  const [source, setSource] = useState("");
+  const [damagedBarcode, setDamagedBarcode] = useState("");
 
   const {
     search: searchRack,
@@ -137,28 +144,29 @@ export const Client = () => {
     "This action cannot be undone",
     "destructive"
   );
-  const [DeleteDialogProduct, confirmDeleteProduct] = useConfirm(
-    "Delete Product",
-    "This action cannot be undone",
-    "liquid"
-  );
+  // const [DeleteDialogProduct, confirmDeleteProduct] = useConfirm(
+  //   "Delete Product",
+  //   "This action cannot be undone",
+  //   "liquid"
+  // );
 
-  const [DialogDryScrap, confirmDryScrap] = useConfirm(
-    "Dry Scrap Product Display",
-    "This action cannot be undone",
-    "destructive"
-  );
+  // const [DialogDryScrap, confirmDryScrap] = useConfirm(
+  //   "Dry Scrap Product Display",
+  //   "This action cannot be undone",
+  //   "destructive"
+  // );
 
   // mutate DELETE, UPDATE, CREATE, EXPORT
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteRack();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateRack();
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateRack();
-  const { mutate: mutateDeleteProduct, isPending: isPendingDeleteProduct } =
-    useDeleteProductCategory();
+  // const { mutate: mutateDeleteProduct, isPending: isPendingDeleteProduct } =
+  //   useDeleteProductCategory();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportProductCategory();
-  const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
-    useDryScrap();
+  // const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
+  //   useDryScrap();
+  const { mutate: mutateDamaged, isPending: isPendingDamaged } = useToDamaged();
 
   const {
     mutate: updateProduct,
@@ -286,6 +294,29 @@ export const Client = () => {
     );
   };
 
+  const handleSubmitDamaged = () => {
+    mutateDamaged(
+      {
+        body: {
+          description: damagedDescription,
+          product_id: damagedProductId,
+          source: source,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsOpenDamaged(false);
+          setDamagedDescription("");
+          setDamagedProductId("");
+
+          queryClient.invalidateQueries({
+            queryKey: ["list-product-by-category"],
+          });
+        },
+      }
+    );
+  };
+
   const loading =
     isLoadingProducts || isRefetchingProducts || isPendingProducts;
 
@@ -353,13 +384,13 @@ export const Client = () => {
   };
 
   // handle delete product
-  const handleDeleteProduct = async (id: any) => {
-    const ok = await confirmDeleteProduct();
+  // const handleDeleteProduct = async (id: any) => {
+  //   const ok = await confirmDeleteProduct();
 
-    if (!ok) return;
+  //   if (!ok) return;
 
-    mutateDeleteProduct({ params: { id } });
-  };
+  //   mutateDeleteProduct({ params: { id } });
+  // };
 
   // handle export
   const handleExport = async () => {
@@ -377,12 +408,12 @@ export const Client = () => {
     );
   };
 
-  const handleDryScrap = async (id: any) => {
-    const ok = await confirmDryScrap();
+  // const handleDryScrap = async (id: any) => {
+  //   const ok = await confirmDryScrap();
 
-    if (!ok) return;
-    mutateDryScrap({ id });
-  };
+  //   if (!ok) return;
+  //   mutateDryScrap({ id });
+  // };
 
   useEffect(() => {
     setSearchRackInput((searchRack as string) ?? "");
@@ -541,7 +572,26 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Delete</p>}>
+          <TooltipProviderPage value={<p>Damaged</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-orange-400 text-orange-700 hover:text-orange-700 hover:bg-orange-50"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setDamagedProductId(row.original.id);
+                setDamagedBarcode(
+                  row.original.new_barcode_product ??
+                    row.original.old_barcode_product ??
+                    "-"
+                );
+                setSource(row.original.source ?? "");
+                setIsOpenDamaged(true);
+              }}
+            >
+              <Shield className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+          {/* <TooltipProviderPage value={<p>Delete</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -557,8 +607,9 @@ export const Client = () => {
                 <Trash2 className="w-4 h-4" />
               )}
             </Button>
-          </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Scrapt</p>}>
+          </TooltipProviderPage> */}
+
+          {/* <TooltipProviderPage value={<p>Scrapt</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -574,7 +625,7 @@ export const Client = () => {
                 <Drill className="w-4 h-4" />
               )}
             </Button>
-          </TooltipProviderPage>
+          </TooltipProviderPage> */}
         </div>
       ),
     },
@@ -723,7 +774,16 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
-      <DialogDryScrap />
+      {/* <DialogDryScrap /> */}
+      <DialogDamaged
+        isOpen={isOpenDamaged}
+        handleClose={() => setIsOpenDamaged(false)}
+        barcode={damagedBarcode}
+        description={damagedDescription}
+        setDescription={setDamagedDescription}
+        isLoading={isPendingDamaged}
+        handleSubmit={handleSubmitDamaged}
+      />
       <DialogBarcode
         onCloseModal={() => {
           if (barcodeOpen) {
@@ -755,7 +815,7 @@ export const Client = () => {
         isPendingUpdate={isPendingUpdate} // loading update
         data={racksData}
       />
-      <DeleteDialogProduct />
+      {/* <DeleteDialogProduct /> */}
       <DialogDetail
         isOpen={isOpenDetailProduct}
         handleClose={handleCloseProduct}

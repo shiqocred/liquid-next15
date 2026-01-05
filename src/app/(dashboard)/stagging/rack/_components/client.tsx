@@ -46,6 +46,8 @@ import { useSubmit } from "../_api/use-submit";
 import { useDryScrap } from "../_api/use-dry-scrap";
 import DialogBarcode from "./dialog-barcode";
 import { useMigrateToRepair } from "../_api/use-migrate-to-repair";
+import { useToDamaged } from "../_api/use-to-damaged";
+import { DialogDamaged } from "./dialog-damaged";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -68,6 +70,11 @@ export const Client = () => {
   const [selectedNameRack, setSelectedNameRack] = useState("");
   const [selectedBarcode, setSelectedBarcode] = useState("");
   const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+  const [isOpenDamaged, setIsOpenDamaged] = useState(false);
+  const [damagedDescription, setDamagedDescription] = useState("");
+  const [damagedProductId, setDamagedProductId] = useState("");
+  const [source, setSource] = useState("");
+  const [damagedBarcode, setDamagedBarcode] = useState("");
 
   // separate search states for rack and product so values don't collide
   const {
@@ -163,6 +170,7 @@ export const Client = () => {
     useDryScrap();
   const { mutate: mutateMigrateToRepair, isPending: isPendingMigrateToRepair } =
     useMigrateToRepair();
+  const { mutate: mutateDamaged, isPending: isPendingDamaged } = useToDamaged();
 
   const {
     data: dataRacks,
@@ -273,6 +281,27 @@ export const Client = () => {
       {
         onSuccess: () => {
           handleClose();
+        },
+      }
+    );
+  };
+
+  // handle to damaged
+  const handleSubmitDamaged = () => {
+    mutateDamaged(
+      {
+        body: {
+          description: damagedDescription,
+          product_id: damagedProductId,
+          source: source,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsOpenDamaged(false);
+          setDamagedDescription("");
+          setDamagedProductId("");
+          setSource("");
         },
       }
     );
@@ -404,6 +433,15 @@ export const Client = () => {
             setIsOpen("");
           }
         }}
+      />
+      <DialogDamaged
+        isOpen={isOpenDamaged}
+        handleClose={() => setIsOpenDamaged(false)}
+        barcode={damagedBarcode}
+        description={damagedDescription}
+        setDescription={setDamagedDescription}
+        isLoading={isPendingDamaged}
+        handleSubmit={handleSubmitDamaged}
       />
       <Breadcrumb>
         <BreadcrumbList>
@@ -784,6 +822,10 @@ export const Client = () => {
                   isPendingMigrateToRepair,
                   setProductId,
                   setIsOpen,
+                  setDamagedProductId,
+                  setDamagedBarcode,
+                  setIsOpenDamaged,
+                  setSource,
                 })}
                 data={productData ?? []}
               />
