@@ -554,6 +554,24 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isLoadingDetailProduct}
+              onClick={(e) => {
+                e.preventDefault();
+                setProductId(row.original.id);
+                setIsOpenDetailProduct(true);
+              }}
+            >
+              {isLoadingDetailProduct ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ReceiptText className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
           <TooltipProviderPage value={<p>Damaged</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-orange-400 text-orange-700 hover:text-orange-700 hover:bg-orange-50"
@@ -571,24 +589,6 @@ export const Client = () => {
               }}
             >
               <Shield className="w-4 h-4" />
-            </Button>
-          </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Detail</p>}>
-            <Button
-              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
-              variant={"outline"}
-              disabled={isLoadingDetailProduct}
-              onClick={(e) => {
-                e.preventDefault();
-                setProductId(row.original.id);
-                setIsOpenDetailProduct(true);
-              }}
-            >
-              {isLoadingDetailProduct ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ReceiptText className="w-4 h-4" />
-              )}
             </Button>
           </TooltipProviderPage>
           {/* <TooltipProviderPage value={<p>Delete</p>}>
