@@ -1,23 +1,18 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import {
   Boxes,
-  Drill,
   Loader2,
   LucideIcon,
   Pencil,
   PlusCircle,
   Printer,
   ReceiptText,
+  Shield,
   Trash2,
   XCircle,
 } from "lucide-react";
@@ -70,12 +65,16 @@ export const columnProductStaging = ({
   metaPageProduct,
   isLoading,
   handleAddFilter,
-  handleDryScrap,
-  handleMigrateToRepair,
-  isPendingMigrateToRepair,
+  // handleDryScrap,
+  // handleMigrateToRepair,
+  // isPendingMigrateToRepair,
   setProductId,
   setIsOpen,
-  isPendingDryScrap,
+  // isPendingDryScrap,
+  setIsOpenDamaged,
+  setDamagedProductId,
+  setDamagedBarcode,
+  setSource,
 }: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -175,7 +174,24 @@ export const columnProductStaging = ({
           }}
           label="Detail"
         />
-        <Popover>
+        <ButtonAction
+          label="Damaged"
+          onClick={(e) => {
+            e.preventDefault();
+            setDamagedProductId(row.original.id);
+            setDamagedBarcode(
+              row.original.new_barcode_product ??
+                row.original.old_barcode_product ??
+                "-"
+            );
+            setSource(row.original.source ?? "");
+            setIsOpenDamaged(true);
+          }}
+          isLoading={isLoading}
+          icon={Shield}
+          type="red"
+        />
+        {/* <Popover>
           <TooltipProviderPage value={<p>Migrate To Repair / Dry Scrap</p>}>
             <PopoverTrigger asChild>
               <Button
@@ -193,7 +209,7 @@ export const columnProductStaging = ({
 
           <PopoverContent className="w-auto py-2">
             <div className="flex flex-col gap-2">
-              {/* <Button
+              <Button
                 variant="ghost"
                 className="justify-start px-3 text-sm"
                 onClick={(e) => {
@@ -203,7 +219,7 @@ export const columnProductStaging = ({
                 }}
               >
                 To LPR
-              </Button> */}
+              </Button>
               <Button
                 variant="ghost"
                 className="justify-start px-3 text-sm"
@@ -226,7 +242,7 @@ export const columnProductStaging = ({
               </Button>
             </div>
           </PopoverContent>
-        </Popover>
+        </Popover> */}
       </div>
     ),
   },
