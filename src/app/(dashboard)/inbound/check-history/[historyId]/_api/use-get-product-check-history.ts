@@ -14,6 +14,8 @@ export const useGetProductDetailCheckHistory = ({ type, code, p, q }: any) => {
             ? "getProductLolos"
             : type === "damaged"
             ? "getProductDamaged"
+            : type === "non"
+            ? "getProductNon"
             : type === "abnormal"
             ? "getProductAbnormal"
             : type === "discrepancy"

@@ -1,9 +1,9 @@
 import React from "react";
 import { Metadata } from "next";
-import { Client } from "./_components/client";
 import { protect } from "@/lib/protect";
 import { redirect } from "next/navigation";
 import { Footer } from "@/components/footer";
+import { Client } from "./_component/client";
 
 export const metadata: Metadata = {
   title: "Create Migrate to Repair",

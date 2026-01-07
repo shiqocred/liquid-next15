@@ -17,11 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  parseAsInteger,
-  parseAsString,
-  useQueryState,
-} from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
@@ -249,6 +245,22 @@ export const Client = () => {
           {row.original.new_name_product}
         </div>
       ),
+    },
+    {
+      header: "Description",
+      accessorKey: "new_quality",
+      cell: ({ row }) => {
+        let desc = "-";
+
+        try {
+          const quality = JSON.parse(row.original.new_quality);
+          desc = quality?.migrate ?? "-";
+        } catch {
+          desc = "-";
+        }
+
+        return <div className="max-w-[300px] break-all capitalize">{desc}</div>;
+      },
     },
     {
       accessorKey: "new_category_product",

@@ -30,6 +30,7 @@ import { useGetListQCD } from "../_api/use-get-list-qcd";
 import Pagination from "@/components/pagination";
 import Link from "next/link";
 import { useExportQcd } from "../_api/use-export-qcd";
+import { useExportAllQcd } from "../_api/use-export-all-qcd";
 
 export const Client = () => {
   // data search, page
@@ -59,6 +60,9 @@ export const Client = () => {
   const { mutate: mutateExportQcd, isPending: isPendingQcd } = useExportQcd(
     exportId ?? 0
   );
+  const { mutate: mutateExportAllQcd, isPending: isPendingExportAllQcd } =
+    useExportAllQcd();
+
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
@@ -67,7 +71,7 @@ export const Client = () => {
   const handleExport = (id: number) => {
     setExportId(id);
     mutateExportQcd(
-      {id},
+      { id },
       {
         onSuccess: (res) => {
           const url = res.data.data.resource?.download_url;
@@ -80,6 +84,20 @@ export const Client = () => {
       }
     );
   };
+
+ const handleExportAll = async () => {
+  mutateExportAllQcd(undefined, {
+    onSuccess: (res) => {
+      const link = document.createElement("a");
+      link.href = res.data.data.resource.download_url;
+      link.target = "_blank"; // opsional
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+  });
+};
+
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -231,6 +249,23 @@ export const Client = () => {
                 </Button>
               </TooltipProviderPage>
               <div className="flex gap-4 items-center ml-auto">
+                <TooltipProviderPage value={"Export Data"} side="left">
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleExportAll();
+                    }}
+                    className="items-center flex-none h-9 px-0 w-9 bg-sky-100 border border-sky-400 hover:bg-sky-200 text-black disabled:opacity-100 disabled:hover:bg-sky-200 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                    disabled={isPendingExportAllQcd}
+                    variant={"outline"}
+                  >
+                    {isPendingExportAllQcd ? (
+                      <Loader2 className={"w-4 h-4 animate-spin"} />
+                    ) : (
+                      <FileDown className={"w-4 h-4"} />
+                    )}
+                  </Button>
+                </TooltipProviderPage>
                 <Button
                   asChild
                   className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"

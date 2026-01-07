@@ -89,6 +89,10 @@ const chartConfig = {
     label: "Abnormal",
     color: "hsl(var(--chart-4))",
   },
+  non: {
+    label: "Non",
+    color: "hsl(var(--chart-5))",
+  },
 } satisfies ChartConfig;
 
 export const Client = () => {
@@ -116,6 +120,7 @@ export const Client = () => {
       "damaged",
       "abnormal",
       "discrepancy",
+      "non",
     ] as const).withDefault("good")
   );
   const [isFilter, setIsFilter] = useState(false);
@@ -204,11 +209,18 @@ export const Client = () => {
       values: dataDetailCH?.total_data_abnormal ?? 0,
       fill: "var(--color-abnormal)",
     },
+      {
+      dataType: "non",
+      values: dataDetailCH?.total_data_non ?? 0,
+      fill: "var(--color-non)",
+    },
   ];
 
   const totalVisitors = useMemo(() => {
     return chartData.reduce((acc, curr) => acc + curr.values, 0);
   }, [dataDetail]);
+
+  console.log("totalVisitors", totalVisitors);
 
   useEffect(() => {
     setPaginate({
@@ -551,6 +563,22 @@ export const Client = () => {
                         %
                       </td>
                     </tr>
+                      <tr className="text-left">
+                      <td>Non</td>
+                      <td>
+                        {(
+                          dataDetailCHAfterRefresh?.non ??
+                          dataDetailCH?.total_data_non ??
+                          0
+                        ).toLocaleString()}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.percentage_non ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
                     <tr className="text-left">
                       <td>Inbound</td>
                       <td>
@@ -628,6 +656,19 @@ export const Client = () => {
                       <td>
                         {(
                           dataDetailCH?.damaged.price_percentage ?? 0
+                        ).toLocaleString()}{" "}
+                        %
+                      </td>
+                    </tr>
+                     <tr className="text-left">
+                      <td>Non</td>
+                      <td>
+                        {formatRupiah(dataDetailCH?.non?.total_old_price) ??
+                          "-"}
+                      </td>
+                      <td>
+                        {(
+                          dataDetailCH?.non.price_percentage ?? 0
                         ).toLocaleString()}{" "}
                         %
                       </td>
@@ -1275,7 +1316,9 @@ export const Client = () => {
                               filter === "abnormal" &&
                                 "bg-green-200 hover:bg-green-200",
                               filter === "discrepancy" &&
-                                "bg-yellow-200 hover:bg-yellow-200"
+                                "bg-yellow-200 hover:bg-yellow-200",
+                                filter === "non" &&
+                                "bg-purple-200 hover:bg-purple-200"
                             )}
                           >
                             {filter}
@@ -1318,6 +1361,22 @@ export const Client = () => {
                                 }}
                               />
                               Damaged
+                            </CommandItem>
+                            <CommandItem
+                              onSelect={() => {
+                                setFilter("non");
+                                setIsFilter(false);
+                              }}
+                            >
+                              <Checkbox
+                                className="w-4 h-4 mr-2"
+                                checked={filter === "non"}
+                                onCheckedChange={() => {
+                                  setFilter("non");
+                                  setIsFilter(false);
+                                }}
+                              />
+                              Non
                             </CommandItem>
                             <CommandItem
                               onSelect={() => {
