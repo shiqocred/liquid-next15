@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListNon = ({ p, q }: any) => {
+export const useGetListAbn = ({ p }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-non", { p, q }],
+    queryKey: ["list-data-abn", { p }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/non?page=${p}&q=${q}`, {
+      const res = await axios.get(`${baseUrl}/abnormal/active-session?page=${p}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
