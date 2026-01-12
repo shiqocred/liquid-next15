@@ -22,6 +22,7 @@ const DialogProduct = ({
   setSearch,
   refetch,
   isRefetching,
+  isLoading,
   columns,
   dataTable,
   page,
@@ -34,6 +35,7 @@ const DialogProduct = ({
   setSearch: any;
   refetch: any;
   isRefetching: any;
+  isLoading: any;
   columns: any;
   dataTable: any;
   page: any;
@@ -79,7 +81,7 @@ const DialogProduct = ({
                   <RefreshCw
                     className={cn(
                       "w-4 h-4",
-                      isRefetching ? "animate-spin" : ""
+                      isRefetching || isLoading ? "animate-spin" : ""
                     )}
                   />
                 </Button>
@@ -88,7 +90,7 @@ const DialogProduct = ({
             <DataTable
               isSticky
               maxHeight="h-[60vh]"
-              isLoading={isRefetching}
+              isLoading={isRefetching || isLoading}
               columns={columns}
               data={dataTable ?? []}
             />
