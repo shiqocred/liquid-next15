@@ -60,7 +60,7 @@ export const Client = () => {
   const [search, setSearch] = useQueryState("q", { defaultValue: "" });
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
-  const { metaPage, page, setPage } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination();
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
@@ -99,7 +99,7 @@ export const Client = () => {
 
   // query strat ----------------------------------------------------------------
 
-  const { data, refetch, isRefetching, error, isError } =
+  const { data, refetch, isRefetching, isLoading, error, isError, isSuccess } =
     useGetListFilterCreateMC({
       p: page,
       q: search,
@@ -119,14 +119,14 @@ export const Client = () => {
   // memeo strat ----------------------------------------------------------------
 
   const dataDetail: any = useMemo(() => {
-    return data?.data.data.resource;
+    return data?.data.data.resource.data?.[0];
   }, [data]);
 
   const dataList: any[] = useMemo(() => {
-    return data?.data.data.resource.migrate_bulky_products;
+    return data?.data.data.resource.data?.[0]?.migrate_bulky_products;
   }, [data]);
 
-  console.log("dataList", dataList);
+  console.log("dataListtt", dataList);
 
   const dataListProduct: any[] = useMemo(() => {
     return dataProduct?.data.data.resource.data;
@@ -135,11 +135,11 @@ export const Client = () => {
   // memo end ----------------------------------------------------------------
 
   // paginate strat ----------------------------------------------------------------
-  // useEffect(() => {
-  //   if (data && isSuccess) {
-  //     setPagination(data?.data.data.resource.products);
-  //   }
-  // }, [data, isSuccess]);
+  useEffect(() => {
+    if (data && isSuccess) {
+      setPagination(data?.data.data.resource);
+    }
+  }, [data, isSuccess]);
 
   useEffect(() => {
     if (dataProduct && isSuccessProduct) {
@@ -585,15 +585,15 @@ export const Client = () => {
                     <Search className="w-4 h-4" />
                   </Button>
                   <Button
-                    onClick={() => refetch()}
+                    onClick={() => refetchProduct()}
                     className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
                     variant={"outline"}
-                    disabled={isRefetching}
+                    disabled={isRefetchingProduct}
                   >
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isRefetching ? "animate-spin" : ""
+                        isRefetchingProduct ? "animate-spin" : ""
                       )}
                     />
                   </Button>
@@ -630,7 +630,7 @@ export const Client = () => {
             </div>
           </div>
           <DataTable
-            isLoading={isRefetching}
+            isLoading={isRefetching || isLoading}
             columns={columnMigrateToRepair}
             data={dataList ?? []}
           />
