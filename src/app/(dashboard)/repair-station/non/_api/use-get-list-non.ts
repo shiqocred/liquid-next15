@@ -8,7 +8,7 @@ export const useGetListNon = ({ p, q }: any) => {
   const query = useQuery({
     queryKey: ["list-non", { p, q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/productNon?page=${p}&q=${q}`, {
+      const res = await axios.get(`${baseUrl}/non?page=${p}&q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

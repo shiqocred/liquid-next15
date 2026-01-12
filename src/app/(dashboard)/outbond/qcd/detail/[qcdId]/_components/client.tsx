@@ -7,6 +7,7 @@ import {
   RefreshCw,
   ScanBarcode,
   Send,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
@@ -38,6 +39,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import DialogProduct from "./dialog-product";
 import { useSubmit } from "../_api/use-submit";
 import { useFinish } from "../_api/use-finish";
+import { useRemoveProduct } from "../_api/use-delete-product-document";
 
 export const Client = () => {
   const router = useRouter();
@@ -77,7 +79,7 @@ export const Client = () => {
     "liquid"
   );
 
-  const [DeleteProductDialog] = useConfirm(
+  const [DeleteProductDialog, confirmDeleteProductDialog] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
     "destructive"
@@ -105,6 +107,8 @@ export const Client = () => {
     useAddProduct();
   const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
   const { mutate: mutateFinish, isPending: isPendingFinish } = useFinish();
+  const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
+    useRemoveProduct();
 
   // query end ----------------------------------------------------------------
 
@@ -161,8 +165,24 @@ export const Client = () => {
 
     if (!ok) return;
 
-    mutateFinish(
-      { id: dataRes?.document?.id },
+    mutateFinish({ id: dataRes?.document?.id });
+  };
+
+  const handleRemoveProduct = async (row: any) => {
+    const ok = await confirmDeleteProductDialog();
+    if (!ok) return;
+
+    mutateRemoveProduct(
+      {
+        scrap_document_id: dataRes?.document?.id,
+        product_id: row.product_id ?? row.id,
+        source: row.source,
+      },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
     );
   };
 
@@ -279,15 +299,15 @@ export const Client = () => {
         </div>
       ),
     },
-    {
-      accessorKey: "new_quantity_product",
-      header: "Qty",
-      cell: ({ row }) => (
-        <div className="max-w-[500px] break-all">
-          {row.original.new_quantity_product}
-        </div>
-      ),
-    },
+    // {
+    //   accessorKey: "new_quantity_product",
+    //   header: "Qty",
+    //   cell: ({ row }) => (
+    //     <div className="max-w-[500px] break-all">
+    //       {row.original.new_quantity_product}
+    //     </div>
+    //   ),
+    // },
     {
       accessorKey: "new_price_product",
       header: "Price",
@@ -297,30 +317,26 @@ export const Client = () => {
         </div>
       ),
     },
-    // {
-    //   accessorKey: "action",
-    //   header: () => <div className="text-center">Action</div>,
-    //   cell: ({ row }) => (
-    //     <div className="flex gap-4 justify-center items-center">
-    //       <Button
-    //         className="items-center border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50"
-    //         variant={"outline"}
-    //         type="button"
-    //         disabled={isPendingRemoveProduct || isPendingSubmit}
-    //         onClick={() => {
-    //           handleRemoveProduct(row.original.id);
-    //         }}
-    //       >
-    //         {isPendingRemoveProduct ? (
-    //           <Loader2 className="w-4 h-4 mr-1" />
-    //         ) : (
-    //           <Trash2 className="w-4 h-4 mr-1" />
-    //         )}
-    //         <div>Delete</div>
-    //       </Button>
-    //     </div>
-    //   ),
-    // },
+     {
+      header: () => <div className="text-center">Action</div>,
+      id: "action",
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            className="border-red-400 text-red-600 hover:bg-red-50 p-0 w-9"
+            disabled={isPendingRemoveProduct || isPendingSubmit}
+            onClick={() => handleRemoveProduct(row.original)}
+          >
+            {isPendingRemoveProduct ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   const columnProduct: ColumnDef<any>[] = [

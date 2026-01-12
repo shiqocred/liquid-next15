@@ -33,6 +33,8 @@ export const useToDisplayProductMigrateToRepair = () => {
     onSuccess: () => {
       toast.success("Product migrate to repair successfully updated");
       invalidateQuery(queryClient, [["detail-migrate-to-repair"]]);
+      invalidateQuery(queryClient, [["list-migrate-to-repair"]]);
+      invalidateQuery(queryClient, [["product-migrate-to-repair-detail"]]);
     },
     onError: (err) => {
       if (err.status === 403) {

@@ -6,10 +6,10 @@ import { redirect } from "next/navigation";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "List Product Repair",
+  title: "List Non",
 };
 
-const LPRPage = async () => {
+const NonPage = async () => {
   const user = await protect();
 
   if (!user) redirect("/login");
@@ -21,4 +21,4 @@ const LPRPage = async () => {
   );
 };
 
-export default LPRPage;
+export default NonPage;
