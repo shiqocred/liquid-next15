@@ -540,7 +540,7 @@ const MenuInbound = ({ pathname, setOpen }: MenuInboundProps) => {
   const uniq = <T,>(arr: T[]) => Array.from(new Set(arr));
 
   const collectRolesFromMenuItem = (menu: MenuItem): Role[] => {
-    let roles: Role[] = [];
+    const roles: Role[] = [];
 
     // roles langsung di menu (jika ada & tidak punya sub_menu)
     if (menu.roles && menu.sub_menu.length === 0) {
