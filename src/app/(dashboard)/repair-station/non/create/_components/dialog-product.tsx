@@ -12,8 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { RefreshCw, X } from "lucide-react";
+import { RefreshCw, Trash2, X } from "lucide-react";
 import React from "react";
+import { useNonAll } from "../_api/use-non-all";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const DialogProduct = ({
   open,
@@ -28,6 +30,7 @@ const DialogProduct = ({
   page,
   metaPage,
   setPage,
+  documentId,
 }: {
   open: boolean;
   onCloseModal: () => void;
@@ -44,35 +47,35 @@ const DialogProduct = ({
   documentId: string;
 }) => {
   // confirm delete
-  // const [DeleteDialogAll, confirmDeleteAll] = useConfirm(
-  //   "Scrap All Non",
-  //   "This action cannot be undone",
-  //   "destructive"
-  // );
+  const [DeleteDialogAll, confirmDeleteAll] = useConfirm(
+    "Non All",
+    "This action cannot be undone",
+    "destructive"
+  );
 
-  // const { mutate: mutateDeleteAll, isPending: isPendingDeleteAll } =
-  //   useNonAll();
+  const { mutate: mutateDeleteAll, isPending: isPendingDeleteAll } =
+    useNonAll();
 
-  // const handleScraptAll = async () => {
-  //   const body = {
-  //     non_document_id: documentId,
-  //   };
-  //   const ok = await confirmDeleteAll();
+  const handleNonAll = async () => {
+    const body = {
+      non_document_id: documentId,
+    };
+    const ok = await confirmDeleteAll();
 
-  //   if (!ok) return;
+    if (!ok) return;
 
-  //   mutateDeleteAll(
-  //     { body },
-  //     {
-  //       onSuccess: () => {
-  //         refetch();
-  //       },
-  //     }
-  //   );
-  // };
+    mutateDeleteAll(
+      { body },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+  };
   return (
     <div>
-      {/* <DeleteDialogAll /> */}
+      <DeleteDialogAll />
       <Dialog open={open} onOpenChange={onCloseModal}>
         <DialogContent
           onClose={false}
@@ -115,20 +118,20 @@ const DialogProduct = ({
                   />
                 </Button>
               </TooltipProviderPage>
-              {/* <div className="flex gap-4 items-center ml-auto">
+              <div className="flex gap-4 items-center ml-auto">
                 <Button
                   className="items-center flex-none h-9 bg-red-500/80 hover:bg-red-500 text-black disabled:opacity-100 disabled:hover:bg-red-500 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleScraptAll();
+                    handleNonAll();
                   }}
                   disabled={isPendingDeleteAll}
                 >
                   <Trash2 className={"w-4 h-4 mr-1"} />
-                  Scrapt All
+                  Non All
                 </Button>
-              </div> */}
+              </div>
             </div>
             <DataTable
               isSticky
