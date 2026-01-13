@@ -17,7 +17,7 @@ export const useNonAll = () => {
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/non/add-all`, body, {
+      const res = await axios.post(`${baseUrl}/non/add-all-product`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

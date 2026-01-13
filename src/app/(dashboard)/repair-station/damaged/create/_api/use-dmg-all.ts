@@ -11,13 +11,13 @@ type RequestType = {
 
 type Error = AxiosError;
 
-export const useDMGAll = () => {
+export const useDmgAll = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
     mutationFn: async ({ body }) => {
-      const res = await axios.post(`${baseUrl}/damaged/add-all`, body, {
+      const res = await axios.post(`${baseUrl}/damaged/add-all-product`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

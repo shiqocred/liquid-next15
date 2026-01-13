@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  FileDown,
-  Loader2,
-  PlusCircle,
-  ReceiptText,
-  RefreshCw,
-} from "lucide-react";
+import { FileDown, Loader2, RefreshCw, ShoppingBag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { cn, formatRupiah } from "@/lib/utils";
+import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,14 +21,42 @@ import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
-import Link from "next/link";
-import { useGetListABN } from "../_api/use-get-list-abn";
-import { useExportAllABN } from "../_api/use-export-all-abn";
-import { useExportABN } from "../_api/use-export-abn";
+import dynamic from "next/dynamic";
+import { useGetListCategories } from "../_api/use-get-list-categories";
+import { useToDisplay } from "../_api/use-to-display";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetListABN } from "../_api/use-get-list-abnormal";
+import { useGetDetailABN } from "../_api/use-get-detail-abnormal";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { useExportProductAbnormal } from "../_api/use-export-product-abnormal";
+import { toast } from "sonner";
+
+const DialogDetail = dynamic(() => import("./dialog-detail"), {
+  ssr: false,
+});
 
 export const Client = () => {
+  const queryClient = useQueryClient();
+  const [openDisplay, setOpenDisplay] = useState(false);
+  const [documentDetail, setDocumentDetail] = useState({
+    barcode: "",
+  });
+
+  const [input, setInput] = useState({
+    barcode: "",
+    oldBarcode: "",
+    name: "",
+    oldName: "",
+    price: "0",
+    oldPrice: "0",
+    qty: "1",
+    oldQty: "1",
+    category: "",
+    new_tag_product: "",
+  });
+
   // data search, page
-  const [exportId, setExportId] = useState<number | null>(null);
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -44,6 +66,20 @@ export const Client = () => {
     total: 1, //total data
     perPage: 1,
   });
+
+  // donfirm delete
+  // const [DeleteDialog, confirmDelete] = useConfirm(
+  //   "QCD LPR",
+  //   "This action cannot be undone",
+  //   "destructive"
+  // );
+
+  // mutate DELETE, UPDATE, CREATE
+  // const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteABN();
+  const { mutate: mutateToDisplay, isPending: isPendingToDisplay } =
+    useToDisplay();
+  const { mutate: mutateExport, isPending: isPendingExport } =
+    useExportProductAbnormal();
 
   // get data utama
   const {
@@ -57,40 +93,119 @@ export const Client = () => {
     isSuccess,
   } = useGetListABN({ p: page, q: searchValue });
 
-  const { mutate: mutateExportABN, isPending: isPendingABN } = useExportABN(
-    exportId ?? 0
-  );
-  const { mutate: mutateExportAllABN, isPending: isPendingExportAllABN } =
-    useExportAllABN();
+  // get data detail
+  const {
+    data: dataDetail,
+    isLoading: isLoadingDetail,
+    error: errorDetail,
+    isError: isErrorDetail,
+    isSuccess: isSuccessDetail,
+  } = useGetDetailABN({
+    barcode: documentDetail.barcode,
+  });
+
+  // get data category
+  const {
+    data: dataCategory,
+    error: errorCategory,
+    isError: isErrorCategory,
+  } = useGetListCategories();
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
 
-  const handleExport = (id: number) => {
-    setExportId(id);
-    mutateExportABN(
-      { id },
-      {
-        onSuccess: (res) => {
-          const url = res.data.data.resource?.download_url;
-          const link = document.createElement("a");
-          link.href = url;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        },
-      }
-    );
-  };
+  // memo data detail
+  const dataResDetail: any = useMemo(() => {
+    return dataDetail?.data.data.resource;
+  }, [dataDetail]);
 
-  const handleExportAll = async () => {
-    mutateExportAllABN(undefined, {
+  // memo data detail
+  const dataResColorDetail: any = useMemo(() => {
+    return dataDetail?.data.data.resource.color_tags?.[0];
+  }, [dataDetail]);
+
+  // memo data category
+  const dataCategories: any[] = useMemo(() => {
+    return dataCategory?.data.data.resource ?? [];
+  }, [dataCategory]);
+
+  useEffect(() => {
+    if (isSuccessDetail && dataDetail) {
+      const dataResponse = dataDetail?.data.data.resource;
+      setInput({
+        barcode: dataResponse?.new_barcode_product ?? "",
+        name: dataResponse?.new_name_product ?? "",
+        price: dataResponse?.new_price_product ?? "0",
+        qty: dataResponse?.new_quantity_product ?? "1",
+        oldBarcode: dataResponse?.old_barcode_product ?? "",
+        oldName: dataResponse?.new_name_product ?? "",
+        oldPrice: dataResponse?.old_price_product ?? "0",
+        oldQty: dataResponse?.new_quantity_product ?? "1",
+        category: dataResponse?.new_category_product ?? "",
+        new_tag_product: dataResponse?.new_tag_product ?? "",
+      });
+    }
+  }, [dataDetail]);
+
+  // load data
+  const loading = isLoading || isRefetching || isPending;
+
+  useEffect(() => {
+    setPaginate({
+      isSuccess,
+      data,
+      dataPaginate: data?.data.data.resource,
+      setPage,
+      setMetaPage,
+    });
+  }, [data]);
+
+  useEffect(() => {
+    alertError({
+      isError,
+      error: error as AxiosError,
+      data: "Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isError, error]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorDetail,
+      error: errorDetail as AxiosError,
+      data: "Detail Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorDetail, errorDetail]);
+
+  useEffect(() => {
+    alertError({
+      isError: isErrorCategory,
+      error: errorCategory as AxiosError,
+      data: "Category Data",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorCategory, errorCategory]);
+
+  // handle delete
+  // const handleDelete = async (id: any, source: any) => {
+  //   const ok = await confirmDelete();
+
+  //   if (!ok) return;
+
+  //   mutateDelete({ id, source });
+  // };
+
+  const handleExport = async () => {
+    mutateExport("", {
       onSuccess: (res) => {
         const link = document.createElement("a");
-        link.href = res.data.data.resource.download_url;
-        link.target = "_blank"; // opsional
+        link.href = res.data.data.resource;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -98,24 +213,44 @@ export const Client = () => {
     });
   };
 
-  // load data
-  const loading = isLoading || isRefetching || isPending;
+  const handleToDisplay = () => {
+    const body = {
+      old_barcode_product: input.oldBarcode,
+      old_price_product: input.oldPrice,
+      new_status_product: dataResDetail?.new_status_product,
+      new_barcode_product: input.barcode,
+      new_name_product: input.name,
+      new_price_product: input.price,
+      new_quantity_product: input.qty,
+      new_category_product: input.category ?? null,
+      new_tag_product: input.new_tag_product ?? null,
+    };
+    mutateToDisplay(
+      { id: dataResDetail?.id, source: dataResDetail?.source, body },
+      {
+        onSuccess: () => {
+          toast.success("Successfully updated to display");
+          queryClient.invalidateQueries({
+            queryKey: ["list-abn"],
+          });
+          setOpenDisplay(false);
+        },
+      }
+    );
+  };
 
-  // get pagetination
+  // default numeric
   useEffect(() => {
-    if (isSuccess && data) {
-      setPage(data?.data.data.resource.current_page);
-      setMetaPage({
-        last: data?.data.data.resource.last_page ?? 1,
-        from: data?.data.data.resource.from ?? 0,
-        total: data?.data.data.resource.total ?? 0,
-        perPage: data?.data.data.resource.per_page ?? 0,
-      });
+    if (isNaN(parseFloat(input.price))) {
+      setInput((prev) => ({ ...prev, price: "0" }));
     }
-  }, [data]);
+    if (isNaN(parseFloat(input.qty))) {
+      setInput((prev) => ({ ...prev, qty: "0" }));
+    }
+  }, [input]);
 
   // column data
-  const columnListABN: ColumnDef<any>[] = [
+  const columnWarehousePalet: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -126,35 +261,63 @@ export const Client = () => {
       ),
     },
     {
-      accessorKey: "code_document_abnormal",
-      header: "Code Document",
-      cell: ({ row }) => row.original.code_document_abnormal,
+      accessorKey: "old_barcode_product||new_barcode_product",
+      header: "Barcode",
+      cell: ({ row }) =>
+        row.original.new_barcode_product || row.original.old_barcode_product,
     },
     {
-      accessorKey: "total_product",
-      header: "Total Product",
+      accessorKey: "new_name_product",
+      header: "Product Name",
       cell: ({ row }) => (
-        <div className="max-w-[400px] break-all">
-          {row.original.total_product}
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
         </div>
       ),
     },
     {
-      accessorKey: "total_new_price||total_old_price",
+      accessorKey: "new_category_product||new_tag_product",
+      header: "Category",
+      cell: ({ row }) =>
+        row.original.new_category_product ??
+        row.original.new_tag_product ??
+        "-",
+    },
+    {
+      accessorKey: "source",
+      header: "Source",
+      cell: ({ row }) => row.original.source,
+    },
+    {
+      accessorKey: "new_price_product||old_price_product",
       header: "Price",
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.total_new_price ?? row.original.total_old_price
+            row.original.new_price_product ?? row.original.old_price_product
           )}
         </div>
       ),
     },
     {
-      accessorKey: "status",
+      accessorKey: "new_date_in_product",
+      header: "Date",
+      cell: ({ row }) => (
+        <div className="">
+          {format(
+            new Date(row.original.new_date_in_product),
+            "iii, dd MMM yyyy"
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_status_product",
       header: "Status",
       cell: ({ row }) => (
-        <div className="max-w-[400px] break-all">{row.original.status}</div>
+        <Badge className="bg-green-400/80 hover:bg-green-400/80 font-normal rounded-full text-black capitalize">
+          {row.original.new_status_product}
+        </Badge>
       ),
     },
     {
@@ -162,31 +325,39 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
-          <TooltipProviderPage value={<p>Detail</p>}>
+          <TooltipProviderPage value={<p>To Display</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              asChild
+              disabled={isPendingToDisplay}
+              onClick={(e) => {
+                e.preventDefault();
+                setOpenDisplay(true);
+                setDocumentDetail({
+                  barcode: row.original.new_barcode_product,
+                });
+              }}
             >
-              <Link href={`/repair-station/abnormal/detail/${row.original.id}`}>
-                <ReceiptText className="w-4 h-4" />
-              </Link>
+              <ShoppingBag className="w-4 h-4" />
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Export</p>}>
+          {/* <TooltipProviderPage value={<p>QCD</p>}>
             <Button
-              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              onClick={() => handleExport(row.original.id)}
-              disabled={isPendingABN}
+              disabled={isPendingToDisplay || isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.original.id, row.original.source);
+              }}
             >
-              {isPendingABN ? (
+              {isPendingDelete ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <FileDown className="w-4 h-4" />
+                <Recycle className="w-4 h-4" />
               )}
             </Button>
-          </TooltipProviderPage>
+          </TooltipProviderPage> */}
         </div>
       ),
     },
@@ -213,6 +384,35 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      {/* <DeleteDialog /> */}
+      <DialogDetail
+        open={openDisplay}
+        handleClose={() => {
+          if (openDisplay) {
+            setOpenDisplay(false);
+            setInput({
+              barcode: "",
+              oldBarcode: "",
+              name: "",
+              oldName: "",
+              price: "0",
+              oldPrice: "0",
+              qty: "1",
+              oldQty: "1",
+              category: "",
+              new_tag_product: "",
+            });
+          }
+        }}
+        isLoading={isLoadingDetail}
+        data={dataResDetail}
+        dataColor={dataResColorDetail}
+        isSubmit={isPendingToDisplay}
+        input={input}
+        setInput={setInput}
+        categories={dataCategories}
+        handleSubmit={handleToDisplay}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -225,7 +425,7 @@ export const Client = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List Abnormal</h2>
+        <h2 className="text-xl font-bold">List Product Abnormal</h2>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -247,42 +447,25 @@ export const Client = () => {
                   />
                 </Button>
               </TooltipProviderPage>
-              <div className="flex gap-4 items-center ml-auto">
-                <TooltipProviderPage value={"Export Data"} side="left">
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleExportAll();
-                    }}
-                    className="items-center flex-none h-9 px-0 w-9 bg-sky-100 border border-sky-400 hover:bg-sky-200 text-black disabled:opacity-100 disabled:hover:bg-sky-200 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                    disabled={isPendingExportAllABN}
-                    variant={"outline"}
-                  >
-                    {isPendingExportAllABN ? (
-                      <Loader2 className={"w-4 h-4 animate-spin"} />
-                    ) : (
-                      <FileDown className={"w-4 h-4"} />
-                    )}
-                  </Button>
-                </TooltipProviderPage>
-                <Button
-                  asChild
-                  className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                  variant={"outline"}
-                >
-                  <Link href={"/repair-station/abnormal/create"}>
-                    <PlusCircle className={"w-4 h-4 mr-1"} />
-                    Create
-                  </Link>
-                </Button>
-              </div>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleExport();
+                }}
+                className="items-center flex-none h-9 bg-sky-400/80 hover:bg-sky-400 text-black ml-auto disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                disabled={isPendingExport}
+                variant={"outline"}
+              >
+                {isPendingExport ? (
+                  <Loader2 className={"w-4 h-4 mr-1 animate-spin"} />
+                ) : (
+                  <FileDown className={"w-4 h-4 mr-1"} />
+                )}
+                Export Data
+              </Button>
             </div>
           </div>
-          <DataTable
-            isLoading={isRefetching || isLoading}
-            columns={columnListABN}
-            data={dataList ?? []}
-          />
+          <DataTable columns={columnWarehousePalet} data={dataList ?? []} />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
