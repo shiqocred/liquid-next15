@@ -121,7 +121,7 @@ export const Client = () => {
   }, [data]);
 
   const dataList: any[] = useMemo(() => {
-    return data?.data.data.resource.products;
+    return data?.data.data.resource.products.data;
   }, [data]);
 
   const dataListProduct: any[] = useMemo(() => {
@@ -174,12 +174,24 @@ export const Client = () => {
     );
   };
 
-  const handleRemoveProduct = async (id: any, idProduct: any) => {
+  const handleRemoveProduct = async (
+    rackId: any,
+    productId: any,
+    source: any
+  ) => {
     const ok = await confirmDeleteProduct();
 
     if (!ok) return;
 
-    mutateRemoveProduct({ id, idProduct });
+    const body = {
+      rack_id: rackId,
+      product_id: productId,
+      source: source,
+    };
+
+    mutateRemoveProduct({
+      body,
+    });
   };
 
   const handleSubmit = async (id: any) => {
@@ -290,7 +302,11 @@ export const Client = () => {
               type="button"
               disabled={isPendingRemoveProduct}
               onClick={() => {
-                handleRemoveProduct(rackId, row.original.id);
+                handleRemoveProduct(
+                  rackId,
+                  row.original.id,
+                  row.original.source
+                );
               }}
             >
               {isPendingRemoveProduct ? (

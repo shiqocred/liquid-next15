@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  FileDown,
-  Loader2,
-  Recycle,
-  RefreshCw,
-  ShoppingBag,
-} from "lucide-react";
+import { FileDown, Loader2, RefreshCw, ShoppingBag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
@@ -26,7 +20,6 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 import { useGetListCategories } from "../_api/use-get-list-categories";
@@ -34,13 +27,12 @@ import { useToDisplay } from "../_api/use-to-display";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetListABN } from "../_api/use-get-list-abnormal";
 import { useGetDetailABN } from "../_api/use-get-detail-abnormal";
-import { useDeleteABN } from "../_api/use-delete-abnormal";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useExportProductAbnormal } from "../_api/use-export-product-abnormal";
 import { toast } from "sonner";
 
-const DialogDetail = dynamic(() => import("../_components/dialog-detail"), {
+const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
 });
 
@@ -76,14 +68,14 @@ export const Client = () => {
   });
 
   // donfirm delete
-  const [DeleteDialog, confirmDelete] = useConfirm(
-    "QCD LPR",
-    "This action cannot be undone",
-    "destructive"
-  );
+  // const [DeleteDialog, confirmDelete] = useConfirm(
+  //   "QCD LPR",
+  //   "This action cannot be undone",
+  //   "destructive"
+  // );
 
   // mutate DELETE, UPDATE, CREATE
-  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteABN();
+  // const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteABN();
   const { mutate: mutateToDisplay, isPending: isPendingToDisplay } =
     useToDisplay();
   const { mutate: mutateExport, isPending: isPendingExport } =
@@ -201,13 +193,13 @@ export const Client = () => {
   }, [isErrorCategory, errorCategory]);
 
   // handle delete
-  const handleDelete = async (id: any, source: any) => {
-    const ok = await confirmDelete();
+  // const handleDelete = async (id: any, source: any) => {
+  //   const ok = await confirmDelete();
 
-    if (!ok) return;
+  //   if (!ok) return;
 
-    mutateDelete({ id, source });
-  };
+  //   mutateDelete({ id, source });
+  // };
 
   const handleExport = async () => {
     mutateExport("", {
@@ -337,7 +329,7 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingToDisplay || isPendingDelete}
+              disabled={isPendingToDisplay}
               onClick={(e) => {
                 e.preventDefault();
                 setOpenDisplay(true);
@@ -349,7 +341,7 @@ export const Client = () => {
               <ShoppingBag className="w-4 h-4" />
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>QCD</p>}>
+          {/* <TooltipProviderPage value={<p>QCD</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -365,7 +357,7 @@ export const Client = () => {
                 <Recycle className="w-4 h-4" />
               )}
             </Button>
-          </TooltipProviderPage>
+          </TooltipProviderPage> */}
         </div>
       ),
     },
@@ -392,7 +384,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <DeleteDialog />
+      {/* <DeleteDialog /> */}
       <DialogDetail
         open={openDisplay}
         handleClose={() => {

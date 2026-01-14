@@ -66,7 +66,6 @@ export const Client = () => {
       },
       {
         onSuccess: (data) => {
-          console.log("Create B2B Success", data?.data);
           router.push(`/outbond/b2b/edit/${data?.data?.data?.resource?.id}`);
         },
       }

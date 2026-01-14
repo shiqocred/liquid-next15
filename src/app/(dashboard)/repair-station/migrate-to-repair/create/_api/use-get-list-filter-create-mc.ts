@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListFilterCreateMC = () => {
+export const useGetListFilterCreateMC = ({ p, q }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-filter-create-mc"],
+    queryKey: ["list-filter-create-mc", { p, q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/migrate-bulky-product`, {
+      const res = await axios.get(`${baseUrl}/migrate-bulky-product?page=${p}&q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
