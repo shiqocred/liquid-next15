@@ -483,7 +483,7 @@ export const Client = () => {
         open={barcodeOpen}
         oldPrice={input.total ?? "0"}
         barcode={data?.data.data.resource.barcode_bundle ?? ""}
-        category={input.name ?? ""}
+        category={input.category ?? ""}
         newPrice={input.custom ?? "0"}
         handleCancel={() => {
           setBarcodeOpen(false);
