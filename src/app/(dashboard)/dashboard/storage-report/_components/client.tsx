@@ -247,422 +247,6 @@ export const Client = () => {
           <BreadcrumbItem>Storage Report</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 flex-col">
-        <div className="w-full justify-between items-center flex mb-5">
-          <h2 className="text-xl font-bold">Report Product Per-Category</h2>
-          <div className="flex gap-2">
-            {dataStorage && (
-              <p className="px-5 h-10 border rounded flex items-center text-sm border-gray-500 cursor-default">
-                {dataStorage?.month.current_month.month +
-                  " " +
-                  dataStorage?.month.current_month.year}
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="w-10 h-10 flex items-center justify-center border border-l-none rounded border-gray-500 hover:bg-sky-100"
-            >
-              <RefreshCcw className="w-4 h-4" />
-            </button>
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogTrigger asChild>
-                <button
-                  className="flex items-center gap-2 px-4 py-2 bg-sky-400/80 hover:bg-sky-400 text-white rounded"
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  Export by Month & Year
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-              </DialogTrigger>
-              <DialogContent className="w-auto max-w-md p-4 border-gray-300">
-                <DialogHeader>
-                  <DialogTitle>Select Month and Year</DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
-                      <CalendarIcon className="w-4 h-4" />
-                      <select
-                        className="outline-none bg-transparent"
-                        value={selectedMonth || ""}
-                        onChange={(e) =>
-                          setSelectedMonth(Number(e.target.value))
-                        }
-                      >
-                        <option value="" disabled>
-                          Select Month
-                        </option>
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            {format(new Date(2025, i, 1), "MMMM")}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
-                      <CalendarIcon className="w-4 h-4" />
-                      <select
-                        className="outline-none bg-transparent"
-                        value={selectedYear || ""}
-                        onChange={(e) =>
-                          setSelectedYear(Number(e.target.value))
-                        }
-                      >
-                        <option value="" disabled>
-                          Select Year
-                        </option>
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <option key={i} value={2025 - i}>
-                            {2025 - i}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleExportByMonthByYear}
-                    className="w-full px-4 py-2 bg-sky-400/80 hover:bg-sky-400 text-white rounded"
-                    disabled={isPendingExportByMonthByYear}
-                  >
-                    {isPendingExportByMonthByYear ? "Exporting..." : "Export"}
-                  </button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            {/* <ExportByMonthYearButton /> */}
-          </div>
-        </div>
-        <div className="h-[300px] w-full relative">
-          {loading ? (
-            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
-              <Loader className="w-7 h-7 animate-spin" />
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dataChart}
-                margin={{
-                  top: 5,
-                  right: 10,
-                  left: 30,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid
-                  vertical={false}
-                  className="stroke-gray-200"
-                  horizontalCoordinatesGenerator={(props) =>
-                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
-                  }
-                />
-                <YAxis
-                  padding={{ top: 10 }}
-                  dataKey={"total_category"}
-                  style={{ fontSize: "14px" }}
-                  tick={false}
-                  width={0}
-                  axisLine={false}
-                />
-                <XAxis
-                  dataKey="category_product"
-                  stroke="#000"
-                  label={{ fontSize: "10px", color: "#fff" }}
-                  padding={{ left: 0, right: 0 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: "10px", height: "20px" }}
-                />
-                <Tooltip
-                  cursor={false}
-                  content={({ active, payload, label }) => (
-                    <ContentTooltip
-                      active={active}
-                      payload={payload}
-                      label={label}
-                    />
-                  )}
-                />
-                <Bar
-                  dataKey="total_category"
-                  fill="#7dd3fc"
-                  strokeWidth={2}
-                  stroke="#38bdf8"
-                  radius={[4, 4, 4, 4]}
-                  label={{ position: "top", fill: "black" }}
-                  activeBar={{ fill: "#38bdf8" }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-        <div className="w-full justify-between items-center flex mb-5">
-          <h2 className="text-xl font-bold">
-            Report Product Per-Category (Staging)
-          </h2>
-        </div>
-        <div className="h-[300px] w-full relative">
-          {loading ? (
-            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
-              <Loader className="w-7 h-7 animate-spin" />
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dataChartStaging}
-                margin={{
-                  top: 5,
-                  right: 10,
-                  left: 30,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid
-                  vertical={false}
-                  className="stroke-gray-200"
-                  horizontalCoordinatesGenerator={(props) =>
-                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
-                  }
-                />
-                <YAxis
-                  padding={{ top: 10 }}
-                  dataKey={"total_category"}
-                  style={{ fontSize: "14px" }}
-                  tick={false}
-                  width={0}
-                  axisLine={false}
-                />
-                <XAxis
-                  dataKey="category_product"
-                  stroke="#000"
-                  label={{ fontSize: "10px", color: "#fff" }}
-                  padding={{ left: 0, right: 0 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: "10px", height: "20px" }}
-                />
-                <Tooltip
-                  cursor={false}
-                  content={({ active, payload, label }) => (
-                    <ContentTooltip
-                      active={active}
-                      payload={payload}
-                      label={label}
-                    />
-                  )}
-                />
-                <Bar
-                  dataKey="total_category"
-                  fill="#7dd3fc"
-                  strokeWidth={2}
-                  stroke="#38bdf8"
-                  radius={[4, 4, 4, 4]}
-                  label={{ position: "top", fill: "black" }}
-                  activeBar={{ fill: "#38bdf8" }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-        <div className="w-full justify-between items-center flex mb-5">
-          <h2 className="text-xl font-bold">Report Product Dump</h2>
-        </div>
-        <div className="h-[300px] w-full relative">
-          {loading ? (
-            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
-              <Loader className="w-7 h-7 animate-spin" />
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dataChartDump}
-                margin={{
-                  top: 5,
-                  right: 10,
-                  left: 30,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid
-                  vertical={false}
-                  className="stroke-gray-200"
-                  horizontalCoordinatesGenerator={(props) =>
-                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
-                  }
-                />
-                <YAxis
-                  padding={{ top: 10 }}
-                  dataKey={"total_category"}
-                  style={{ fontSize: "14px" }}
-                  tick={false}
-                  width={0}
-                  axisLine={false}
-                />
-                <XAxis
-                  dataKey="category_product"
-                  stroke="#000"
-                  label={{ fontSize: "10px", color: "#fff" }}
-                  padding={{ left: 0, right: 0 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: "10px", height: "20px" }}
-                />
-                <Tooltip
-                  cursor={false}
-                  content={({ active, payload, label }) => (
-                    <ContentTooltip
-                      active={active}
-                      payload={payload}
-                      label={label}
-                    />
-                  )}
-                />
-                <Bar
-                  dataKey="total_category"
-                  fill="#7dd3fc"
-                  strokeWidth={2}
-                  stroke="#38bdf8"
-                  radius={[4, 4, 4, 4]}
-                  label={{ position: "top", fill: "black" }}
-                  activeBar={{ fill: "#38bdf8" }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-        <div className="w-full justify-between items-center flex mb-5">
-          <h2 className="text-xl font-bold">Report Product Scrap Qcd</h2>
-        </div>
-        <div className="h-[300px] w-full relative">
-          {loading ? (
-            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
-              <Loader className="w-7 h-7 animate-spin" />
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dataChartScrapQcd}
-                margin={{
-                  top: 5,
-                  right: 10,
-                  left: 30,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid
-                  vertical={false}
-                  className="stroke-gray-200"
-                  horizontalCoordinatesGenerator={(props) =>
-                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
-                  }
-                />
-                <YAxis
-                  padding={{ top: 10 }}
-                  dataKey={"total_category"}
-                  style={{ fontSize: "14px" }}
-                  tick={false}
-                  width={0}
-                  axisLine={false}
-                />
-                <XAxis
-                  dataKey="category_product"
-                  stroke="#000"
-                  label={{ fontSize: "10px", color: "#fff" }}
-                  padding={{ left: 0, right: 0 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: "10px", height: "20px" }}
-                />
-                <Tooltip
-                  cursor={false}
-                  content={({ active, payload, label }) => (
-                    <ContentTooltip
-                      active={active}
-                      payload={payload}
-                      label={label}
-                    />
-                  )}
-                />
-                <Bar
-                  dataKey="total_category"
-                  fill="#7dd3fc"
-                  strokeWidth={2}
-                  stroke="#38bdf8"
-                  radius={[4, 4, 4, 4]}
-                  label={{ position: "top", fill: "black" }}
-                  activeBar={{ fill: "#38bdf8" }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-        <div className="w-full justify-between items-center flex mb-5">
-          <h2 className="text-xl font-bold">Report Product B2B</h2>
-        </div>
-        <div className="h-[300px] w-full relative">
-          {loading ? (
-            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
-              <Loader className="w-7 h-7 animate-spin" />
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dataChartB2b}
-                margin={{
-                  top: 5,
-                  right: 10,
-                  left: 30,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid
-                  vertical={false}
-                  className="stroke-gray-200"
-                  horizontalCoordinatesGenerator={(props) =>
-                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
-                  }
-                />
-                <YAxis
-                  padding={{ top: 10 }}
-                  dataKey={"total_category"}
-                  style={{ fontSize: "14px" }}
-                  tick={false}
-                  width={0}
-                  axisLine={false}
-                />
-                <XAxis
-                  dataKey="category_product"
-                  stroke="#000"
-                  label={{ fontSize: "10px", color: "#fff" }}
-                  padding={{ left: 0, right: 0 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: "10px", height: "20px" }}
-                />
-                <Tooltip
-                  cursor={false}
-                  content={({ active, payload, label }) => (
-                    <ContentTooltip
-                      active={active}
-                      payload={payload}
-                      label={label}
-                    />
-                  )}
-                />
-                <Bar
-                  dataKey="total_category"
-                  fill="#7dd3fc"
-                  strokeWidth={2}
-                  stroke="#38bdf8"
-                  radius={[4, 4, 4, 4]}
-                  label={{ position: "top", fill: "black" }}
-                  activeBar={{ fill: "#38bdf8" }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </div>
       <div className="flex flex-col w-full gap-4">
         <Card className="w-full bg-blue-200 rounded-md overflow-hidden shadow border-0">
           <CardHeader>
@@ -1204,6 +788,423 @@ export const Client = () => {
           </div>
         </div>
       </div>
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 flex-col">
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">Report Product Per-Category</h2>
+          <div className="flex gap-2">
+            {dataStorage && (
+              <p className="px-5 h-10 border rounded flex items-center text-sm border-gray-500 cursor-default">
+                {dataStorage?.month.current_month.month +
+                  " " +
+                  dataStorage?.month.current_month.year}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="w-10 h-10 flex items-center justify-center border border-l-none rounded border-gray-500 hover:bg-sky-100"
+            >
+              <RefreshCcw className="w-4 h-4" />
+            </button>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <button
+                  className="flex items-center gap-2 px-4 py-2 bg-sky-400/80 hover:bg-sky-400 text-white rounded"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  Export by Month & Year
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="w-auto max-w-md p-4 border-gray-300">
+                <DialogHeader>
+                  <DialogTitle>Select Month and Year</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                      <CalendarIcon className="w-4 h-4" />
+                      <select
+                        className="outline-none bg-transparent"
+                        value={selectedMonth || ""}
+                        onChange={(e) =>
+                          setSelectedMonth(Number(e.target.value))
+                        }
+                      >
+                        <option value="" disabled>
+                          Select Month
+                        </option>
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {format(new Date(2025, i, 1), "MMMM")}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2 border border-sky-400/80 rounded px-3 py-2">
+                      <CalendarIcon className="w-4 h-4" />
+                      <select
+                        className="outline-none bg-transparent"
+                        value={selectedYear || ""}
+                        onChange={(e) =>
+                          setSelectedYear(Number(e.target.value))
+                        }
+                      >
+                        <option value="" disabled>
+                          Select Year
+                        </option>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <option key={i} value={2025 - i}>
+                            {2025 - i}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleExportByMonthByYear}
+                    className="w-full px-4 py-2 bg-sky-400/80 hover:bg-sky-400 text-white rounded"
+                    disabled={isPendingExportByMonthByYear}
+                  >
+                    {isPendingExportByMonthByYear ? "Exporting..." : "Export"}
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            {/* <ExportByMonthYearButton /> */}
+          </div>
+        </div>
+        <div className="h-[300px] w-full relative">
+          {loading ? (
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChart}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">
+            Report Product Per-Category (Staging)
+          </h2>
+        </div>
+        <div className="h-[300px] w-full relative">
+          {loading ? (
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChartStaging}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">Report Product Dump</h2>
+        </div>
+        <div className="h-[300px] w-full relative">
+          {loading ? (
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChartDump}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">Report Product Scrap Qcd</h2>
+        </div>
+        <div className="h-[300px] w-full relative">
+          {loading ? (
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChartScrapQcd}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="w-full justify-between items-center flex mb-5">
+          <h2 className="text-xl font-bold">Report Product B2B</h2>
+        </div>
+        <div className="h-[300px] w-full relative">
+          {loading ? (
+            <div className="w-full h-full absolute top-0 left-0 bg-sky-500/15 backdrop-blur z-10 rounded flex justify-center items-center border border-sky-500">
+              <Loader className="w-7 h-7 animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dataChartB2b}
+                margin={{
+                  top: 5,
+                  right: 10,
+                  left: 30,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  className="stroke-gray-200"
+                  horizontalCoordinatesGenerator={(props) =>
+                    props.height > 250 ? [75, 125, 175, 225] : [100, 200]
+                  }
+                />
+                <YAxis
+                  padding={{ top: 10 }}
+                  dataKey={"total_category"}
+                  style={{ fontSize: "14px" }}
+                  tick={false}
+                  width={0}
+                  axisLine={false}
+                />
+                <XAxis
+                  dataKey="category_product"
+                  stroke="#000"
+                  label={{ fontSize: "10px", color: "#fff" }}
+                  padding={{ left: 0, right: 0 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: "10px", height: "20px" }}
+                />
+                <Tooltip
+                  cursor={false}
+                  content={({ active, payload, label }) => (
+                    <ContentTooltip
+                      active={active}
+                      payload={payload}
+                      label={label}
+                    />
+                  )}
+                />
+                <Bar
+                  dataKey="total_category"
+                  fill="#7dd3fc"
+                  strokeWidth={2}
+                  stroke="#38bdf8"
+                  radius={[4, 4, 4, 4]}
+                  label={{ position: "top", fill: "black" }}
+                  activeBar={{ fill: "#38bdf8" }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow p-5 gap-6 items-center flex-col">
         <div className="w-full flex flex-col gap-4">
           <h3 className="text-lg font-semibold">List Product Per-Category</h3>

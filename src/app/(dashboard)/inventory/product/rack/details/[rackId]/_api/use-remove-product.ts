@@ -6,8 +6,7 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: string;
-  idProduct: string;
+  body: any;
 };
 
 type Error = AxiosError;
@@ -16,16 +15,13 @@ export const useRemoveProduct = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id, idProduct }) => {
-      const res = await axios.delete(
-        `${baseUrl}/racks/${id}/display-products/${idProduct}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+  return useMutation<AxiosResponse, Error, RequestType>({
+    mutationFn: async ({ body }) => {
+      const res = await axios.post(`${baseUrl}/racks/remove-product`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
     onSuccess: () => {
@@ -38,13 +34,14 @@ export const useRemoveProduct = () => {
       });
     },
     onError: (err) => {
-      if (err.status === 403) {
-        toast.error(`Error 403: Restricted Access`);
+      const status = err.response?.status;
+
+      if (status === 403) {
+        toast.error("Error 403: Restricted Access");
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to remove`);
-        console.log("ERROR_REMOVE_PRODUCT:", err);
+        toast.error(`ERROR ${status}: Product failed to remove`);
+        console.error("ERROR_REMOVE_PRODUCT:", err);
       }
     },
   });
-  return mutation;
 };
