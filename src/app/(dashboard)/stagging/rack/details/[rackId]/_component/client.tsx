@@ -121,7 +121,7 @@ export const Client = () => {
   }, [data]);
 
   const dataList: any[] = useMemo(() => {
-    return data?.data.data.resource.products;
+    return data?.data.data.resource.products.data;
   }, [data]);
 
   const dataListProduct: any[] = useMemo(() => {
