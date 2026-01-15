@@ -44,6 +44,12 @@ const DialogExportData = ({
   const [pageBreak, setPageBreak] = useState<"none" | "cek" | "catat">("none");
   const [cekOpen, setCekOpen] = useState(false);
   const [catatOpen, setCatatOpen] = useState(false);
+  const loyalty = data?.buyer_loyalty;
+
+  const showLoyaltyCard =
+    loyalty?.upgrade_message_rank != null &&
+    loyalty?.upgrade_message_discount != null &&
+    loyalty?.expired_rank != null;
 
   function convertToRoman(num: number): string {
     const romanNumerals: { value: number; symbol: string }[] = [
@@ -339,29 +345,31 @@ const DialogExportData = ({
                       <p>: {data?.data?.transactions_today}</p>
                     </div>
                   </div>
-                  {data?.buyer_loyalty?.rank && (
+                  {showLoyaltyCard && (
                     <div className="w-full border border-black p-3 my-3 bg-gray-50">
                       <p className="font-bold mb-1">🎉 Selamat!</p>
+
                       <p className="text-justify">
                         Anda saat ini berada di{" "}
                         <span className="font-bold uppercase">
-                          Rank {data?.buyer_loyalty?.upgrade_message_rank}
+                          Rank {loyalty.upgrade_message_rank}
                         </span>{" "}
                         dan berhak mendapatkan{" "}
                         <span className="font-bold">
-                          diskon{" "}
-                          {data?.buyer_loyalty?.upgrade_message_discount ?? 0}%
+                          diskon {loyalty.upgrade_message_discount}%
                         </span>{" "}
                         untuk pembelanjaan selanjutnya.
                       </p>
+
                       <p className="mt-1 text-sm">
                         Masa berlaku rank hingga:{" "}
                         <span className="font-bold">
-                          {data?.buyer_loyalty?.expired_rank ?? "-"}
+                          {loyalty.expired_rank}
                         </span>
                       </p>
                     </div>
                   )}
+
                   <h3 className="font-bold my-3">A. Identitas Pembeli</h3>
                   <div className="w-[99.8%] flex flex-col border border-black">
                     <div className="w-full flex">
