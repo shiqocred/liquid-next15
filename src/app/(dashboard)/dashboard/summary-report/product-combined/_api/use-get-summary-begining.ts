@@ -3,11 +3,11 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 export const useGetSummaryBeginBalance = (date?: string) => {
   const accessToken = getCookie("accessToken");
-  const today = new Date().toISOString().split("T")[0];
-  const finalDate = date ?? today;
+  const finalDate = date ?? format(new Date(), "yyyy-MM-dd");
 
   return useQuery({
     queryKey: ["summary-begin-balance", finalDate],

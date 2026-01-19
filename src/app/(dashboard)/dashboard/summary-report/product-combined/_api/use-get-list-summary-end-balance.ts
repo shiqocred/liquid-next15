@@ -3,15 +3,17 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
-export const useGetSummaryEndBalance = () => {
+export const useGetSummaryEndBalance = (date?: string) => {
   const accessToken = getCookie("accessToken");
+  const finalDate = date ?? format(new Date(), "yyyy-MM-dd");
 
   return useQuery({
-    queryKey: ["summary-end-balance"],
+    queryKey: ["summary-end-balance", finalDate],
     queryFn: async () => {
       const res = await axios.get(
-        `${baseUrl}/summary-ending-balance`,
+        `${baseUrl}/summary-ending-balance?date=${finalDate}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

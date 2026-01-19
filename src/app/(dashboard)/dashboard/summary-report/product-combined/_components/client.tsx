@@ -92,17 +92,18 @@ export const Client = () => {
   });
 
   // get begin balance date
-  const todayString = format(new Date(), "yyyy-MM-dd");
+  const [beginBalanceDate, setBeginBalanceDate] = useState<Date>(new Date());
 
+  const beginBalanceDateString = format(beginBalanceDate, "yyyy-MM-dd");
   const { data: beginBalanceData, isLoading: isLoadingBeginBalance } =
-    useGetSummaryBeginBalance(todayString);
+    useGetSummaryBeginBalance(beginBalanceDateString);
   const dataBegin = useMemo(() => {
     return beginBalanceData?.data?.resource;
   }, [beginBalanceData]);
 
   // get end balance date
   const { data: endBalanceData, isLoading: isLoadingEndBalance } =
-    useGetSummaryEndBalance();
+    useGetSummaryEndBalance(beginBalanceDateString);
   const dataEnd = useMemo(() => {
     return endBalanceData?.data?.resource;
   }, [endBalanceData]);
@@ -207,7 +208,7 @@ export const Client = () => {
     className,
   }: {
     title: string;
-    value?: string | number | React.ReactNode;
+    value?: React.ReactNode;
     qty?: string | number;
     className?: string;
   }) => (
@@ -217,7 +218,9 @@ export const Client = () => {
         className,
       )}
     >
-      <p className="text-sm text-gray-500">{title}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-gray-500">{title}</p>
+      </div>
 
       <div className="mt-1">
         <div className="text-xl font-semibold">{value ?? "-"}</div>
@@ -498,7 +501,34 @@ export const Client = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">Summary Report</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Summary Report</h2>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 border-sky-400/80"
+              >
+                <CalendarIcon className="w-4 h-4" />
+                {format(beginBalanceDate, "dd MMM yyyy")}
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </PopoverTrigger>
+
+            <PopoverContent className="p-2 w-auto" align="end">
+              <Calendar
+                mode="single"
+                selected={beginBalanceDate}
+                onSelect={(date) => date && setBeginBalanceDate(date)}
+                disabled={(date) =>
+                  date > new Date() || date < new Date("1900-01-01")
+                }
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
         {/* SUMMARY CARDS */}
         <div className="grid grid-cols-2 gap-6">
           {/* Saldo */}
@@ -517,7 +547,6 @@ export const Client = () => {
             qty={dataBegin?.total_all_product}
             className="bg-sky-200"
           />
-
           <SummaryCard
             title="Saldo Akhir"
             value={
