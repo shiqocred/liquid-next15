@@ -54,6 +54,8 @@ import { useExportInboundDataDay } from "../_api/use-export-summary-inbound-day"
 import { useExportOutboundDataDay } from "../_api/use-export-summary-outbound-day";
 import { useExportInboundData } from "../_api/use-export-summary-inbound";
 import { useExportOutboundData } from "../_api/use-export-summary-outbound";
+import { useGetSummaryBeginBalance } from "../_api/use-get-summary-begining";
+import { useGetSummaryEndBalance } from "../_api/use-get-list-summary-end-balance";
 
 type DestinationMC = {
   date: string;
@@ -88,6 +90,22 @@ export const Client = () => {
     total: 1, //total data
     perPage: 1,
   });
+
+  // get begin balance date
+  const todayString = format(new Date(), "yyyy-MM-dd");
+
+  const { data: beginBalanceData, isLoading: isLoadingBeginBalance } =
+    useGetSummaryBeginBalance(todayString);
+  const dataBegin = useMemo(() => {
+    return beginBalanceData?.data?.resource;
+  }, [beginBalanceData]);
+
+  // get end balance date
+  const { data: endBalanceData, isLoading: isLoadingEndBalance } =
+    useGetSummaryEndBalance();
+  const dataEnd = useMemo(() => {
+    return endBalanceData?.data?.resource;
+  }, [endBalanceData]);
 
   // get data utama
   const {
@@ -146,7 +164,7 @@ export const Client = () => {
 
   const mergeInboundOutbound = (
     inbound: any[],
-    outbound: any[]
+    outbound: any[],
   ): DestinationMC[] => {
     const map = new Map<string, DestinationMC>();
 
@@ -171,14 +189,14 @@ export const Client = () => {
     });
 
     return Array.from(map.values()).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
   };
 
   const tableData = useMemo(() => {
     return mergeInboundOutbound(
       dataBoth?.inbound ?? [],
-      dataBoth?.outbound ?? []
+      dataBoth?.outbound ?? [],
     );
   }, [dataBoth]);
 
@@ -189,20 +207,20 @@ export const Client = () => {
     className,
   }: {
     title: string;
-    value?: string | number;
+    value?: string | number | React.ReactNode;
     qty?: string | number;
     className?: string;
   }) => (
     <div
       className={cn(
         "rounded-md border border-gray-300 bg-white p-4 flex flex-col justify-between",
-        className
+        className,
       )}
     >
       <p className="text-sm text-gray-500">{title}</p>
 
       <div className="mt-1">
-        <p className="text-xl font-semibold">{value ?? "-"}</p>
+        <div className="text-xl font-semibold">{value ?? "-"}</div>
 
         {qty !== undefined && (
           <p className="text-sm text-gray-600 mt-1">
@@ -229,7 +247,7 @@ export const Client = () => {
       cell: ({ row }) => {
         const formatted = format(
           new Date(row.original.date),
-          "iiii, dd MMMM yyyy"
+          "iiii, dd MMMM yyyy",
         );
         return <div className="tabular-nums">{formatted}</div>;
       },
@@ -326,7 +344,7 @@ export const Client = () => {
                   className={cn(
                     "items-center p-0 w-9 h-9",
                     "border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50",
-                    "disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                    "disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed",
                   )}
                   variant="outline"
                   type="button"
@@ -384,7 +402,7 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
@@ -404,7 +422,7 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
@@ -423,7 +441,7 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
@@ -442,7 +460,7 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
@@ -486,15 +504,33 @@ export const Client = () => {
           {/* Saldo */}
           <SummaryCard
             title="Saldo Awal"
-            value={formatRupiah(dataBoth?.summary_report?.begin_balance)}
-            qty={dataBoth?.summary_report?.qty_in}
+            value={
+              isLoadingBeginBalance ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm text-gray-600">Loading</span>
+                </div>
+              ) : (
+                formatRupiah(dataBegin?.total_all_price)
+              )
+            }
+            qty={dataBegin?.total_all_product}
             className="bg-sky-200"
           />
 
           <SummaryCard
             title="Saldo Akhir"
-            value={formatRupiah(dataBoth?.summary_report?.end_balance)}
-            qty={dataBoth?.summary_report?.qty_out}
+            value={
+              isLoadingEndBalance ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm text-gray-600">Loading</span>
+                </div>
+              ) : (
+                formatRupiah(dataEnd?.total_all_price)
+              )
+            }
+            qty={dataEnd?.total_all_product}
             className="bg-sky-200"
           />
 
