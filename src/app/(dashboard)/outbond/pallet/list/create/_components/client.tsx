@@ -260,8 +260,8 @@ export const Client = () => {
     });
     setInput((prev) => ({
       ...prev,
-      total: Math.ceil(dataResource?.total_old_price).toString(),
-      totalNew: Math.ceil(dataResource?.total_new_price).toString(),
+      total: Math.round(dataResource?.total_old_price).toString(),
+      totalNew: Math.round(dataResource?.total_new_price).toString(),
     }));
   }, [data]);
 
