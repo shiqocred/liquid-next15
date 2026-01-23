@@ -443,3 +443,4 @@ const MenuInbound = ({ pathname, setOpen }: MenuInboundProps) => {
 };
 
 export default MenuInbound;
+

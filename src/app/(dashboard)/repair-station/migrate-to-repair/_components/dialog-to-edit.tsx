@@ -107,7 +107,7 @@ export const DialogToEdit = ({
       // ),
       condition: dataDetail?.new_quality
         ? Object.keys(dataDetail.new_quality).find(
-            (key) => dataDetail.new_quality[key as keyof QualityData] !== null
+            (key) => dataDetail.new_quality[key as keyof QualityData] !== null,
           )
         : undefined,
       new_category_product: input.category ?? dataDetail?.new_category_product,
@@ -124,7 +124,7 @@ export const DialogToEdit = ({
           });
           onOpenChange();
         },
-      }
+      },
     );
   };
 
@@ -133,7 +133,7 @@ export const DialogToEdit = ({
       const qualityObject = JSON.parse(v);
 
       const filteredEntries = Object.entries(qualityObject).find(
-        ([, value]) => value !== null
+        ([, value]) => value !== null,
       );
 
       return filteredEntries?.[0] ?? "";
@@ -142,7 +142,7 @@ export const DialogToEdit = ({
 
   // selected category and its max price (used in confirmation dialog)
   const selectedCategory = categories?.find(
-    (item: any) => item.name_category === input.category
+    (item: any) => item.name_category === input.category,
   );
   const maxPriceCategory = selectedCategory
     ? parseFloat(selectedCategory.max_price_category ?? "0")
@@ -152,7 +152,7 @@ export const DialogToEdit = ({
     let discount = 0;
     if (input.category) {
       const selectedCategory = categories.find(
-        (item: any) => item.name_category === input.category
+        (item: any) => item.name_category === input.category,
       );
       discount = selectedCategory
         ? parseFloat(selectedCategory.discount_category ?? "0")
@@ -509,7 +509,7 @@ export const DialogToEdit = ({
                                         "my-2 first:mt-0 last:mb-0 flex gap-2 items-center border",
                                         input.category === item.name_category
                                           ? "border-gray-500"
-                                          : "border-gray-300"
+                                          : "border-gray-300",
                                       )}
                                       onSelect={() => {
                                         setInput((prev: any) => ({
@@ -520,7 +520,7 @@ export const DialogToEdit = ({
                                             (dataDetail?.old_price_product /
                                               100) *
                                               parseFloat(
-                                                item?.discount_category ?? "0"
+                                                item?.discount_category ?? "0",
                                               )
                                           ).toString(),
                                         }));
@@ -540,7 +540,7 @@ export const DialogToEdit = ({
                                             input.category ===
                                               item.name_category
                                               ? "border-gray-500"
-                                              : "border-gray-300"
+                                              : "border-gray-300",
                                           )}
                                         >
                                           {item.name_category}
@@ -552,8 +552,8 @@ export const DialogToEdit = ({
                                             Max.{" "}
                                             {formatRupiah(
                                               parseFloat(
-                                                item.max_price_category
-                                              )
+                                                item.max_price_category,
+                                              ),
                                             )}
                                           </span>
                                         </p>
@@ -629,7 +629,7 @@ export const DialogToEdit = ({
                   </div>
                   <BarcodePrinted
                     barcode={dataDetail?.new_barcode_product}
-                    newPrice={dataDetail?.new_price_product}
+                    newPrice={dataDetail?.display_price}
                     oldPrice={dataDetail?.old_price_product}
                     category={dataDetail?.new_category_product}
                     discount={dataDetail?.discount_category ?? "0"}
