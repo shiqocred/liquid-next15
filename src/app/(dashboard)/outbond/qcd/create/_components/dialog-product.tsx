@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { RefreshCw, Trash2, X } from "lucide-react";
+import { Loader, RefreshCw, Trash2, X } from "lucide-react";
 import React from "react";
 import { useScrapQCDAll } from "../_api/use-scrap-qcd-all";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -30,6 +30,7 @@ const DialogProduct = ({
   metaPage,
   setPage,
   documentId,
+  isLoading,
 }: {
   open: boolean;
   onCloseModal: () => void;
@@ -43,12 +44,13 @@ const DialogProduct = ({
   metaPage: any;
   setPage: any;
   documentId: string;
+  isLoading: boolean;
 }) => {
   // confirm delete
   const [DeleteDialogAll, confirmDeleteAll] = useConfirm(
     "Scrap All QCD",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   const { mutate: mutateDeleteAll, isPending: isPendingDeleteAll } =
@@ -68,7 +70,7 @@ const DialogProduct = ({
         onSuccess: () => {
           refetch();
         },
-      }
+      },
     );
   };
   return (
@@ -111,7 +113,7 @@ const DialogProduct = ({
                   <RefreshCw
                     className={cn(
                       "w-4 h-4",
-                      isRefetching ? "animate-spin" : ""
+                      isRefetching ? "animate-spin" : "",
                     )}
                   />
                 </Button>
@@ -131,17 +133,25 @@ const DialogProduct = ({
                 </Button>
               </div>
             </div>
-            <DataTable
-              isSticky
-              maxHeight="h-[60vh]"
-              isLoading={isRefetching}
-              columns={columns}
-              data={dataTable ?? []}
-            />
-            <Pagination
-              pagination={{ ...metaPage, current: page }}
-              setPagination={setPage}
-            />
+            {isLoading ? (
+              <div className="w-full h-[78vh] flex justify-center items-center">
+                <Loader className="size-6 animate-spin" />
+              </div>
+            ) : (
+              <div>
+                <DataTable
+                  isSticky
+                  maxHeight="h-[60vh]"
+                  isLoading={isRefetching}
+                  columns={columns}
+                  data={dataTable ?? []}
+                />
+                <Pagination
+                  pagination={{ ...metaPage, current: page }}
+                  setPagination={setPage}
+                />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

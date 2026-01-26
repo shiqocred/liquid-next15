@@ -41,7 +41,7 @@ export const Client = () => {
 
   // data search, page
   const { search, searchValue, setSearch } = useSearchQuery();
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("page");
 
   // mutate DELETE, UPDATE
   const { mutate: mutateUpdate } = useUpdateBuyer();

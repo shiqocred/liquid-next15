@@ -56,13 +56,13 @@ export const Client = () => {
   const [search, setSearch] = useQueryState("q", { defaultValue: "" });
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pp");
 
   // search, debounce, paginate end ----------------------------------------------------------------
 

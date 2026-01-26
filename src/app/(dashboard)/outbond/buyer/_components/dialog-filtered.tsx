@@ -32,7 +32,7 @@ export const DialogFiltered = ({
   );
 
   // data search, page
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("page");
 
   const {
     mutate: mutateApproveSpvFilter,

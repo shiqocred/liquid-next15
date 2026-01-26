@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  Loader,
   Loader2,
   PlusCircle,
   RefreshCw,
@@ -45,12 +46,12 @@ export const Client = () => {
   const router = useRouter();
   const [isProduct, setIsProduct] = useState(false);
   const [dynamicMessage, setDynamicMessage] = useState(
-    "This action cannot be undone"
+    "This action cannot be undone",
   );
   const addRef = useRef<HTMLInputElement | null>(null);
   const { qcdId } = useParams();
   const { search, searchValue, setSearch } = useSearchQuery("");
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("page");
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
   const [pageProduct, setPageProduct] = useState(1);
@@ -64,39 +65,47 @@ export const Client = () => {
   const [AddProductDialog, confirmAddProduct] = useConfirm(
     "Confirm Add Product",
     dynamicMessage,
-    "liquid"
+    "liquid",
   );
 
   const [SubmitDialog, confirmSubmit] = useConfirm(
     "Create Qcd",
     "This action cannot be undone",
-    "liquid"
+    "liquid",
   );
 
   const [FinishDialog, confirmFinish] = useConfirm(
     "Finish Qcd",
     "This action cannot be undone",
-    "liquid"
+    "liquid",
   );
 
   const [DeleteProductDialog, confirmDeleteProductDialog] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // query start ----------------------------------------------------------------
 
-  const { data, isSuccess, refetch, isRefetching, error, isError } =
-    useGetDetailQCD({
-      id: qcdId,
-      p: page,
-      q: searchValue,
-    });
+  const {
+    data,
+    isSuccess,
+    refetch,
+    isLoading: isLoadingData,
+    isRefetching,
+    error,
+    isError,
+  } = useGetDetailQCD({
+    id: qcdId,
+    p: page,
+    q: searchValue,
+  });
 
   const {
     data: dataProduct,
     refetch: refetchProduct,
+    isLoading: isLoadingProduct,
     isRefetching: isRefetchingProduct,
     error: errorProduct,
     isError: isErrorProduct,
@@ -136,7 +145,7 @@ export const Client = () => {
             return;
           }
         },
-      }
+      },
     );
   };
 
@@ -156,7 +165,7 @@ export const Client = () => {
           const id = res?.data?.data?.resource?.id;
           router.push(`/outbond/qcd/detail/${id}`);
         },
-      }
+      },
     );
   };
 
@@ -182,7 +191,7 @@ export const Client = () => {
         onSuccess: () => {
           refetch();
         },
-      }
+      },
     );
   };
 
@@ -317,7 +326,7 @@ export const Client = () => {
         </div>
       ),
     },
-     {
+    {
       header: () => <div className="text-center">Action</div>,
       id: "action",
       cell: ({ row }) => (
@@ -447,6 +456,7 @@ export const Client = () => {
         search={productSearch}
         setSearch={setProductSearch}
         refetch={refetchProduct}
+        isLoading={isLoadingProduct}
         isRefetching={isRefetchingProduct}
         columns={columnProduct}
         dataTable={dataListProduct}
@@ -577,15 +587,23 @@ export const Client = () => {
               </Button>
             </div>
           </div>
-          <DataTable
-            isLoading={isRefetching}
-            columns={columnQcd}
-            data={dataList ?? []}
-          />
-          <Pagination
-            pagination={{ ...metaPage, current: page }}
-            setPagination={setPage}
-          />
+          {isLoadingData ? (
+            <div className="w-full h-[78vh] flex justify-center items-center">
+              <Loader className="size-6 animate-spin" />
+            </div>
+          ) : (
+            <div>
+              <DataTable
+                isLoading={isRefetching}
+                columns={columnQcd}
+                data={dataList ?? []}
+              />
+              <Pagination
+                pagination={{ ...metaPage, current: page }}
+                setPagination={setPage}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
