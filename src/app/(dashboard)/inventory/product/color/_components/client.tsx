@@ -638,6 +638,7 @@ export const Client = () => {
                 <DataTable
                   columns={columnListProductColorWMS}
                   data={dataListWMS ?? []}
+                  isLoading={loadingWMS}
                 />
                 <Pagination
                   pagination={{ ...metaPageWMS, current: pageWMS }}
@@ -703,6 +704,7 @@ export const Client = () => {
                 <DataTable
                   columns={columnListProductColorAPK}
                   data={dataListAPK ?? []}
+                  isLoading={loadingAPK}
                 />
                 <Pagination
                   pagination={{ ...metaPageAPK, current: pageAPK }}

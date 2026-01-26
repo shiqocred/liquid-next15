@@ -267,9 +267,9 @@ export const Client = () => {
       header: "Category",
     },
     {
-      accessorKey: "new_price_product",
+      accessorKey: "display_price",
       header: "Price",
-      cell: ({ row }) => formatRupiah(row.original.new_price_product),
+      cell: ({ row }) => formatRupiah(row.original.display_price),
     },
     {
       accessorKey: "action",

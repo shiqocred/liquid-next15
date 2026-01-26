@@ -49,7 +49,7 @@ export const Client = () => {
 
   // data search, page
   const { search, searchValue, setSearch } = useSearchQuery();
-  const { page, metaPage, setPage, setPagination } = usePagination();
+  const { page, metaPage, setPage, setPagination } = usePagination("p");
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(

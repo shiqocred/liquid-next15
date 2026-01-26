@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   FileDown,
+  Loader,
   Loader2,
   Pencil,
   Printer,
@@ -67,12 +68,12 @@ export const Client = () => {
   const queryClient = useQueryClient();
   const [openCreateEdit, setOpenCreateEdit] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
   const [isOpenCategory, setIsOpenCategory] = useState(false);
   const [isOpenDetailProduct, setIsOpenDetailProduct] = useQueryState(
     "dialog2",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
   // rack Id for Edit
   const [rackId, setRackId] = useQueryState("rackId", {
@@ -103,19 +104,19 @@ export const Client = () => {
     setSearch: setSearchProduct,
   } = useSearchQuery("qProduct");
   const [searchRackInput, setSearchRackInput] = useState<string>(
-    (searchRack as string) ?? ""
+    (searchRack as string) ?? "",
   );
   const [searchProductInput, setSearchProductInput] = useState<string>(
-    (searchProduct as string) ?? ""
+    (searchProduct as string) ?? "",
   );
 
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pp");
 
   // data form create edit
   const [input, setInput] = useState({
@@ -142,7 +143,7 @@ export const Client = () => {
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Rack Display",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
   // const [DeleteDialogProduct, confirmDeleteProduct] = useConfirm(
   //   "Delete Product",
@@ -273,7 +274,7 @@ export const Client = () => {
         (key) =>
           JSON.parse(dataDetailProduct?.new_quality)[
             key as keyof QualityData
-          ] !== null
+          ] !== null,
       ),
       new_category_product:
         inputProduct.category ?? dataDetailProduct?.new_category_product,
@@ -290,7 +291,7 @@ export const Client = () => {
             queryKey: ["product-detail-product-detail", dataDetailProduct.id],
           });
         },
-      }
+      },
     );
   };
 
@@ -313,7 +314,7 @@ export const Client = () => {
             queryKey: ["list-product-by-category"],
           });
         },
-      }
+      },
     );
   };
 
@@ -353,7 +354,7 @@ export const Client = () => {
         onSuccess: () => {
           handleClose();
         },
-      }
+      },
     );
   };
 
@@ -370,7 +371,7 @@ export const Client = () => {
         onSuccess: () => {
           handleClose();
         },
-      }
+      },
     );
   };
 
@@ -404,7 +405,7 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
@@ -459,7 +460,7 @@ export const Client = () => {
       displayPrice: Math.round(
         parseFloat(inputProduct.price ?? "0") -
           (parseFloat(inputProduct.price ?? "0") / 100) *
-            parseFloat(inputProduct.discount ?? "0")
+            parseFloat(inputProduct.discount ?? "0"),
       ).toString(),
     }));
   }, [inputProduct.discount, inputProduct.price]);
@@ -505,7 +506,7 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.new_price_product ?? row.original.old_price_product
+            row.original.new_price_product ?? row.original.old_price_product,
           )}
         </div>
       ),
@@ -517,7 +518,7 @@ export const Client = () => {
         <div className="">
           {format(
             new Date(row.original.new_date_in_product),
-            "iii, dd MMM yyyy"
+            "iii, dd MMM yyyy",
           )}
         </div>
       ),
@@ -541,7 +542,7 @@ export const Client = () => {
                   | "display"
                   | "expired"
                   | "slowmoving"
-              ]
+              ],
             )}
           >
             {status}
@@ -582,7 +583,7 @@ export const Client = () => {
                 setDamagedBarcode(
                   row.original.new_barcode_product ??
                     row.original.old_barcode_product ??
-                    "-"
+                    "-",
                 );
                 setSource(row.original.source ?? "");
                 setIsOpenDamaged(true);
@@ -896,7 +897,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isLoadingRacks ? "animate-spin" : ""
+                        isLoadingRacks ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -1193,6 +1194,7 @@ export const Client = () => {
                   metaPageProduct,
                 })}
                 data={productData ?? []}
+                isLoading={loading}
               />
               <Pagination
                 pagination={{ ...metaPageProduct, current: pageProduct }}

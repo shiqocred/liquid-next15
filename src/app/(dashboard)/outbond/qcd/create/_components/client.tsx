@@ -119,6 +119,7 @@ export const Client = () => {
 
   const {
     data: dataQcd,
+    isLoading: isLoadingQcd,
     refetch: refetchQcd,
     isRefetching: isRefetchingQcd,
     error: errorQcd,
@@ -130,6 +131,7 @@ export const Client = () => {
 
   const {
     data: dataProduct,
+    isLoading: isLoadingProduct,
     refetch: refetchProduct,
     isRefetching: isRefetchingProduct,
     error: errorProduct,
@@ -154,7 +156,7 @@ export const Client = () => {
   }, [dataProduct]);
 
   // memo end ----------------------------------------------------------------
-
+  
   // paginate start ----------------------------------------------------------------
 
   useEffect(() => {
@@ -480,6 +482,7 @@ export const Client = () => {
         search={productSearch}
         setSearch={setProductSearch}
         refetch={refetchProduct}
+        isLoading={isLoadingProduct}
         isRefetching={isRefetchingProduct}
         columns={columnProduct}
         dataTable={dataListProduct}

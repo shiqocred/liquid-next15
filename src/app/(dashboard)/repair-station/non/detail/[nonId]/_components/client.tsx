@@ -50,7 +50,7 @@ export const Client = () => {
   const addRef = useRef<HTMLInputElement | null>(null);
   const { nonId } = useParams();
   const { search, searchValue, setSearch } = useSearchQuery("");
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("page");
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
   const [pageProduct, setPageProduct] = useState(1);

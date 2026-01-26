@@ -60,13 +60,13 @@ export const Client = () => {
   const [search, setSearch] = useQueryState("q", { defaultValue: "" });
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pProduct");
 
   // search, debounce, paginate end ----------------------------------------------------------------
 
@@ -235,6 +235,7 @@ export const Client = () => {
   const handleCloseProduct = () => {
     setIsProduct(false);
     setProductSearch("");
+    setPageProduct(1);
   };
 
   // handling close end ----------------------------------------------------------------

@@ -108,14 +108,14 @@ export const Client = () => {
     setSearchProductInput((searchProduct as string) ?? "");
   }, [searchProduct]);
 
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
 
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pProduct");
 
   // data form create edit
   type InputState = {
@@ -221,7 +221,15 @@ export const Client = () => {
     isLoadingProducts ||
     isRefetchingProducts ||
     isPendingProducts ||
-    isPendingAddFilter;
+    isPendingAddFilter ||
+    isPendingExport ||
+    isPendingSubmit ||
+    isPendingDryScrap ||
+    isPendingMigrateToRepair ||
+    isLoadingRacks ||
+    isPendingDelete ||
+    isPendingCreate ||
+    isPendingUpdate;
 
   // handle close
   const handleClose = () => {
@@ -741,6 +749,7 @@ export const Client = () => {
                 setBarcodeOpen,
               })}
               data={racksData?.data ?? []}
+              isLoading={loading}
             />
 
             <div className="w-full p-4 bg-white">
@@ -828,6 +837,7 @@ export const Client = () => {
                   setSource,
                 })}
                 data={productData ?? []}
+                isLoading={loading}
               />
               <Pagination
                 pagination={{ ...metaPageProduct, current: pageProduct }}
