@@ -119,7 +119,6 @@ export const Client = () => {
 
   const {
     data: dataQcd,
-    isLoading: isLoadingQcd,
     refetch: refetchQcd,
     isRefetching: isRefetchingQcd,
     error: errorQcd,
@@ -156,7 +155,7 @@ export const Client = () => {
   }, [dataProduct]);
 
   // memo end ----------------------------------------------------------------
-  
+
   // paginate start ----------------------------------------------------------------
 
   useEffect(() => {
