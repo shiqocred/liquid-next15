@@ -15,6 +15,7 @@ import {
   Shield,
   Trash2,
   XCircle,
+  BookMarked,
 } from "lucide-react";
 import Link from "next/link";
 import { MouseEvent } from "react";
@@ -44,7 +45,7 @@ const ButtonAction = ({
       <Button
         className={cn(
           "items-center p-0 w-9 disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed",
-          colorMap[type]
+          colorMap[type],
         )}
         disabled={isLoading}
         variant={"outline"}
@@ -114,7 +115,7 @@ export const columnProductStaging = ({
     cell: ({ row }) => (
       <div className="tabular-nums">
         {formatRupiah(
-          row.original.new_price_product ?? row.original.old_price_product
+          row.original.new_price_product ?? row.original.old_price_product,
         )}
       </div>
     ),
@@ -140,7 +141,25 @@ export const columnProductStaging = ({
             status === "display" && "bg-green-400/80 hover:bg-green-400/80",
             status === "expired" && "bg-red-400/80 hover:bg-red-400/80",
             status === "slow_moving" &&
-              "bg-yellow-400/80 hover:bg-yellow-400/80"
+              "bg-yellow-400/80 hover:bg-yellow-400/80",
+          )}
+        >
+          {status}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "status_so",
+    header: "Status SO",
+    cell: ({ row }) => {
+      const status = row.original.status_so;
+      return (
+        <Badge
+          className={cn(
+            "shadow-none font-normal rounded-full capitalize text-black",
+            status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+            status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
           )}
         >
           {status}
@@ -182,7 +201,7 @@ export const columnProductStaging = ({
             setDamagedBarcode(
               row.original.new_barcode_product ??
                 row.original.old_barcode_product ??
-                "-"
+                "-",
             );
             setSource(row.original.source ?? "");
             setIsOpenDamaged(true);
@@ -311,6 +330,8 @@ export const columnRackStaging = ({
   setSelectedNameRack,
   setSelectedTotalProduct,
   setBarcodeOpen,
+  handleStockOpname,
+  isPendingStockOpname,
 }: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -346,6 +367,24 @@ export const columnRackStaging = ({
         {formatRupiah(row.original.total_new_price_product ?? 0)}
       </div>
     ),
+  },
+  {
+    accessorKey: "status_so",
+    header: "Status SO",
+    cell: ({ row }) => {
+      const status = row.original.status_so;
+      return (
+        <Badge
+          className={cn(
+            "shadow-none font-normal rounded-full capitalize text-black",
+            status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+            status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+          )}
+        >
+          {status}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "action",
@@ -398,6 +437,7 @@ export const columnRackStaging = ({
           icon={Printer}
           type="sky"
         />
+
         <ButtonAction
           label="Delete"
           onClick={(e) => {
@@ -417,6 +457,16 @@ export const columnRackStaging = ({
           isLoading={isLoading}
           icon={Boxes}
           type="sky"
+        />
+        <ButtonAction
+          label="Stock Opname"
+          onClick={(e) => {
+            e.preventDefault();
+            handleStockOpname(row.original.id);
+          }}
+          isLoading={isPendingStockOpname}
+          icon={BookMarked}
+          type="yellow"
         />
       </div>
     ),

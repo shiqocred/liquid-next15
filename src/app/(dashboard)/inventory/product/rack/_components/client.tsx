@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
+  BookMarked,
   FileDown,
   Loader2,
   Pencil,
@@ -53,6 +54,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import DialogBarcode from "./dialog-barcode";
 import { useToDamaged } from "../_api/use-to-damaged";
 import { DialogDamaged } from "./dialog-damaged";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
+import { useStockOpname } from "../_api/use-stock-opname";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -91,6 +94,7 @@ export const Client = () => {
   const [damagedProductId, setDamagedProductId] = useState("");
   const [source, setSource] = useState("");
   const [damagedBarcode, setDamagedBarcode] = useState("");
+  const [SOProductInput, setSOProductInput] = useState("");
 
   const {
     search: searchRack,
@@ -144,6 +148,13 @@ export const Client = () => {
     "This action cannot be undone",
     "destructive",
   );
+
+  const [SoRackDialog, confirmSoRack] = useConfirm(
+    "SO Rack Stagging",
+    "This action cannot be undone",
+    "liquid",
+  );
+
   // const [DeleteDialogProduct, confirmDeleteProduct] = useConfirm(
   //   "Delete Product",
   //   "This action cannot be undone",
@@ -167,6 +178,10 @@ export const Client = () => {
   // const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
   //   useDryScrap();
   const { mutate: mutateDamaged, isPending: isPendingDamaged } = useToDamaged();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
+  const { mutate: mutateStockOpname, isPending: isPendingStockOpname } =
+    useStockOpname();
 
   const {
     mutate: updateProduct,
@@ -408,6 +423,29 @@ export const Client = () => {
     );
   };
 
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+      },
+    );
+  };
+
+  // handle stock opname
+  const handleStockOpname = async (id: any) => {
+    const ok = await confirmSoRack();
+
+    if (!ok) return;
+    mutateStockOpname({ id });
+  };
+
   // const handleDryScrap = async (id: any) => {
   //   const ok = await confirmDryScrap();
 
@@ -550,6 +588,24 @@ export const Client = () => {
       },
     },
     {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -668,6 +724,24 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -747,6 +821,23 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Stock Opname</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingStockOpname}
+              onClick={(e) => {
+                e.preventDefault();
+                handleStockOpname(row.original.id);
+              }}
+            >
+              {isPendingStockOpname ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <BookMarked className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
         </div>
       ),
     },
@@ -774,6 +865,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <SoRackDialog />
       {/* <DialogDryScrap /> */}
       <DialogDamaged
         isOpen={isOpenDamaged}
@@ -1094,6 +1186,8 @@ export const Client = () => {
                 setSelectedNameRack,
                 setSelectedTotalProduct,
                 setBarcodeOpen,
+                handleStockOpname,
+                isPendingStockOpname,
               })}
               data={racksData?.data ?? []}
             />
@@ -1146,6 +1240,41 @@ export const Client = () => {
           </div> */}
 
           <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
+            <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+              <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+              <form
+                onSubmit={handleScanSOProduct}
+                className="flex flex-col gap-3"
+              >
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">
+                      Scan Barcode
+                    </label>
+                    <Input
+                      type="text"
+                      className="border-sky-400/80 focus-visible:ring-sky-400"
+                      value={SOProductInput}
+                      onChange={(e) => setSOProductInput(e.target.value)}
+                      placeholder="Scan barcode here..."
+                      disabled={isPendingScanSO}
+                      autoFocus
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                    disabled={isPendingScanSO || !SOProductInput.trim()}
+                  >
+                    {isPendingScanSO ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "SO"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </div>
             <h2 className="text-xl font-bold">List Product by Category</h2>
             <div className="flex flex-col w-full gap-4">
               <div className="flex gap-2 items-center w-full justify-between">

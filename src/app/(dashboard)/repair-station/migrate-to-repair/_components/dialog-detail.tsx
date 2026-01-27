@@ -8,10 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
-import { Barcode, Loader, RefreshCw, User2, X } from "lucide-react";
+import { Barcode, Loader, Loader2, RefreshCw, User2, X } from "lucide-react";
 import React from "react";
 
 const DialogDetail = ({
@@ -23,6 +24,10 @@ const DialogDetail = ({
   isRefetching,
   columns,
   dataTable,
+  handleScanSOProduct,
+  SOProductInput,
+  setSOProductInput,
+  isPendingScanSO,
 }: {
   open: any;
   onCloseModal: () => void;
@@ -32,6 +37,10 @@ const DialogDetail = ({
   isRefetching: any;
   columns: any;
   dataTable: any;
+  handleScanSOProduct: any;
+  SOProductInput: any;
+  setSOProductInput: any;
+  isPendingScanSO: any;
 }) => {
   return (
     <>
@@ -60,6 +69,41 @@ const DialogDetail = ({
             </div>
           ) : (
             <div className="w-full flex flex-col gap-5 mt-5 text-sm">
+              <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+                <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+                <form
+                  onSubmit={handleScanSOProduct}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1">
+                      <label className="text-sm font-medium text-gray-700 block mb-2">
+                        Scan Barcode
+                      </label>
+                      <Input
+                        type="text"
+                        className="border-sky-400/80 focus-visible:ring-sky-400"
+                        value={SOProductInput}
+                        onChange={(e) => setSOProductInput(e.target.value)}
+                        placeholder="Scan barcode here..."
+                        // disabled={isPendingScanSO}
+                        autoFocus
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                      disabled={isPendingScanSO || !SOProductInput.trim()}
+                    >
+                      {isPendingScanSO ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "SO"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
               <div className="flex w-full rounded-md overflow-hidden border border-sky-400/80 p-5 flex-col">
                 <div className="flex w-full border-sky-400/80 rounded-md overflow-hidden border p-4 flex-col">
                   <div className="w-full flex items-center">
@@ -112,7 +156,7 @@ const DialogDetail = ({
                           <RefreshCw
                             className={cn(
                               "w-4 h-4",
-                              isRefetching ? "animate-spin" : ""
+                              isRefetching ? "animate-spin" : "",
                             )}
                           />
                         </Button>
