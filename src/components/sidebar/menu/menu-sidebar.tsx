@@ -328,11 +328,11 @@ const sidebarMenu: MenuGroup[] = [
             href: "/inventory/stock-opname/color",
             roles: ["ADMIN", "SPV", "TEAM_LEADER"],
           },
-          {
-            title: "Category",
-            href: "/inventory/stock-opname/category",
-            roles: ["ADMIN", "SPV"],
-          },
+          // {
+          //   title: "Category",
+          //   href: "/inventory/stock-opname/category",
+          //   roles: ["ADMIN", "SPV"],
+          // },
         ],
       },
     ],

@@ -8,7 +8,7 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -37,6 +37,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { useExportDetailDataB2B } from "../_api/use-export-detail-data-b2b";
+import { useScanSODocument } from "../_api/use-scan-so-document";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -46,16 +47,17 @@ export const Client = () => {
   const router = useRouter();
   const [openDetail, setOpenDetail] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
 
   const [b2bId, setB2BId] = useQueryState("B2BId", { defaultValue: "" });
+  const [soDocumentInput, setSODocumentInput] = useState("");
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete B2B",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // data search, page
@@ -73,6 +75,8 @@ export const Client = () => {
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteB2B();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportDetailDataB2B();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSODocument();
 
   // get data utama
   const {
@@ -164,7 +168,22 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
+    );
+  };
+
+  // handle scan SO Document
+  const handleScanSODocument = (e: FormEvent) => {
+    e.preventDefault();
+    if (!soDocumentInput.trim()) return;
+
+    mutateScanSO(
+      { code_document: soDocumentInput },
+      {
+        onSuccess: () => {
+          setSODocumentInput("");
+        },
+      },
     );
   };
 
@@ -215,13 +234,31 @@ export const Client = () => {
               "rounded w-20 px-0 justify-center text-black font-normal capitalize",
               row.original.status_bulky.toLowerCase() === "selesai"
                 ? "bg-green-400 hover:bg-green-400"
-                : "bg-yellow-400 hover:bg-yellow-400"
+                : "bg-yellow-400 hover:bg-yellow-400",
             )}
           >
             {row.original.status_bulky}
           </Badge>
         </div>
       ),
+    },
+    {
+      accessorKey: "status_so_text",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so_text;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "action",
@@ -252,13 +289,13 @@ export const Client = () => {
               //   setOpenDetail(true);
               // }}
               onClick={() =>
-                  router.push(`/outbond/b2b/detail/${row.original.id}`)
-                }
+                router.push(`/outbond/b2b/detail/${row.original.id}`)
+              }
             >
               {/* {isLoadingDetail ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : ( */}
-                <ReceiptText className="w-4 h-4" />
+              <ReceiptText className="w-4 h-4" />
               {/* // )} */}
             </Button>
           </TooltipProviderPage>
@@ -369,6 +406,38 @@ export const Client = () => {
           <BreadcrumbItem>B2B</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
+        <h3 className="text-lg font-semibold">SO Document Disini</h3>
+        <form onSubmit={handleScanSODocument} className="flex flex-col gap-3">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Scan Barcode
+              </label>
+              <Input
+                type="text"
+                className="border-sky-400/80 focus-visible:ring-sky-400"
+                value={soDocumentInput}
+                onChange={(e) => setSODocumentInput(e.target.value)}
+                placeholder="Scan barcode here..."
+                disabled={isPendingScanSO}
+                autoFocus
+              />
+            </div>
+            <Button
+              type="submit"
+              className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingScanSO || !soDocumentInput.trim()}
+            >
+              {isPendingScanSO ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "SO"
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List B2B</h2>
         <div className="flex flex-col w-full gap-4">
@@ -400,7 +469,11 @@ export const Client = () => {
               </Link>
             </Button>
           </div>
-          <DataTable columns={columnB2B} data={dataList ?? []} />
+          <DataTable
+            columns={columnB2B}
+            data={dataList ?? []}
+            isLoading={isLoading}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

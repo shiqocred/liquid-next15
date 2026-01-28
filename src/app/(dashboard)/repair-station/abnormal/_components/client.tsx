@@ -1,7 +1,7 @@
 "use client";
 
 import { FileDown, Loader2, RefreshCw, ShoppingBag } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -31,6 +31,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useExportProductAbnormal } from "../_api/use-export-product-abnormal";
 import { toast } from "sonner";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -42,7 +43,7 @@ export const Client = () => {
   const [documentDetail, setDocumentDetail] = useState({
     barcode: "",
   });
-
+  const [SOProductInput, setSOProductInput] = useState("");
   const [input, setInput] = useState({
     barcode: "",
     oldBarcode: "",
@@ -80,6 +81,8 @@ export const Client = () => {
     useToDisplay();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportProductAbnormal();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
 
   // get data utama
   const {
@@ -235,7 +238,22 @@ export const Client = () => {
           });
           setOpenDisplay(false);
         },
-      }
+      },
+    );
+  };
+
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+      },
     );
   };
 
@@ -294,7 +312,7 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.new_price_product ?? row.original.old_price_product
+            row.original.new_price_product ?? row.original.old_price_product,
           )}
         </div>
       ),
@@ -306,7 +324,7 @@ export const Client = () => {
         <div className="">
           {format(
             new Date(row.original.new_date_in_product),
-            "iii, dd MMM yyyy"
+            "iii, dd MMM yyyy",
           )}
         </div>
       ),
@@ -319,6 +337,24 @@ export const Client = () => {
           {row.original.new_status_product}
         </Badge>
       ),
+    },
+    {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "action",
@@ -424,6 +460,38 @@ export const Client = () => {
           <BreadcrumbItem>List Product Abnormal</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 flex-col">
+        <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+        <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Scan Barcode
+              </label>
+              <Input
+                type="text"
+                className="border-sky-400/80 focus-visible:ring-sky-400"
+                value={SOProductInput}
+                onChange={(e) => setSOProductInput(e.target.value)}
+                placeholder="Scan barcode here..."
+                disabled={isPendingScanSO}
+                autoFocus
+              />
+            </div>
+            <Button
+              type="submit"
+              className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingScanSO || !SOProductInput.trim()}
+            >
+              {isPendingScanSO ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "SO"
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Product Abnormal</h2>
         <div className="flex flex-col w-full gap-4">
@@ -465,7 +533,11 @@ export const Client = () => {
               </Button>
             </div>
           </div>
-          <DataTable columns={columnWarehousePalet} data={dataList ?? []} />
+          <DataTable
+            columns={columnWarehousePalet}
+            data={dataList ?? []}
+            isLoading={isLoading}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

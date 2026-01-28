@@ -7,7 +7,7 @@ import {
   Recycle,
   RefreshCw,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -36,21 +36,23 @@ import { DialogToEdit } from "./dialog-to-edit";
 import { DialogToDisplay } from "./dialog-to-display";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useToQcd } from "../_api/use-to-qcd";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
 
 // const DialogDetail = dynamic(() => import("./dialog-detail"), {
 //   ssr: false,
 // });
 
 export const Client = () => {
+  const [SOProductInput, setSOProductInput] = useState("");
   // sheet detail
   const [openDetail, setOpenDetail] = useQueryState(
     "dialog",
-    parseAsString.withDefault("")
+    parseAsString.withDefault(""),
   );
 
   const [productId, setProductId] = useQueryState(
     "id",
-    parseAsString.withDefault("")
+    parseAsString.withDefault(""),
   );
 
   // MigrateToRepairId for detail
@@ -58,13 +60,13 @@ export const Client = () => {
     "MigrateToRepairId",
     {
       defaultValue: "",
-    }
+    },
   );
 
   const [DialogDryScrap, confirmToQcd] = useConfirm(
     "To Qcd Product Migrate To Repair",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // data search, page
@@ -80,6 +82,8 @@ export const Client = () => {
 
   // mutate
   const { mutate: mutateToQcd, isPending: isPendingToQcd } = useToQcd();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
 
   // get data utama
   const {
@@ -157,6 +161,21 @@ export const Client = () => {
 
     if (!ok) return;
     mutateToQcd({ id });
+  };
+
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+      },
+    );
   };
 
   // handle close
@@ -272,6 +291,24 @@ export const Client = () => {
       cell: ({ row }) => formatRupiah(row.original.display_price),
     },
     {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -354,6 +391,10 @@ export const Client = () => {
         isRefetching={isRefetchingMigrateToRepair}
         columns={columnMigrateToRepairDetail}
         dataTable={dataListDetail ?? []}
+        handleScanSOProduct={handleScanSOProduct}
+        SOProductInput={SOProductInput}
+        setSOProductInput={setSOProductInput}
+        isPendingScanSO={isPendingScanSO}
       />
       <DialogToEdit
         open={openDetail === "detail-to-edit"}
@@ -426,6 +467,7 @@ export const Client = () => {
           <DataTable
             columns={columnListMigrateToRepair}
             data={dataList ?? []}
+            isLoading={loading}
           />
           <Pagination
             pagination={{ ...metaPage, current: page }}
