@@ -51,6 +51,7 @@ import { DialogDamaged } from "./dialog-damaged";
 import { useScanSOProduct } from "../_api/use-scan-so-product";
 import { useStockOpname } from "../_api/use-stock-opname";
 import { useScanSOrack } from "../_api/use-scan-so-rack";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -80,6 +81,8 @@ export const Client = () => {
   const [damagedBarcode, setDamagedBarcode] = useState("");
   const [SOProductInput, setSOProductInput] = useState("");
   const [SORackInput, setSORackInput] = useState("");
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // separate search states for rack and product so values don't collide
   const {
@@ -345,6 +348,15 @@ export const Client = () => {
         onSuccess: () => {
           setSOProductInput("");
         },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
       },
     );
   };
@@ -359,6 +371,15 @@ export const Client = () => {
       {
         onSuccess: () => {
           setSORackInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
         },
       },
     );
@@ -509,6 +530,24 @@ export const Client = () => {
         isLoading={isPendingDamaged}
         handleSubmit={handleSubmitDamaged}
       />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -553,12 +592,9 @@ export const Client = () => {
           </TabsList>
         </div>
         <TabsContent value="rack" className="w-full gap-4 flex flex-col">
-           <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+          <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
             <h3 className="text-lg font-semibold">SO Rack Disini</h3>
-            <form
-              onSubmit={handleScanSORack}
-              className="flex flex-col gap-3"
-            >
+            <form onSubmit={handleScanSORack} className="flex flex-col gap-3">
               <div className="flex gap-3 items-end">
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700 block mb-2">

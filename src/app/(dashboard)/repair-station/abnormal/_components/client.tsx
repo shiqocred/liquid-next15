@@ -32,6 +32,12 @@ import { Badge } from "@/components/ui/badge";
 import { useExportProductAbnormal } from "../_api/use-export-product-abnormal";
 import { toast } from "sonner";
 import { useScanSOProduct } from "../_api/use-scan-so-product";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -43,6 +49,8 @@ export const Client = () => {
   const [documentDetail, setDocumentDetail] = useState({
     barcode: "",
   });
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [SOProductInput, setSOProductInput] = useState("");
   const [input, setInput] = useState({
     barcode: "",
@@ -253,6 +261,15 @@ export const Client = () => {
         onSuccess: () => {
           setSOProductInput("");
         },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
       },
     );
   };
@@ -449,6 +466,22 @@ export const Client = () => {
         categories={dataCategories}
         handleSubmit={handleToDisplay}
       />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

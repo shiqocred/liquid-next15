@@ -32,11 +32,19 @@ import { useGetListDMG } from "../_api/use-get-list-dmg";
 import { useExportAllDMG } from "../_api/use-export-all-dmg";
 import { useExportDMG } from "../_api/use-export-dmg";
 import { useScanSOProduct } from "../_api/use-scan-so-product";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Client = () => {
   // data search, page
   const [exportId, setExportId] = useState<number | null>(null);
   const [SOProductInput, setSOProductInput] = useState("");
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -112,6 +120,15 @@ export const Client = () => {
       {
         onSuccess: () => {
           setSOProductInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
         },
       },
     );
@@ -232,6 +249,24 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -243,7 +278,6 @@ export const Client = () => {
           <BreadcrumbItem>List Product Damaged</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
         <h3 className="text-lg font-semibold">SO Barang Disini</h3>
         <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">

@@ -249,6 +249,24 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -357,24 +375,6 @@ export const Client = () => {
           />
         </div>
       </div>
-      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-red-600">SO Barang Gagal</DialogTitle>
-          </DialogHeader>
-
-          <div className="text-sm text-gray-700">{errorMessage}</div>
-
-          <div className="flex justify-end mt-4">
-            <Button
-              onClick={() => setOpenErrorDialog(false)}
-              className="bg-sky-400 hover:bg-sky-400/80 text-black"
-            >
-              OK
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

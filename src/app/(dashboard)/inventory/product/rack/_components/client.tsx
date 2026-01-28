@@ -57,6 +57,12 @@ import { DialogDamaged } from "./dialog-damaged";
 import { useScanSOProduct } from "../_api/use-scan-so-product";
 import { useStockOpname } from "../_api/use-stock-opname";
 import { useScanSOrack } from "../_api/use-scan-so-rack";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -78,6 +84,9 @@ export const Client = () => {
     "dialog2",
     parseAsBoolean.withDefault(false),
   );
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   // rack Id for Edit
   const [rackId, setRackId] = useQueryState("rackId", {
     defaultValue: "",
@@ -438,6 +447,15 @@ export const Client = () => {
         onSuccess: () => {
           setSOProductInput("");
         },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
       },
     );
   };
@@ -452,6 +470,15 @@ export const Client = () => {
       {
         onSuccess: () => {
           setSORackInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Rack gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
         },
       },
     );
@@ -940,6 +967,24 @@ export const Client = () => {
         setIsOpenCategory={setIsOpenCategory}
         categories={categories}
       />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

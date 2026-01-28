@@ -38,6 +38,7 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { useExportDetailDataB2B } from "../_api/use-export-detail-data-b2b";
 import { useScanSODocument } from "../_api/use-scan-so-document";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -52,6 +53,8 @@ export const Client = () => {
 
   const [b2bId, setB2BId] = useQueryState("B2BId", { defaultValue: "" });
   const [soDocumentInput, setSODocumentInput] = useState("");
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // donfirm delete
   const [DeleteDialog, confirmDelete] = useConfirm(
@@ -182,6 +185,15 @@ export const Client = () => {
       {
         onSuccess: () => {
           setSODocumentInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
         },
       },
     );
@@ -395,6 +407,22 @@ export const Client = () => {
         isPendingExport={isPendingExport}
         handleExport={handleExport}
       />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -412,14 +440,14 @@ export const Client = () => {
           <div className="flex gap-3 items-end">
             <div className="flex-1">
               <label className="text-sm font-medium text-gray-700 block mb-2">
-                Scan Barcode
+                Scan Code Document
               </label>
               <Input
                 type="text"
                 className="border-sky-400/80 focus-visible:ring-sky-400"
                 value={soDocumentInput}
                 onChange={(e) => setSODocumentInput(e.target.value)}
-                placeholder="Scan barcode here..."
+                placeholder="Scan Code Document here..."
                 disabled={isPendingScanSO}
                 autoFocus
               />
