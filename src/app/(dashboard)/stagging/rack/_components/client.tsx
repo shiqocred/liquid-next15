@@ -50,6 +50,7 @@ import { useToDamaged } from "../_api/use-to-damaged";
 import { DialogDamaged } from "./dialog-damaged";
 import { useScanSOProduct } from "../_api/use-scan-so-product";
 import { useStockOpname } from "../_api/use-stock-opname";
+import { useScanSOrack } from "../_api/use-scan-so-rack";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -78,6 +79,7 @@ export const Client = () => {
   const [source, setSource] = useState("");
   const [damagedBarcode, setDamagedBarcode] = useState("");
   const [SOProductInput, setSOProductInput] = useState("");
+  const [SORackInput, setSORackInput] = useState("");
 
   // separate search states for rack and product so values don't collide
   const {
@@ -184,6 +186,8 @@ export const Client = () => {
     useScanSOProduct();
   const { mutate: mutateStockOpname, isPending: isPendingStockOpname } =
     useStockOpname();
+  const { mutate: mutateScanSORack, isPending: isPendingScanSORack } =
+    useScanSOrack();
 
   const {
     data: dataRacks,
@@ -340,6 +344,21 @@ export const Client = () => {
       {
         onSuccess: () => {
           setSOProductInput("");
+        },
+      },
+    );
+  };
+
+  // handle scan SO Rack
+  const handleScanSORack = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SORackInput.trim()) return;
+
+    mutateScanSORack(
+      { barcode: SORackInput },
+      {
+        onSuccess: () => {
+          setSORackInput("");
         },
       },
     );
@@ -534,6 +553,41 @@ export const Client = () => {
           </TabsList>
         </div>
         <TabsContent value="rack" className="w-full gap-4 flex flex-col">
+           <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">SO Rack Disini</h3>
+            <form
+              onSubmit={handleScanSORack}
+              className="flex flex-col gap-3"
+            >
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    Scan Barcode Rack
+                  </label>
+                  <Input
+                    type="text"
+                    className="border-sky-400/80 focus-visible:ring-sky-400"
+                    value={SORackInput}
+                    onChange={(e) => setSORackInput(e.target.value)}
+                    placeholder="Scan barcode here..."
+                    disabled={isPendingScanSORack}
+                    autoFocus
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  disabled={isPendingScanSORack || !SORackInput.trim()}
+                >
+                  {isPendingScanSORack ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "SO"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
           <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full flex flex-col gap-4">
               <h3 className="text-lg font-semibold">List Rak</h3>
@@ -805,7 +859,10 @@ export const Client = () => {
           {/* Card: SO Barang Disini */}
           <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
             <h3 className="text-lg font-semibold">SO Barang Disini</h3>
-            <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">
+            <form
+              onSubmit={handleScanSOProduct}
+              className="flex flex-col gap-3"
+            >
               <div className="flex gap-3 items-end">
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700 block mb-2">

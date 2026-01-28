@@ -7,7 +7,7 @@ import {
   ReceiptText,
   RefreshCw,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -31,10 +31,12 @@ import Link from "next/link";
 import { useGetListDMG } from "../_api/use-get-list-dmg";
 import { useExportAllDMG } from "../_api/use-export-all-dmg";
 import { useExportDMG } from "../_api/use-export-dmg";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
 
 export const Client = () => {
   // data search, page
   const [exportId, setExportId] = useState<number | null>(null);
+  const [SOProductInput, setSOProductInput] = useState("");
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
@@ -58,10 +60,12 @@ export const Client = () => {
   } = useGetListDMG({ p: page, q: searchValue });
 
   const { mutate: mutateExportDMG, isPending: isPendingDMG } = useExportDMG(
-    exportId ?? 0
+    exportId ?? 0,
   );
   const { mutate: mutateExportAllDMG, isPending: isPendingExportAllDMG } =
     useExportAllDMG();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -81,7 +85,7 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
@@ -96,6 +100,21 @@ export const Client = () => {
         document.body.removeChild(link);
       },
     });
+  };
+
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+      },
+    );
   };
 
   // load data
@@ -145,7 +164,7 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.total_new_price ?? row.original.total_old_price
+            row.original.total_new_price ?? row.original.total_old_price,
           )}
         </div>
       ),
@@ -224,6 +243,39 @@ export const Client = () => {
           <BreadcrumbItem>List Product Damaged</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
+        <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+        <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Scan Barcode
+              </label>
+              <Input
+                type="text"
+                className="border-sky-400/80 focus-visible:ring-sky-400"
+                value={SOProductInput}
+                onChange={(e) => setSOProductInput(e.target.value)}
+                placeholder="Scan barcode here..."
+                disabled={isPendingScanSO}
+                autoFocus
+              />
+            </div>
+            <Button
+              type="submit"
+              className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingScanSO || !SOProductInput.trim()}
+            >
+              {isPendingScanSO ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "SO"
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Damaged</h2>
         <div className="flex flex-col w-full gap-4">
