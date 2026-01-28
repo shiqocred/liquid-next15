@@ -469,7 +469,11 @@ export const Client = () => {
               </Link>
             </Button>
           </div>
-          <DataTable columns={columnB2B} data={dataList ?? []} />
+          <DataTable
+            columns={columnB2B}
+            data={dataList ?? []}
+            isLoading={isLoading}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

@@ -467,6 +467,7 @@ export const Client = () => {
           <DataTable
             columns={columnListMigrateToRepair}
             data={dataList ?? []}
+            isLoading={loading}
           />
           <Pagination
             pagination={{ ...metaPage, current: page }}

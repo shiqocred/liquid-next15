@@ -533,7 +533,11 @@ export const Client = () => {
               </Button>
             </div>
           </div>
-          <DataTable columns={columnWarehousePalet} data={dataList ?? []} />
+          <DataTable
+            columns={columnWarehousePalet}
+            data={dataList ?? []}
+            isLoading={isLoading}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}
