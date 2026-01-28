@@ -9,7 +9,7 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -40,7 +40,6 @@ import { useSubmit } from "../_api/use-submit";
 import { useFinish } from "../_api/use-finish";
 import { useGetListProductDamaged } from "../_api/use-get-list-product";
 import { useRemoveProduct } from "../_api/use-delete-product-document";
-import { useScanSOProduct } from "../_api/use-scan-so-product";
 import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
@@ -51,7 +50,6 @@ export const Client = () => {
   );
   const addRef = useRef<HTMLInputElement | null>(null);
   const { dmgId } = useParams();
-  const [SOProductInput, setSOProductInput] = useState("");
   const { search, searchValue, setSearch } = useSearchQuery("");
   const { metaPage, page, setPage, setPagination } = usePagination("page");
   const [productSearch, setProductSearch] = useState("");
@@ -113,8 +111,6 @@ export const Client = () => {
   const { mutate: mutateFinish, isPending: isPendingFinish } = useFinish();
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
-  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
-    useScanSOProduct();
 
   // query end ----------------------------------------------------------------
 
@@ -187,21 +183,6 @@ export const Client = () => {
       {
         onSuccess: () => {
           refetch();
-        },
-      },
-    );
-  };
-
-  // handle scan SO Barang
-  const handleScanSOProduct = (e: FormEvent) => {
-    e.preventDefault();
-    if (!SOProductInput.trim()) return;
-
-    mutateScanSO(
-      { barcode: SOProductInput },
-      {
-        onSuccess: () => {
-          setSOProductInput("");
         },
       },
     );
@@ -571,38 +552,6 @@ export const Client = () => {
               </div>
             </div>
           </div>
-        </div>
-        <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
-          <h3 className="text-lg font-semibold">SO Barang Disini</h3>
-          <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">
-            <div className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Scan Barcode
-                </label>
-                <Input
-                  type="text"
-                  className="border-sky-400/80 focus-visible:ring-sky-400"
-                  value={SOProductInput}
-                  onChange={(e) => setSOProductInput(e.target.value)}
-                  placeholder="Scan barcode here..."
-                  disabled={isPendingScanSO}
-                  autoFocus
-                />
-              </div>
-              <Button
-                type="submit"
-                className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                disabled={isPendingScanSO || !SOProductInput.trim()}
-              >
-                {isPendingScanSO ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  "SO"
-                )}
-              </Button>
-            </div>
-          </form>
         </div>
         <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
           <h2 className="text-xl font-bold">List Product</h2>
