@@ -914,7 +914,7 @@ export const Client = () => {
                 isPendingStockOpname,
               })}
               data={racksData?.data ?? []}
-              isLoading={loading}
+              isLoading={loading || isLoadingRacks || isRefetchRacks}
             />
 
             <div className="w-full p-4 bg-white">

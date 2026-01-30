@@ -28,6 +28,9 @@ export const useRemoveProduct = () => {
       toast.success("Product successfully removed");
       queryClient.invalidateQueries({ queryKey: ["list-product-staging"] });
       queryClient.invalidateQueries({ queryKey: ["list-detail-rack"] });
+      queryClient.invalidateQueries({
+        queryKey: ["list-racks"],
+      });
     },
 
     onError: (err) => {
