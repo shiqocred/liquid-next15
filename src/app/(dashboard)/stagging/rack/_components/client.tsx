@@ -201,6 +201,7 @@ export const Client = () => {
     data: dataRacks,
     refetch: refetchRacks,
     isLoading: isLoadingRacks,
+    isRefetching: isRefetchRacks,
     isError: isErrorRacks,
     error: errorRacks,
     isSuccess: isSuccessRacks,
@@ -680,7 +681,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isLoadingRacks ? "animate-spin" : "",
+                        isLoadingRacks || isRefetchRacks ? "animate-spin" : "",
                       )}
                     />
                   </Button>
