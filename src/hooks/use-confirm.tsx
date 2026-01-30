@@ -20,13 +20,21 @@ export const useConfirm = (
   title: string,
   message: string,
   variant: ButtonProps["variant"] = "default"
-): [() => JSX.Element, () => Promise<unknown>] => {
+): [() => JSX.Element, (titleOverride?: string, messageOverride?: string) => Promise<boolean>] => {
   const [promise, setPromise] = useState<{
     resolve: (value: boolean) => void;
   } | null>(null);
+  const [currentTitle, setCurrentTitle] = useState(title);
+  const [currentMessage, setCurrentMessage] = useState(message);
 
-  const confirm = () => {
-    return new Promise((resolve) => {
+  const confirm = (titleOverride?: string, messageOverride?: string) => {
+    return new Promise<boolean>((resolve) => {
+      if (titleOverride !== undefined) setCurrentTitle(titleOverride);
+      else setCurrentTitle(title);
+
+      if (messageOverride !== undefined) setCurrentMessage(messageOverride);
+      else setCurrentMessage(message);
+
       setPromise({ resolve });
     });
   };
@@ -53,9 +61,9 @@ export const useConfirm = (
         </DialogHeader>
         <Card className="w-full h-full border-none shadow-none">
           <CardContent className="pt-8">
-            <CardHeader className="p-0">
-              <CardTitle>{title}</CardTitle>
-              <CardDescription className="whitespace-pre-line">{message}</CardDescription>
+              <CardHeader className="p-0">
+              <CardTitle>{currentTitle}</CardTitle>
+              <CardDescription className="whitespace-pre-line">{currentMessage}</CardDescription>
             </CardHeader>
             <div className="w-full pt-4 flex items-center flex-col gap-y-2 lg:flex-row gap-x-2 justify-end">
               <Button

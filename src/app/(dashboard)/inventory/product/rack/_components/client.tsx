@@ -464,32 +464,60 @@ export const Client = () => {
   const handleScanSORack = (e: FormEvent) => {
     e.preventDefault();
     if (!SORackInput.trim()) return;
+    const title = `SO Rack Stagging barcode ${SORackInput}`;
 
-    mutateScanSORack(
-      { barcode: SORackInput },
-      {
-        onSuccess: () => {
-          setSORackInput("");
+    (async () => {
+      const ok = await confirmSoRack(title);
+      if (!ok) return;
+
+      mutateScanSORack(
+        { barcode: SORackInput },
+        {
+          onSuccess: () => {
+            setSORackInput("");
+          },
+          onError: (error: any) => {
+            const message =
+              error?.response?.data?.message ||
+              error?.response?.data?.data?.message ||
+              "Rack gagal di-SO";
+
+            setErrorMessage(message);
+            setOpenErrorDialog(true);
+          },
         },
+      );
+    })();
+  };
+
+  // handle stock opname
+  const handleStockOpname = async (id: any) => {
+    const foundRack = racksData?.data?.find(
+      (r: any) => String(r.id) === String(id),
+    );
+    const barcode = selectedBarcode || foundRack?.barcode || "";
+    const name =
+      selectedNameRack || foundRack?.display?.name || foundRack?.name || "";
+
+    const title = `SO Rack Stagging barcode ${barcode}${name ? ` nama rak ${name}` : ""}`;
+
+    const ok = await confirmSoRack(title);
+
+    if (!ok) return;
+    mutateStockOpname(
+      { id },
+      {
         onError: (error: any) => {
           const message =
             error?.response?.data?.message ||
             error?.response?.data?.data?.message ||
-            "Rack gagal di-SO";
+            "Barang gagal di-SO";
 
           setErrorMessage(message);
           setOpenErrorDialog(true);
         },
       },
     );
-  };
-
-  // handle stock opname
-  const handleStockOpname = async (id: any) => {
-    const ok = await confirmSoRack();
-
-    if (!ok) return;
-    mutateStockOpname({ id });
   };
 
   // const handleDryScrap = async (id: any) => {
