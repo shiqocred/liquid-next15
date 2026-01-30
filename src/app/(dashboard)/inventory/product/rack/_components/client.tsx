@@ -214,6 +214,7 @@ export const Client = () => {
     data: dataRacks,
     refetch: refetchRacks,
     isLoading: isLoadingRacks,
+    isRefetching: isRefetchRacks,
     isError: isErrorRacks,
     error: errorRacks,
     isSuccess: isSuccessRacks,
@@ -346,7 +347,7 @@ export const Client = () => {
   };
 
   const loading =
-    isLoadingProducts || isRefetchingProducts || isPendingProducts;
+    isLoadingProducts || isRefetchingProducts || isPendingProducts || isRefetchRacks;
 
   // handle close
   const handleClose = () => {
@@ -1112,7 +1113,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isLoadingRacks ? "animate-spin" : "",
+                        isLoadingRacks || isRefetchRacks ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -1314,6 +1315,7 @@ export const Client = () => {
                 isPendingStockOpname,
               })}
               data={racksData?.data ?? []}
+              isLoading={isLoadingRacks || isRefetchRacks}
             />
             <div className="w-full p-4 bg-white">
               <Pagination
