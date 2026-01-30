@@ -71,7 +71,7 @@ export const Client = () => {
   const [DeleteProductDialog, confirmDeleteProduct] = useConfirm(
     "Remove Product from Rack",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // confirm end ----------------------------------------------------------------
@@ -87,7 +87,7 @@ export const Client = () => {
 
   // query strat ----------------------------------------------------------------
 
-  const { data, refetch, isRefetching, error, isError, isSuccess } =
+  const { data, refetch, isRefetching, isLoading, error, isError, isSuccess } =
     useGetDetailRacks({
       id: rackId,
       p: page,
@@ -158,17 +158,17 @@ export const Client = () => {
           toast.error(
             `ERROR ${err?.status}: ${
               (err.response?.data as any).message || "Product failed to add"
-            } `
+            } `,
           );
         },
-      }
+      },
     );
   };
 
   const handleRemoveProduct = async (
     rackId: any,
     productId: any,
-    source: any
+    source: any,
   ) => {
     const ok = await confirmDeleteProduct();
 
@@ -286,7 +286,11 @@ export const Client = () => {
               type="button"
               disabled={isPendingRemoveProduct}
               onClick={() => {
-                handleRemoveProduct(rackId, row.original.id, row.original.source);
+                handleRemoveProduct(
+                  rackId,
+                  row.original.id,
+                  row.original.source,
+                );
               }}
             >
               {isPendingRemoveProduct ? (
@@ -437,7 +441,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isRefetching ? "animate-spin" : ""
+                        isRefetching ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -474,13 +478,24 @@ export const Client = () => {
                     {formatRupiah(dataDetail?.total_display_price_product)}{" "}
                   </p>
                 </div>
+                {/* <div className="flex flex-col">
+                  <p className="text-sm">Status SO</p>
+                  <p className="font-semibold">
+                    {" "}
+                    {dataDetail?.is_so === 1
+                      ? "Sudah SO"
+                      : dataDetail?.is_so === 0
+                        ? "Belum SO"
+                        : "-"}{" "}
+                  </p>
+                </div> */}
               </div>
             </div>
             <div className="border-t border-gray-500 w-full pt-3 mt-5">
               <div className="w-full flex justify-between items-center">
                 <div
                   className={cn(
-                    "flex items-center gap-2 relative group w-full max-w-xl"
+                    "flex items-center gap-2 relative group w-full max-w-xl",
                   )}
                 >
                   <Label
@@ -519,7 +534,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isRefetching ? "animate-spin" : ""
+                        isRefetching ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -548,7 +563,7 @@ export const Client = () => {
                   <RefreshCw
                     className={cn(
                       "w-4 h-4",
-                      isRefetching ? "animate-spin" : ""
+                      isRefetching ? "animate-spin" : "",
                     )}
                   />
                 </Button>
@@ -556,7 +571,7 @@ export const Client = () => {
             </div>
           </div>
           <DataTable
-            isLoading={isRefetching}
+            isLoading={isRefetching || isLoading}
             columns={columnSales}
             data={dataList ?? []}
           />

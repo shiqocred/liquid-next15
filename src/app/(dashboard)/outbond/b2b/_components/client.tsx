@@ -38,7 +38,12 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { useExportDetailDataB2B } from "../_api/use-export-detail-data-b2b";
 import { useScanSODocument } from "../_api/use-scan-so-document";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
@@ -61,6 +66,12 @@ export const Client = () => {
     "Delete B2B",
     "This action cannot be undone",
     "destructive",
+  );
+
+  const [SoB2bDialog, confirmSoB2B] = useConfirm(
+    "SO Rack Stagging",
+    "This action cannot be undone",
+    "liquid",
   );
 
   // data search, page
@@ -179,24 +190,30 @@ export const Client = () => {
   const handleScanSODocument = (e: FormEvent) => {
     e.preventDefault();
     if (!soDocumentInput.trim()) return;
+    const title = `SO B2B code document ${soDocumentInput}`;
 
-    mutateScanSO(
-      { code_document: soDocumentInput },
-      {
-        onSuccess: () => {
-          setSODocumentInput("");
-        },
-        onError: (error: any) => {
-          const message =
-            error?.response?.data?.message ||
-            error?.response?.data?.data?.message ||
-            "Barang gagal di-SO";
+    (async () => {
+      const ok = await confirmSoB2B(title);
+      if (!ok) return;
 
-          setErrorMessage(message);
-          setOpenErrorDialog(true);
+      mutateScanSO(
+        { code_document: soDocumentInput },
+        {
+          onSuccess: () => {
+            setSODocumentInput("");
+          },
+          onError: (error: any) => {
+            const message =
+              error?.response?.data?.message ||
+              error?.response?.data?.data?.message ||
+              "Barang gagal di-SO";
+
+            setErrorMessage(message);
+            setOpenErrorDialog(true);
+          },
         },
-      },
-    );
+      );
+    })();
   };
 
   // column data
@@ -390,6 +407,7 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <SoB2bDialog />
       <DialogDetail
         open={openDetail} // open modal
         onCloseModal={() => {

@@ -122,7 +122,8 @@ export const Client = () => {
 
   // query end ----------------------------------------------------------------
 
-  const loading = isLoadingData || isRefetching ||isLoadingProduct || isRefetchingProduct;
+  const loading =
+    isLoadingData || isRefetching || isLoadingProduct || isRefetchingProduct;
 
   // memeo start ----------------------------------------------------------------
 
@@ -517,6 +518,17 @@ export const Client = () => {
                     {formatRupiah(dataDetail?.total_display_price_product)}{" "}
                   </p>
                 </div>
+                {/* <div className="flex flex-col">
+                  <p className="text-sm">Status SO</p>
+                  <p className="font-semibold">
+                    {" "}
+                    {dataDetail?.is_so === 1
+                      ? "Sudah SO"
+                      : dataDetail?.is_so === 0
+                        ? "Belum SO"
+                        : "-"}{" "}
+                  </p>
+                </div> */}
               </div>
             </div>
             <div className="border-t border-gray-500 w-full pt-3 mt-5">

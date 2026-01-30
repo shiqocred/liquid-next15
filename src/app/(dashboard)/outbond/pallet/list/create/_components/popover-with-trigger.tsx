@@ -47,6 +47,7 @@ const PopoverWithTrigger = ({
       <PopoverContent
         className="p-0"
         style={{ width: "var(--radix-popover-trigger-width)" }}
+        onWheel={(e) => e.stopPropagation()}
       >
         <Command>
           <CommandInput />
