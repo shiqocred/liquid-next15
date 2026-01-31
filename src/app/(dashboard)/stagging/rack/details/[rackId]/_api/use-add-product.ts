@@ -30,6 +30,9 @@ export const useAddProduct = () => {
       queryClient.invalidateQueries({
         queryKey: ["list-detail-rack"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["list-racks"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
