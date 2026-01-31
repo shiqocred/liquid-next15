@@ -54,7 +54,7 @@ import { useToDamaged } from "../_api/use-to-damaged";
 import { DialogDamaged } from "./dialog-damaged";
 import { useScanSOProduct } from "../_api/use-scan-so-product";
 import { useStockOpname } from "../_api/use-stock-opname";
-import { useScanSOrack } from "../_api/use-scan-so-rack";
+// import { useScanSOrack } from "../_api/use-scan-so-rack";
 import {
   Dialog,
   DialogContent,
@@ -103,7 +103,7 @@ export const Client = () => {
   const [source, setSource] = useState("");
   const [damagedBarcode, setDamagedBarcode] = useState("");
   const [SOProductInput, setSOProductInput] = useState("");
-  const [SORackInput, setSORackInput] = useState("");
+  // const [SORackInput, setSORackInput] = useState("");
 
   const {
     search: searchRack,
@@ -191,8 +191,8 @@ export const Client = () => {
     useScanSOProduct();
   const { mutate: mutateStockOpname, isPending: isPendingStockOpname } =
     useStockOpname();
-  const { mutate: mutateScanSORack, isPending: isPendingScanSORack } =
-    useScanSOrack();
+  // const { mutate: mutateScanSORack, isPending: isPendingScanSORack } =
+  //   useScanSOrack();
 
   const {
     mutate: updateProduct,
@@ -462,35 +462,35 @@ export const Client = () => {
     );
   };
 
-  // handle scan SO Rack
-  const handleScanSORack = (e: FormEvent) => {
-    e.preventDefault();
-    if (!SORackInput.trim()) return;
-    const title = `SO Rack Stagging barcode ${SORackInput}`;
+  // // handle scan SO Rack
+  // const handleScanSORack = (e: FormEvent) => {
+  //   e.preventDefault();
+  //   if (!SORackInput.trim()) return;
+  //   const title = `SO Rack Stagging barcode ${SORackInput}`;
 
-    (async () => {
-      const ok = await confirmSoRack(title);
-      if (!ok) return;
+  //   (async () => {
+  //     const ok = await confirmSoRack(title);
+  //     if (!ok) return;
 
-      mutateScanSORack(
-        { barcode: SORackInput },
-        {
-          onSuccess: () => {
-            setSORackInput("");
-          },
-          onError: (error: any) => {
-            const message =
-              error?.response?.data?.message ||
-              error?.response?.data?.data?.message ||
-              "Rack gagal di-SO";
+  //     mutateScanSORack(
+  //       { barcode: SORackInput },
+  //       {
+  //         onSuccess: () => {
+  //           setSORackInput("");
+  //         },
+  //         onError: (error: any) => {
+  //           const message =
+  //             error?.response?.data?.message ||
+  //             error?.response?.data?.data?.message ||
+  //             "Rack gagal di-SO";
 
-            setErrorMessage(message);
-            setOpenErrorDialog(true);
-          },
-        },
-      );
-    })();
-  };
+  //           setErrorMessage(message);
+  //           setOpenErrorDialog(true);
+  //         },
+  //       },
+  //     );
+  //   })();
+  // };
 
   // handle stock opname
   const handleStockOpname = async (id: any) => {
@@ -799,24 +799,24 @@ export const Client = () => {
         </div>
       ),
     },
-    {
-      accessorKey: "status_so",
-      header: "Status SO",
-      cell: ({ row }) => {
-        const status = row.original.status_so;
-        return (
-          <Badge
-            className={cn(
-              "shadow-none font-normal rounded-full capitalize text-black",
-              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
-              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
-            )}
-          >
-            {status}
-          </Badge>
-        );
-      },
-    },
+    // {
+    //   accessorKey: "status_so",
+    //   header: "Status SO",
+    //   cell: ({ row }) => {
+    //     const status = row.original.status_so;
+    //     return (
+    //       <Badge
+    //         className={cn(
+    //           "shadow-none font-normal rounded-full capitalize text-black",
+    //           status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+    //           status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+    //         )}
+    //       >
+    //         {status}
+    //       </Badge>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
@@ -1060,7 +1060,7 @@ export const Client = () => {
           </TabsList>
         </div>
         <TabsContent value="rack" className="w-full gap-4 flex flex-col">
-          <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+          {/* <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
             <h3 className="text-lg font-semibold">SO Rack Disini</h3>
             <form onSubmit={handleScanSORack} className="flex flex-col gap-3">
               <div className="flex gap-3 items-end">
@@ -1091,7 +1091,7 @@ export const Client = () => {
                 </Button>
               </div>
             </form>
-          </div>
+          </div> */}
           <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full flex flex-col gap-4">
               <h3 className="text-lg font-semibold">List Rak</h3>
