@@ -41,13 +41,13 @@ export const Client = () => {
   const [DoneCheckAllDialog, confirmDoneCheckAll] = useConfirm(
     "Check All Product",
     "This action cannot be undone",
-    "liquid"
+    "liquid",
   );
 
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
-    "liquid"
+    "liquid",
   );
 
   const { mutate: mutateDelete, isPending: isPendingDelete } =
@@ -149,7 +149,7 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.new_price_product ?? row.original.old_price_product
+            row.original.new_price_product ?? row.original.old_price_product,
           )}
         </div>
       ),
@@ -161,7 +161,7 @@ export const Client = () => {
         <div className="">
           {format(
             new Date(row.original.new_date_in_product),
-            "iii, dd MMM yyyy"
+            "iii, dd MMM yyyy",
           )}
         </div>
       ),
@@ -270,7 +270,11 @@ export const Client = () => {
               Done Check All
             </Button>
           </div>
-          <DataTable columns={columnApprovementStaging} data={dataList ?? []} />
+          <DataTable
+            columns={columnApprovementStaging}
+            data={dataList ?? []}
+            isLoading={loading}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

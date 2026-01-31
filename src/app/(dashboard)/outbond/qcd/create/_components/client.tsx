@@ -130,6 +130,7 @@ export const Client = () => {
 
   const {
     data: dataProduct,
+    isLoading: isLoadingProduct,
     refetch: refetchProduct,
     isRefetching: isRefetchingProduct,
     error: errorProduct,
@@ -480,6 +481,7 @@ export const Client = () => {
         search={productSearch}
         setSearch={setProductSearch}
         refetch={refetchProduct}
+        isLoading={isLoadingProduct}
         isRefetching={isRefetchingProduct}
         columns={columnProduct}
         dataTable={dataListProduct}

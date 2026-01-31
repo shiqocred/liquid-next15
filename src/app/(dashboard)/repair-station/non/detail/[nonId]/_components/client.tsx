@@ -40,17 +40,18 @@ import { useFinish } from "../_api/use-finish";
 import { useGetDetailNon } from "../_api/use-get-detail-non";
 import { useGetListProductNon } from "../_api/use-get-list-product";
 import { useRemoveProduct } from "../_api/use-delete-product-document";
+import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
   const router = useRouter();
   const [isProduct, setIsProduct] = useState(false);
   const [dynamicMessage, setDynamicMessage] = useState(
-    "This action cannot be undone"
+    "This action cannot be undone",
   );
   const addRef = useRef<HTMLInputElement | null>(null);
   const { nonId } = useParams();
   const { search, searchValue, setSearch } = useSearchQuery("");
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("page");
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
   const [pageProduct, setPageProduct] = useState(1);
@@ -64,25 +65,25 @@ export const Client = () => {
   const [AddProductDialog, confirmAddProduct] = useConfirm(
     "Confirm Add Product",
     dynamicMessage,
-    "liquid"
+    "liquid",
   );
 
   const [SubmitDialog, confirmSubmit] = useConfirm(
     "Create Non",
     "This action cannot be undone",
-    "liquid"
+    "liquid",
   );
 
   const [FinishDialog, confirmFinish] = useConfirm(
     "Finish Non",
     "This action cannot be undone",
-    "liquid"
+    "liquid",
   );
 
   const [DeleteProductDialog, confirmDeleteProductDialog] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // query start ----------------------------------------------------------------
@@ -137,7 +138,7 @@ export const Client = () => {
             return;
           }
         },
-      }
+      },
     );
   };
 
@@ -157,7 +158,7 @@ export const Client = () => {
           const id = res?.data?.data?.resource?.id;
           router.push(`/repair-station/non/detail/${id}`);
         },
-      }
+      },
     );
   };
 
@@ -183,7 +184,7 @@ export const Client = () => {
         onSuccess: () => {
           refetch();
         },
-      }
+      },
     );
   };
 
@@ -317,6 +318,24 @@ export const Client = () => {
           {formatRupiah(row.original.new_price_product)}
         </div>
       ),
+    },
+    {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
     },
     {
       header: () => <div className="text-center">Action</div>,

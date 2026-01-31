@@ -2,6 +2,7 @@
 
 import {
   FileDown,
+  Loader,
   Loader2,
   PlusCircle,
   ReceiptText,
@@ -58,7 +59,7 @@ export const Client = () => {
   } = useGetListQCD({ p: page, q: searchValue });
 
   const { mutate: mutateExportQcd, isPending: isPendingQcd } = useExportQcd(
-    exportId ?? 0
+    exportId ?? 0,
   );
   const { mutate: mutateExportAllQcd, isPending: isPendingExportAllQcd } =
     useExportAllQcd();
@@ -81,23 +82,22 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
- const handleExportAll = async () => {
-  mutateExportAllQcd(undefined, {
-    onSuccess: (res) => {
-      const link = document.createElement("a");
-      link.href = res.data.data.resource.download_url;
-      link.target = "_blank"; // opsional
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    },
-  });
-};
-
+  const handleExportAll = async () => {
+    mutateExportAllQcd(undefined, {
+      onSuccess: (res) => {
+        const link = document.createElement("a");
+        link.href = res.data.data.resource.download_url;
+        link.target = "_blank"; // opsional
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
+    });
+  };
 
   // load data
   const loading = isLoading || isRefetching || isPending;
@@ -146,7 +146,7 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.total_new_price ?? row.original.total_old_price
+            row.original.total_new_price ?? row.original.total_old_price,
           )}
         </div>
       ),
@@ -279,11 +279,19 @@ export const Client = () => {
               </div>
             </div>
           </div>
-          <DataTable columns={columnListQCD} data={dataList ?? []} />
-          <Pagination
-            pagination={{ ...metaPage, current: page }}
-            setPagination={setPage}
-          />
+          {isLoading ? (
+            <div className="w-full h-[78vh] flex justify-center items-center">
+              <Loader className="size-6 animate-spin" />
+            </div>
+          ) : (
+            <div>
+              <DataTable columns={columnListQCD} data={dataList ?? []} />
+              <Pagination
+                pagination={{ ...metaPage, current: page }}
+                setPagination={setPage}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

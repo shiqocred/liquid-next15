@@ -45,7 +45,7 @@ export const Client = () => {
 
   // search & page product stagging
   const { search, searchValue, setSearch } = useSearchQuery();
-  const { page, metaPage, setPage, setPagination } = usePagination();
+  const { page, metaPage, setPage, setPagination } = usePagination("page");
 
   const { mutate: mutateAddFilter, isPending: isPendingAddFilter } =
     useAddFilterProductStaging();

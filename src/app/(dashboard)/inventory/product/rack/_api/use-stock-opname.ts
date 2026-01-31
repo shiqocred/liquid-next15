@@ -4,22 +4,22 @@ import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
+import { invalidateQuery } from "@/lib/query";
 
 type RequestType = {
-  body: any;
+  id: string;
 };
-
 type Error = AxiosError;
 
-export const useAddProduct = () => {
+export const useStockOpname = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
+    mutationFn: async ({ id }) => {
       const res = await axios.post(
-        `${baseUrl}/racks/add-product-by-barcode`,
-        body,
+        `${baseUrl}/racks/${id}/so`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -29,27 +29,25 @@ export const useAddProduct = () => {
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully added");
-      queryClient.invalidateQueries({ queryKey: ["list-product-detail-display"] });
-      queryClient.invalidateQueries({
-        queryKey: ["list-detail-rack-display"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["list-racks-display"],
-      });
+      toast.success("Stock Opname berhasil dilakukan");
+      invalidateQuery(queryClient, [["list-detail-rack-display"]]);
+      invalidateQuery(queryClient, [["list-racks-display"]]);
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
+        console.log(err);
         toast.error(
           `ERROR ${err?.status}: ${
-            (err.response?.data as any).data.message || "Product failed to add"
-          } `
+            (err as any)?.response?.data.message ||
+            "Stock Opname gagal"
+          }`
         );
-        console.log("ERROR_ADD_PRODUCT:", err);
+        console.log("ERROR_STOCK_OPNAME:", err);
       }
     },
   });
+
   return mutation;
 };

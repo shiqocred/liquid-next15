@@ -5,49 +5,40 @@ import { baseUrl } from "@/lib/baseUrl";
 import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
-type RequestType = {
-  body: any;
-};
-
 type Error = AxiosError;
 
-export const useAddProduct = () => {
+export const useScanSOProduct = () => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ body }) => {
+  const mutation = useMutation<AxiosResponse, Error, { barcode: string }>({
+    mutationFn: async ({ barcode }) => {
       const res = await axios.post(
-        `${baseUrl}/racks/add-product-by-barcode`,
-        body,
+        `${baseUrl}/damaged-products/so`,
+        { barcode },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
       return res;
     },
-    onSuccess: () => {
-      toast.success("Product successfully added");
-      queryClient.invalidateQueries({ queryKey: ["list-product-detail-display"] });
+    onSuccess: (res) => {
+      toast.success(res.data?.data?.message || "Barcode scanned successfully");
       queryClient.invalidateQueries({
-        queryKey: ["list-detail-rack-display"],
+        queryKey: ["list-product-dmg"],
       });
       queryClient.invalidateQueries({
-        queryKey: ["list-racks-display"],
+        queryKey: ["list-detail-dmg"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(
-          `ERROR ${err?.status}: ${
-            (err.response?.data as any).data.message || "Product failed to add"
-          } `
-        );
-        console.log("ERROR_ADD_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: Failed to scan barcode`);
+        console.log("ERROR_SCAN_SO_BARANG:", err);
       }
     },
   });

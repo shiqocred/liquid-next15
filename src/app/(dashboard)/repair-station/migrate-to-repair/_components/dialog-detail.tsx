@@ -22,7 +22,7 @@ const DialogDetail = ({
   refetch,
   isRefetching,
   columns,
-  dataTable,
+  dataTable
 }: {
   open: any;
   onCloseModal: () => void;
@@ -112,7 +112,7 @@ const DialogDetail = ({
                           <RefreshCw
                             className={cn(
                               "w-4 h-4",
-                              isRefetching ? "animate-spin" : ""
+                              isRefetching ? "animate-spin" : "",
                             )}
                           />
                         </Button>

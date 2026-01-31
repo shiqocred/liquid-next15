@@ -68,7 +68,7 @@ export const Client = () => {
     parseAsString.withDefault("")
   );
 
-  const { page, setPage, metaPage, setPagination } = usePagination();
+  const { page, setPage, metaPage, setPagination } = usePagination("p");
 
   // get data utama
   const { data, refetch, isLoading, isRefetching, error, isError, isSuccess } =

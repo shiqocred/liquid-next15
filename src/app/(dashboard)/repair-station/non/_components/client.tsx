@@ -7,7 +7,7 @@ import {
   ReceiptText,
   RefreshCw,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -31,9 +31,19 @@ import Link from "next/link";
 import { useGetListNon } from "../_api/use-get-list-non";
 import { useExportNon } from "../_api/use-export-non";
 import { useExportAllNon } from "../_api/use-export-all-non";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Client = () => {
   // data search, page
+  const [SOProductInput, setSOProductInput] = useState("");
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [exportId, setExportId] = useState<number | null>(null);
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
@@ -58,10 +68,12 @@ export const Client = () => {
   } = useGetListNon({ p: page, q: searchValue });
 
   const { mutate: mutateExportNon, isPending: isPendingNon } = useExportNon(
-    exportId ?? 0
+    exportId ?? 0,
   );
   const { mutate: mutateExportAllNon, isPending: isPendingExportAllNon } =
     useExportAllNon();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
@@ -81,7 +93,7 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
@@ -96,6 +108,30 @@ export const Client = () => {
         document.body.removeChild(link);
       },
     });
+  };
+
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
+      },
+    );
   };
 
   // load data
@@ -145,7 +181,7 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.total_new_price ?? row.original.total_old_price
+            row.original.total_new_price ?? row.original.total_old_price,
           )}
         </div>
       ),
@@ -213,6 +249,24 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -224,6 +278,38 @@ export const Client = () => {
           <BreadcrumbItem>List Product Non</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
+        <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+        <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Scan Barcode
+              </label>
+              <Input
+                type="text"
+                className="border-sky-400/80 focus-visible:ring-sky-400"
+                value={SOProductInput}
+                onChange={(e) => setSOProductInput(e.target.value)}
+                placeholder="Scan barcode here..."
+                disabled={isPendingScanSO}
+                autoFocus
+              />
+            </div>
+            <Button
+              type="submit"
+              className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingScanSO || !SOProductInput.trim()}
+            >
+              {isPendingScanSO ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "SO"
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Non</h2>
         <div className="flex flex-col w-full gap-4">

@@ -27,6 +27,7 @@ const DialogProduct = ({
   page,
   metaPage,
   setPage,
+  isLoading
 }: {
   open: boolean;
   onCloseModal: () => void;
@@ -39,6 +40,7 @@ const DialogProduct = ({
   page: any;
   metaPage: any;
   setPage: any;
+  isLoading: boolean;
 }) => {
   return (
     <div>
@@ -88,7 +90,7 @@ const DialogProduct = ({
             <DataTable
               isSticky
               maxHeight="h-[60vh]"
-              isLoading={isRefetching}
+              isLoading={isLoading}
               columns={columns}
               data={dataTable ?? []}
             />

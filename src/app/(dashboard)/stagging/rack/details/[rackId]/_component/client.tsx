@@ -58,13 +58,13 @@ export const Client = () => {
   const [search, setSearch] = useQueryState("q", { defaultValue: "" });
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pProduct");
 
   // search, debounce, paginate end ----------------------------------------------------------------
 
@@ -73,13 +73,13 @@ export const Client = () => {
   const [DeleteProductDialog, confirmDeleteProduct] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   const [ToDisplayDialog, confirmToDisplay] = useConfirm(
     "To Display Rack",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // confirm end ----------------------------------------------------------------
@@ -96,16 +96,24 @@ export const Client = () => {
 
   // query strat ----------------------------------------------------------------
 
-  const { data, refetch, isRefetching, error, isError, isSuccess } =
-    useGetDetailRacks({
-      id: rackId,
-      p: page,
-      q: search,
-    });
+  const {
+    data,
+    refetch,
+    isLoading: isLoadingData,
+    isRefetching,
+    error,
+    isError,
+    isSuccess,
+  } = useGetDetailRacks({
+    id: rackId,
+    p: page,
+    q: search,
+  });
 
   const {
     data: dataProduct,
     refetch: refetchProduct,
+    isLoading: isLoadingProduct,
     isRefetching: isRefetchingProduct,
     error: errorProduct,
     isError: isErrorProduct,
@@ -114,7 +122,10 @@ export const Client = () => {
 
   // query end ----------------------------------------------------------------
 
-  // memeo strat ----------------------------------------------------------------
+  const loading =
+    isLoadingData || isRefetching || isLoadingProduct || isRefetchingProduct;
+
+  // memeo start ----------------------------------------------------------------
 
   const dataDetail: any = useMemo(() => {
     return data?.data.data.resource.rack_info;
@@ -167,17 +178,17 @@ export const Client = () => {
           toast.error(
             `ERROR ${err?.status}: ${
               (err.response?.data as any).message || "Product failed to add"
-            } `
+            } `,
           );
         },
-      }
+      },
     );
   };
 
   const handleRemoveProduct = async (
     rackId: any,
     productId: any,
-    source: any
+    source: any,
   ) => {
     const ok = await confirmDeleteProduct();
 
@@ -305,7 +316,7 @@ export const Client = () => {
                 handleRemoveProduct(
                   rackId,
                   row.original.id,
-                  row.original.source
+                  row.original.source,
                 );
               }}
             >
@@ -416,6 +427,7 @@ export const Client = () => {
         isRefetching={isRefetchingProduct}
         columns={columnProduct}
         dataTable={dataListProduct}
+        isLoading={loading}
         page={pageProduct}
         metaPage={metaPageProduct}
         setPage={setPageProduct}
@@ -456,7 +468,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isRefetching ? "animate-spin" : ""
+                        isRefetching ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -506,13 +518,24 @@ export const Client = () => {
                     {formatRupiah(dataDetail?.total_display_price_product)}{" "}
                   </p>
                 </div>
+                {/* <div className="flex flex-col">
+                  <p className="text-sm">Status SO</p>
+                  <p className="font-semibold">
+                    {" "}
+                    {dataDetail?.is_so === 1
+                      ? "Sudah SO"
+                      : dataDetail?.is_so === 0
+                        ? "Belum SO"
+                        : "-"}{" "}
+                  </p>
+                </div> */}
               </div>
             </div>
             <div className="border-t border-gray-500 w-full pt-3 mt-5">
               <div className="w-full flex justify-between items-center">
                 <div
                   className={cn(
-                    "flex items-center gap-2 relative group w-full max-w-xl"
+                    "flex items-center gap-2 relative group w-full max-w-xl",
                   )}
                 >
                   <Label
@@ -551,7 +574,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isRefetching ? "animate-spin" : ""
+                        isRefetching ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -580,7 +603,7 @@ export const Client = () => {
                   <RefreshCw
                     className={cn(
                       "w-4 h-4",
-                      isRefetching ? "animate-spin" : ""
+                      isRefetching ? "animate-spin" : "",
                     )}
                   />
                 </Button>
@@ -588,7 +611,7 @@ export const Client = () => {
             </div>
           </div>
           <DataTable
-            isLoading={isRefetching}
+            isLoading={loading}
             columns={columnSales}
             data={dataList ?? []}
           />
