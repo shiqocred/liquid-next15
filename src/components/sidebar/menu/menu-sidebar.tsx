@@ -658,6 +658,7 @@ import {
   CircleDashed,
   ClipboardMinus,
   Drill,
+  File,
   FileCog,
   FolderClock,
   IdCard,
@@ -742,6 +743,12 @@ const sidebarMenu = [
         icon: <FileCog className="w-5 h-5 stroke-[1.5]" />,
         sub_menu: [],
       },
+       {
+        title: "Inbound Process SKU",
+        href: "/inbound/inbound-process-sku",
+        icon: <File className="w-5 h-5 stroke-[1.5]" />,
+        sub_menu: [],
+      },
       {
         title: "Bulking Product",
         href: "/inbound/bulking-product",
@@ -756,6 +763,10 @@ const sidebarMenu = [
           {
             title: "Manifest Inbound",
             href: "/inbound/check-product/manifest-inbound",
+          },
+           {
+            title: "Manifest Inbound SKU",
+            href: "/inbound/check-product/manifest-inbound-sku",
           },
           {
             title: "Product Approve",
@@ -836,6 +847,10 @@ const sidebarMenu = [
           {
             title: "by category",
             href: "/inventory/product/rack",
+          },
+          {
+            title: "by sku",
+            href: "/inventory/product/sku",
           },
         ],
       },
