@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BarcodePrintPreview from "@/components/barcode-print-preview";
+import { Input } from "@/components/ui/input";
 
 export const Client = () => {
   const { skuId, skuMonth, skuYear, productId } = useParams();
@@ -45,7 +46,7 @@ export const Client = () => {
   const detailsProduct = useMemo(() => {
     return dataProduct?.data?.data?.resource || {};
   }, [dataProduct]);
-  
+
   /* =======================
    * PRICE
    * ======================= */
@@ -191,6 +192,15 @@ export const Client = () => {
     }
   }, [showCategory]);
 
+  useEffect(() => {
+      if (isNaN(parseFloat(input.perBundle))) {
+        setInput((prev) => ({ ...prev, perBundle: "0" }));
+      }
+      if (isNaN(parseFloat(input.bundle))) {
+        setInput((prev) => ({ ...prev, bundle: "0" }));
+      }
+    }, [input]);
+
   return (
     <div className="flex flex-col bg-gray-100 w-full px-4 gap-4 py-4">
       <Dialog open={barcodeOpen} onOpenChange={setBarcodeOpen}>
@@ -250,14 +260,16 @@ export const Client = () => {
 
             <div>
               <p className="text-gray-500 mb-1">Per Bundle</p>
-              <input
+              <Input
                 type="number"
-                className="w-full border rounded px-2 py-1"
+                className="w-full border focus-visible:ring-sky-400 rounded px-2 py-1"
                 value={input.perBundle}
                 onChange={(e) =>
                   setInput((prev) => ({
                     ...prev,
-                    perBundle: e.target.value,
+                    perBundle: e.target.value.startsWith("0")
+                      ? e.target.value.replace(/^0+/, "")
+                      : e.target.value,
                   }))
                 }
               />
@@ -265,14 +277,16 @@ export const Client = () => {
 
             <div>
               <p className="text-gray-500 mb-1">Bundle</p>
-              <input
+              <Input
                 type="number"
-                className="w-full border rounded px-2 py-1"
+                className="w-full border focus-visible:ring-sky-400 rounded px-2 py-1"
                 value={input.bundle}
                 onChange={(e) =>
                   setInput((prev) => ({
                     ...prev,
-                    bundle: e.target.value,
+                    bundle: e.target.value.startsWith("0")
+                      ? e.target.value.replace(/^0+/, "")
+                      : e.target.value,
                   }))
                 }
               />
