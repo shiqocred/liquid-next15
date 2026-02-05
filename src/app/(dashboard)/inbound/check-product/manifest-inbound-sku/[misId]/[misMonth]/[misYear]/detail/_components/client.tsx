@@ -50,7 +50,7 @@ export const Client = () => {
     old_name_product: "",
     actual_quantity_product: "0",
     damaged_quantity_product: "0",
-    lost_quantity_product: "0",
+    // lost_quantity_product: "0",
   });
   const codeDocument = `${misId}/${misMonth}/${misYear}`;
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
@@ -100,7 +100,7 @@ export const Client = () => {
       old_name_product: "",
       actual_quantity_product: "0",
       damaged_quantity_product: "0",
-      lost_quantity_product: "0",
+      // lost_quantity_product: "0",
     });
   };
 
@@ -109,7 +109,7 @@ export const Client = () => {
     const body = {
       actual_quantity_product: input.actual_quantity_product,
       damaged_quantity_product: input.damaged_quantity_product,
-      lost_quantity_product: input.lost_quantity_product,
+      // lost_quantity_product: input.lost_quantity_product,
     };
     mutateUpdate(
       { id: productId, body },
@@ -184,10 +184,10 @@ export const Client = () => {
           Math.round(
             dataProduct.data.data.resource.damaged_quantity_product,
           ).toString() ?? "0",
-        lost_quantity_product:
-          Math.round(
-            dataProduct.data.data.resource.lost_quantity_product,
-          ).toString() ?? "0",
+        // lost_quantity_product:
+        //   Math.round(
+        //     dataProduct.data.data.resource.lost_quantity_product,
+        //   ).toString() ?? "0",
       });
     }
   }, [dataProduct]);
@@ -199,9 +199,9 @@ export const Client = () => {
     if (isNaN(parseFloat(input.damaged_quantity_product))) {
       setInput((prev) => ({ ...prev, damaged_quantity_product: "0" }));
     }
-    if (isNaN(parseFloat(input.lost_quantity_product))) {
-      setInput((prev) => ({ ...prev, lost_quantity_product: "0" }));
-    }
+    // if (isNaN(parseFloat(input.lost_quantity_product))) {
+    //   setInput((prev) => ({ ...prev, lost_quantity_product: "0" }));
+    // }
   }, [input]);
   const columnSales: ColumnDef<any>[] = [
     {
@@ -513,7 +513,7 @@ export const Client = () => {
                   {parseFloat(input.damaged_quantity_product) ?? "Rp 0"}
                 </p>
               </div>
-              <div className="flex flex-col gap-1 w-full relative">
+              {/* <div className="flex flex-col gap-1 w-full relative">
                 <Label>Qty Lost</Label>
                 <Input
                   className="border-sky-400/80 focus-visible:ring-0 border-0 border-b rounded-none focus-visible:border-sky-500 disabled:cursor-not-allowed disabled:opacity-100"
@@ -533,7 +533,7 @@ export const Client = () => {
                 <p className="absolute right-3 bottom-2 text-xs text-gray-400">
                   {parseFloat(input.lost_quantity_product) ?? "Rp 0"}
                 </p>
-              </div>
+              </div> */}
             </div>
             <div className="flex w-full gap-2">
               <Button
