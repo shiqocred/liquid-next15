@@ -22,6 +22,7 @@ import {
   ArrowLeftRight,
   Boxes,
   Loader2,
+  ReceiptText,
   RefreshCw,
   Trash2,
 } from "lucide-react";
@@ -43,10 +44,14 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useToDamaged } from "../_api/use-to-damaged";
+import DialogHistoryBundling from "./dialog-history-bundling";
+import { useGetListHistoryBundling } from "../_api/use-get-list-bundling";
+import { format } from "date-fns";
 
 export const Client = () => {
   const { skuId, skuMonth, skuYear } = useParams();
   const queryClient = useQueryClient();
+  const [isHistoryBundling, setIsHistoryBundling] = useState(false);
   const [input, setInput] = useState("");
   const [openDamaged, setOpenDamaged] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -59,6 +64,15 @@ export const Client = () => {
   const searchValue = useDebounce(dataSearch);
   const [page, setPage] = useQueryState("p", parseAsInteger.withDefault(1));
   const [metaPage, setMetaPage] = useState({
+    last: 1, //page terakhir
+    from: 1, //data dimulai dari (untuk memulai penomoran tabel)
+    total: 1, //total data
+    perPage: 1,
+  });
+  const [historyBundlingSearch, setHistoryBundlingSearch] = useState("");
+  const searchHistoryBundlingValue = useDebounce(historyBundlingSearch);
+  const [pageHistoryBundling, setPageHistoryBundling] = useState(1);
+  const [metaPageHistoryBundling, setMetaPageHistoryBundling] = useState({
     last: 1, //page terakhir
     from: 1, //data dimulai dari (untuk memulai penomoran tabel)
     total: 1, //total data
@@ -94,14 +108,28 @@ export const Client = () => {
     q: searchValue,
   });
 
+  const {
+    data: dataHistoryBundling,
+    refetch: refetchHistoryBundling,
+    isRefetching: isRefetchingHistoryBundling,
+    isLoading: isLoadingHistoryBundling,
+    error: errorHistoryBundling,
+    isError: isErrorHistoryBundling,
+    isSuccess: isSuccessHistoryBundling,
+  } = useGetListHistoryBundling({
+    p: pageHistoryBundling,
+    q: searchHistoryBundlingValue,
+  });
+
   const dataDetails = useMemo(() => {
     return data?.data.data.resource;
   }, [data]);
   const dataDocumentsInfo = dataDetails?.document_info;
-
-  console.log("dataDetails", dataDetails);
-
   const dataDetailProductSku = dataDetails?.products?.data;
+
+  const dataListHistoryBundling: any[] = useMemo(() => {
+    return dataHistoryBundling?.data.data.resource.data;
+  }, [dataHistoryBundling]);
 
   const handleDeleteBarcode = async () => {
     const ok = await confirmBarcodeDelete();
@@ -169,6 +197,18 @@ export const Client = () => {
     );
   };
 
+  const handleCloseHistoryBundling = () => {
+    setIsHistoryBundling(false);
+    setHistoryBundlingSearch("");
+    setPageHistoryBundling(1);
+    setMetaPageHistoryBundling({
+      from: 0,
+      last: 0,
+      perPage: 0,
+      total: 0,
+    });
+  };
+
   useEffect(() => {
     setPaginate({
       isSuccess,
@@ -178,6 +218,17 @@ export const Client = () => {
       setMetaPage,
     });
   }, [data]);
+
+  useEffect(() => {
+    setPaginate({
+      isSuccess: isSuccessHistoryBundling,
+      data: dataHistoryBundling,
+      dataPaginate: dataHistoryBundling?.data.data.resource,
+      setPage: setPageHistoryBundling,
+      setMetaPage: setMetaPageHistoryBundling,
+    });
+  }, [dataHistoryBundling]);
+
   useEffect(() => {
     alertError({
       isError,
@@ -189,12 +240,20 @@ export const Client = () => {
   }, [isError, error]);
 
   useEffect(() => {
+    alertError({
+      isError: isErrorHistoryBundling,
+      error: errorHistoryBundling as AxiosError,
+      data: "HistoryBundling",
+      action: "get data",
+      method: "GET",
+    });
+  }, [isErrorHistoryBundling, errorHistoryBundling]);
+
+  useEffect(() => {
     if (isSuccess && data && cEBarcode) {
       setInput(dataDocumentsInfo?.custom_barcode ?? "");
     }
   }, [cEBarcode]);
-
-  console.log("input", input);
 
   const columnSales: ColumnDef<any>[] = [
     {
@@ -289,6 +348,82 @@ export const Client = () => {
     },
   ];
 
+  const columnHistoryBundling: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPageHistoryBundling.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "tanggal",
+      header: "Date",
+      cell: ({ row }) => {
+        const formatted = format(
+          new Date(row.original.tanggal),
+          "iiii, dd MMMM yyyy",
+        );
+        return <div className="tabular-nums">{formatted}</div>;
+      },
+    },
+    {
+      accessorKey: "user",
+      header: "User",
+      cell: ({ row }) => row.original.user,
+    },
+    {
+      accessorKey: "produk",
+      header: "Product Name",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">{row.original.produk}</div>
+      ),
+    },
+    {
+      accessorKey: "price_before",
+      header: "Price Before",
+      cell: ({ row }) =>
+        formatRupiah(Number(row.original.price_before.replace(/,/g, ""))),
+    },
+    {
+      accessorKey: "price_after",
+      header: "Price After",
+      cell: ({ row }) =>
+        formatRupiah(Number(row.original.price_after.replace(/,/g, ""))),
+    },
+
+    {
+      accessorKey: "qty_before",
+      header: "Qty Before",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">{row.original.qty_before}</div>
+      ),
+    },
+    {
+      accessorKey: "qty_after",
+      header: "Qty After",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">{row.original.qty_after}</div>
+      ),
+    },
+       {
+      accessorKey: "items_per_bundle",
+      header: "Items /bundle",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">{row.original.items_per_bundle}</div>
+      ),
+    },
+    {
+      accessorKey: "bundling",
+      header: "Bundling",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">{row.original.bundling}</div>
+      ),
+    },
+  ];
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -312,6 +447,24 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteBarcodeDialog />
+      <DialogHistoryBundling
+        open={isHistoryBundling}
+        onCloseModal={() => {
+          if (isHistoryBundling) {
+            handleCloseHistoryBundling();
+          }
+        }}
+        search={historyBundlingSearch}
+        setSearch={setHistoryBundlingSearch}
+        refetch={refetchHistoryBundling}
+        isRefetching={isRefetchingHistoryBundling}
+        isLoading={isLoadingHistoryBundling}
+        columns={columnHistoryBundling}
+        dataTable={dataListHistoryBundling}
+        page={pageHistoryBundling}
+        metaPage={metaPageHistoryBundling}
+        setPage={setPageHistoryBundling}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -451,7 +604,25 @@ export const Client = () => {
       </div>
 
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
-        <h2 className="text-xl font-bold">List of Document Data</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">List of Document Data</h2>
+
+          <div className="flex gap-4 items-center">
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                setIsHistoryBundling(true);
+              }}
+              className="items-center flex h-9 bg-sky-400/80 hover:bg-sky-400 text-black
+        disabled:opacity-100 disabled:hover:bg-sky-400
+        disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant="outline"
+            >
+              <ReceiptText className="w-4 h-4 mr-1" />
+              Detail bundling
+            </Button>
+          </div>
+        </div>
         <div className="flex flex-col w-full gap-4">
           <div className="flex gap-2 items-center w-full">
             <Input

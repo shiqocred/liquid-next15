@@ -220,8 +220,6 @@ export const Client = () => {
     return chartData.reduce((acc, curr) => acc + curr.values, 0);
   }, [dataDetail]);
 
-  console.log("totalVisitors", totalVisitors);
-
   useEffect(() => {
     setPaginate({
       isSuccess: isSuccessProduct,

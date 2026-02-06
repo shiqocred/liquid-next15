@@ -127,8 +127,6 @@ export const Client = () => {
     return data?.data.data.resource.data?.[0]?.migrate_bulky_products;
   }, [data]);
 
-  console.log("dataListtt", dataList);
-
   const dataListProduct: any[] = useMemo(() => {
     return dataProduct?.data.data.resource.data;
   }, [dataProduct]);
