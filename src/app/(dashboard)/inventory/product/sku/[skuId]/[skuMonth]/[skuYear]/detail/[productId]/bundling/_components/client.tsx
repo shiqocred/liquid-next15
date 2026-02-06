@@ -181,6 +181,9 @@ export const Client = () => {
           queryClient.invalidateQueries({
             queryKey: ["check-tag-product-by-sku-bundling"],
           });
+          queryClient.invalidateQueries({
+            queryKey: ["list-history-bundling-sku"],
+          });
         },
       },
     );
@@ -193,13 +196,13 @@ export const Client = () => {
   }, [showCategory]);
 
   useEffect(() => {
-      if (isNaN(parseFloat(input.perBundle))) {
-        setInput((prev) => ({ ...prev, perBundle: "0" }));
-      }
-      if (isNaN(parseFloat(input.bundle))) {
-        setInput((prev) => ({ ...prev, bundle: "0" }));
-      }
-    }, [input]);
+    if (isNaN(parseFloat(input.perBundle))) {
+      setInput((prev) => ({ ...prev, perBundle: "0" }));
+    }
+    if (isNaN(parseFloat(input.bundle))) {
+      setInput((prev) => ({ ...prev, bundle: "0" }));
+    }
+  }, [input]);
 
   return (
     <div className="flex flex-col bg-gray-100 w-full px-4 gap-4 py-4">
@@ -240,6 +243,23 @@ export const Client = () => {
               <BreadcrumbLink href="/inventory/product/sku">Sku</BreadcrumbLink>
             </button>
           </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink
+              href={`/inventory/product/sku/${codeDocument}/detail`}
+              onClick={() => {
+                queryClient.invalidateQueries({
+                  queryKey: ["detail-product-sku"],
+                });
+                queryClient.invalidateQueries({
+                  queryKey: ["list-history-bundling-sku"],
+                });
+              }}
+            >
+              Detail
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+
           <BreadcrumbSeparator />
           <BreadcrumbItem>Bundling</BreadcrumbItem>
         </BreadcrumbList>
