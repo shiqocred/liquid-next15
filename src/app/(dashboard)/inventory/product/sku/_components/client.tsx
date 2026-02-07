@@ -122,7 +122,7 @@ export const Client = () => {
 
   useEffect(() => {
     if (isSuccess && data) {
-      setPagination(data?.data.data.resource.data);
+      setPagination(data?.data.data.resource);
     }
   }, [data, isSuccess]);
 

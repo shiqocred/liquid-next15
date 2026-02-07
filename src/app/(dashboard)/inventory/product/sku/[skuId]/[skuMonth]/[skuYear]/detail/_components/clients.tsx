@@ -213,7 +213,7 @@ export const Client = () => {
     setPaginate({
       isSuccess,
       data,
-      dataPaginate: dataDetailProductSku,
+      dataPaginate: dataDetails?.products,
       setPage,
       setMetaPage,
     });
@@ -303,6 +303,7 @@ export const Client = () => {
         <div className="flex gap-4 justify-center items-center">
           <TooltipProviderPage value={<p>Bundling</p>}>
             <Button
+              asChild
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
               // disabled={isLoadingProduct || isPendingUpdate || isPendingCreate}
@@ -408,11 +409,13 @@ export const Client = () => {
         <div className="max-w-[500px] break-all">{row.original.qty_after}</div>
       ),
     },
-       {
+    {
       accessorKey: "items_per_bundle",
       header: "Items /bundle",
       cell: ({ row }) => (
-        <div className="max-w-[500px] break-all">{row.original.items_per_bundle}</div>
+        <div className="max-w-[500px] break-all">
+          {row.original.items_per_bundle}
+        </div>
       ),
     },
     {
