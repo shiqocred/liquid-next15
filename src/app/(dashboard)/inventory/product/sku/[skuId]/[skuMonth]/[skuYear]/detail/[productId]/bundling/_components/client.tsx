@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import BarcodePrintPreview from "@/components/barcode-print-preview";
 import { Input } from "@/components/ui/input";
+import { ArrowLeft } from "lucide-react";
 
 export const Client = () => {
   const { skuId, skuMonth, skuYear, productId } = useParams();
@@ -268,11 +269,34 @@ export const Client = () => {
         <div className="flex justify-between items-start gap-6">
           {/* LEFT INFO */}
           <div className="flex flex-col gap-2">
-            <h2>Bundling</h2>
+            <div className="flex items-center gap-3">
+              <BreadcrumbLink
+                href={`/inventory/product/sku/${codeDocument}/detail`}
+                onClick={() => {
+                  queryClient.invalidateQueries({
+                    queryKey: ["detail-product-sku"],
+                  });
+                  queryClient.invalidateQueries({
+                    queryKey: ["list-history-bundling-sku"],
+                  });
+                }}
+                className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-200"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </BreadcrumbLink>
+
+              <h2 className="text-lg font-semibold">Bundling</h2>
+            </div>{" "}
             <div>
               <p className="text-sm text-gray-500">Nama Dokumen</p>
               <p className="font-semibold">
-                {/* {dataDocumentsInfo?.code_document} */}
+                {detailsProduct?.code_document}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Nama Product</p>
+              <p className="font-semibold">
+                {detailsProduct?.name_product}
               </p>
             </div>
           </div>
