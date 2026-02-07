@@ -282,22 +282,18 @@ export const Client = () => {
                 }}
                 className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-200"
               >
-                <ArrowLeft className="w-4 h-4 text-blue-400" />
+                <ArrowLeft className="w-4 h-4 text-blue-600" />
               </BreadcrumbLink>
 
               <h2 className="text-lg font-semibold">Bundling</h2>
             </div>{" "}
             <div>
               <p className="text-sm text-gray-500">Nama Dokumen</p>
-              <p className="font-semibold">
-                {detailsProduct?.code_document}
-              </p>
+              <p className="font-semibold">{detailsProduct?.code_document}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Nama Product</p>
-              <p className="font-semibold">
-                {detailsProduct?.name_product}
-              </p>
+              <p className="font-semibold">{detailsProduct?.name_product}</p>
             </div>
           </div>
         </div>
