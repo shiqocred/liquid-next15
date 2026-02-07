@@ -264,7 +264,20 @@ export const Client = () => {
           <BreadcrumbItem>Bundling</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-
+      <div className="w-full bg-white rounded-md shadow border p-4">
+        <div className="flex justify-between items-start gap-6">
+          {/* LEFT INFO */}
+          <div className="flex flex-col gap-2">
+            <h2>Bundling</h2>
+            <div>
+              <p className="text-sm text-gray-500">Nama Dokumen</p>
+              <p className="font-semibold">
+                {/* {dataDocumentsInfo?.code_document} */}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="col-span-2 bg-white border rounded-lg p-4">
           <div className="grid grid-cols-2 gap-4 text-sm">

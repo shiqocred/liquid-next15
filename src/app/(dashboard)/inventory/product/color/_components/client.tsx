@@ -202,6 +202,7 @@ export const Client = () => {
       setMetaPage: setMetaPageWMS,
     });
   }, [dataWMS]);
+
   useEffect(() => {
     setPaginate({
       isSuccess: isSuccessAPK,

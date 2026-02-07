@@ -6,7 +6,7 @@ import { getCookie } from "cookies-next/client";
 export const useGetListProductColorWMS = ({ p, q }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-prduct-color-wms", { p, q }],
+    queryKey: ["list-product-color-wms", { p, q }],
     queryFn: async () => {
       const res = await axios.get(
         `${baseUrl}/product_byColor?page=${p}&q=${q}`,

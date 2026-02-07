@@ -92,7 +92,8 @@ export const Client = () => {
     return data?.data.data.resource;
   }, [data]);
   const dataDetailMI = dataDetails?.data.data;
-
+  const statusMIS = dataDetails?.status;
+  
   const handleClose = () => {
     setOpenEdit(false);
     setProductId("");
@@ -122,9 +123,6 @@ export const Client = () => {
               data.data.data.resource.id,
             ],
           });
-          // queryClient.invalidateQueries({
-          //   queryKey: ["list-categories"],
-          // });
         },
       },
     );
@@ -280,7 +278,7 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isLoadingProduct || isPendingUpdate}
+              disabled={isLoadingProduct || isPendingUpdate || statusMIS === "done"}
               onClick={(e) => {
                 e.preventDefault();
                 setProductId(row.original.id);
@@ -376,7 +374,7 @@ export const Client = () => {
             </TooltipProviderPage>
             <TooltipProviderPage value={"Add Product"} align="end">
               <Button
-                disabled={isPendingSubmitSku}
+                disabled={isPendingSubmitSku || statusMIS === "done"}
                 onClick={handleSubmitSku}
                 className="items-center w-9 px-0 flex-none h-9 bg-sky-400/80 text-black hover:bg-sky-400"
               >
@@ -554,7 +552,7 @@ export const Client = () => {
                     : "bg-sky-400 hover:bg-sky-400/80",
                 )}
                 type="submit"
-                disabled={parseFloat(input.actual_quantity_product) <= 0}
+                // disabled={parseFloat(input.actual_quantity_product) <= 0}
               >
                 Update
               </Button>
