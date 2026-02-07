@@ -361,7 +361,8 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPageWMS.from + row.index).toLocaleString()}
+          {/* {(metaPageWMS.from + row.index).toLocaleString()} */}
+          {(1 + row.index).toLocaleString()}
         </div>
       ),
     },
@@ -450,7 +451,8 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPageAPK.from + row.index).toLocaleString()}
+          {/* {(metaPageAPK.from + row.index).toLocaleString()} */}
+          {(1 + row.index).toLocaleString()}
         </div>
       ),
     },
@@ -533,7 +535,7 @@ export const Client = () => {
       ),
     },
   ];
-   const columnListProductSkuWMS: ColumnDef<any>[] = [
+  const columnListProductSkuWMS: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
@@ -873,7 +875,7 @@ export const Client = () => {
                   data={dataListWMS ?? []}
                   isLoading={loadingWMS}
                 />
-                  <DataTable
+                <DataTable
                   columns={columnListProductSkuWMS}
                   data={dataListSkuWMS ?? []}
                   isLoading={loadingWMS}
