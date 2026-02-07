@@ -643,7 +643,7 @@ export const Client = () => {
               variant="outline"
             >
               <ReceiptText className="w-4 h-4 mr-1" />
-              Detail bundling
+              History
             </Button>
           </div>
         </div>
