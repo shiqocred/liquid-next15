@@ -24,6 +24,7 @@ import {
   Loader2,
   ReceiptText,
   RefreshCw,
+  Shield,
   Trash2,
 } from "lucide-react";
 import { notFound, useParams } from "next/navigation";
@@ -47,6 +48,7 @@ import { useToDamaged } from "../_api/use-to-damaged";
 import DialogHistoryBundling from "./dialog-history-bundling";
 import { useGetListHistoryBundling } from "../_api/use-get-list-bundling";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
   const { skuId, skuMonth, skuYear } = useParams();
@@ -340,7 +342,7 @@ export const Client = () => {
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Trash2 className="w-4 h-4" />
+                <Shield className="w-4 h-4" />
               )}
             </Button>
           </TooltipProviderPage>
@@ -380,6 +382,25 @@ export const Client = () => {
       header: "Product Name",
       cell: ({ row }) => (
         <div className="max-w-[500px] break-all">{row.original.produk}</div>
+      ),
+    },
+    {
+      accessorKey: "type_badge",
+      header: "Type",
+      cell: ({ row }) => (
+        // <div className="max-w-[500px] break-all">{row.original.type_badge}</div>
+        <div className="flex justify-center">
+          <Badge
+            className={cn(
+              "rounded w-20 px-0 justify-center font-normal capitalize",
+              row.original.type_badge === "bundling"
+                ? "bg-green-400 text-black hover:bg-green-400"
+                : "bg-yellow-400 text-black hover:bg-yellow-400",
+            )}
+          >
+            {row.original.type_badge}
+          </Badge>
+        </div>
       ),
     },
     {
