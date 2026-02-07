@@ -282,7 +282,7 @@ export const Client = () => {
                 }}
                 className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-200"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 text-blue-400" />
               </BreadcrumbLink>
 
               <h2 className="text-lg font-semibold">Bundling</h2>
