@@ -88,7 +88,7 @@ export const Client = () => {
   const { mutate: mutateCE } = useCreateEditBarcodeSKU();
   const { mutate: mutateDeleteBarcode } = useDeleteBarcodeSku();
   const { mutate: mutateDamaged, isPending: isDamagedLoading } = useToDamaged();
-
+  
   const [DeleteBarcodeDialog, confirmBarcodeDelete] = useConfirm(
     "Delete Barcode",
     "This action cannot be undone",
@@ -199,6 +199,8 @@ export const Client = () => {
     );
   };
 
+ 
+
   const handleCloseHistoryBundling = () => {
     setIsHistoryBundling(false);
     setHistoryBundlingSearch("");
@@ -303,6 +305,7 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
+         
           <TooltipProviderPage value={<p>Bundling</p>}>
             <Button
               asChild
@@ -329,7 +332,7 @@ export const Client = () => {
               </Link>
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Delete</p>}>
+          <TooltipProviderPage value={<p>Damaged</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
