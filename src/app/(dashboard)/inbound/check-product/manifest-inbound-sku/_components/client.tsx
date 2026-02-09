@@ -15,7 +15,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, ReceiptText, RefreshCw, Trash2 } from "lucide-react";
+import { FileDown, Loader2, ReceiptText, RefreshCw, Trash2 } from "lucide-react";
 import { parseAsInteger, useQueryState } from "nuqs";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDeleteHistory } from "../_api/use-delete-history";
@@ -28,8 +28,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useExportSKU } from "../_api/use-export-sku";
 
 export const Client = () => {
+  const [exportId, setExportId] = useState<number | null>(null);
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
   const queryClient = useQueryClient();
   const searchValue = useDebounce(dataSearch);
@@ -64,6 +66,10 @@ export const Client = () => {
   const dataMI: any[] = useMemo(() => {
     return data?.data.data.resource.data;
   }, [data]);
+
+  const { mutate: mutateExportSKU, isPending: isPendingSKU } = useExportSKU(
+    exportId ?? 0,
+  );
 
   useEffect(() => {
     setPaginate({
@@ -106,6 +112,23 @@ export const Client = () => {
       success: "Manifest Inbound Successfully Deleted",
       error: "Manifest Inbound failed to delete",
     });
+  };
+
+  const handleExport = (id: number) => {
+    setExportId(id);
+    mutateExportSKU(
+      { id },
+      {
+        onSuccess: (res) => {
+          const url = res.data.data.resource?.download_url;
+          const link = document.createElement("a");
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      },
+    );
   };
 
   const columnManifestInbound: ColumnDef<any>[] = [
@@ -182,6 +205,20 @@ export const Client = () => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
         <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Export</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              onClick={() => handleExport(row.original.id)}
+              disabled={isPendingSKU}
+            >
+              {isPendingSKU ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileDown className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
           <TooltipProviderPage value="Detail">
             <Button
               asChild
