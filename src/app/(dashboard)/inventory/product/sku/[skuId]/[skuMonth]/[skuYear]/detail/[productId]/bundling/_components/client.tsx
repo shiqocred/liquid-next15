@@ -544,51 +544,111 @@ export const Client = () => {
           </div>
           <TabsContent value="regular">
             <form className="w-full space-y-6 mt-6">
-              {showCategory && (
-                <div className="w-full flex flex-col gap-3">
-                  <RadioGroup
-                    className="grid grid-cols-4 gap-6"
-                    onValueChange={(value) => {
-                      const cat = categories.find(
-                        (item) => item.name_category === value,
-                      );
-                      setSelectedCategory(cat);
-                    }}
-                  >
-                    {categories.map((item) => (
-                      <div
-                        key={item.id}
-                        className={cn(
-                          "border rounded-md px-4 py-3 bg-sky-50",
-                          selectedCategory?.id === item.id
-                            ? "border-sky-500 bg-sky-100"
-                            : "border-gray-300",
-                        )}
-                      >
-                        <RadioGroupItem
-                          value={item.name_category}
-                          id={String(item.id)}
-                        />
-                        <Label htmlFor={String(item.id)}>
-                          <p className="font-bold">{item.name_category}</p>
-                          <p className="text-xs">
-                            {item.discount_category}% - Max{" "}
-                            {formatRupiah(Math.round(item.max_price_category))}
-                          </p>
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
-              ;
+              {/* {showCategory && ( */}
+              <div className="w-full flex flex-col gap-3">
+                <RadioGroup
+                  className="grid grid-cols-4 gap-6"
+                  onValueChange={(value) => {
+                    const cat = categories.find(
+                      (item) => item.name_category === value,
+                    );
+                    setSelectedCategory(cat);
+                  }}
+                >
+                  {categories.map((item) => (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        "border rounded-md px-4 py-3 bg-sky-50",
+                        selectedCategory?.id === item.id
+                          ? "border-sky-500 bg-sky-100"
+                          : "border-gray-300",
+                      )}
+                    >
+                      <RadioGroupItem
+                        value={item.name_category}
+                        id={String(item.id)}
+                      />
+                      <Label htmlFor={String(item.id)}>
+                        <p className="font-bold">{item.name_category}</p>
+                        <p className="text-xs">
+                          {item.discount_category}% - Max{" "}
+                          {formatRupiah(Math.round(item.max_price_category))}
+                        </p>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+              {/* )} */}
             </form>
           </TabsContent>
           <TabsContent value="small">
-            <form className="w-full space-y-6 mt-6"></form>
+            <form className="w-full space-y-4 mt-6">
+              <p className="text-sm text-gray-500">Tag Color & Fixed Price</p>
+
+              {isFetchingColor ? (
+                <p className="text-sm text-gray-400">Loading...</p>
+              ) : dataColorTag?.data?.data?.resource?.[0] ? (
+                <div className="flex items-center gap-4">
+                  <span
+                    className="px-3 py-1 rounded-full text-white text-sm"
+                    style={{
+                      backgroundColor:
+                        dataColorTag.data.data.resource[0].hexa_code_color,
+                    }}
+                  >
+                    {dataColorTag.data.data.resource[0].name_color}
+                  </span>
+
+                  <p className="text-lg font-semibold">
+                    {formatRupiah(
+                      Math.round(
+                        Number(
+                          dataColorTag.data.data.resource[0].fixed_price_color,
+                        ),
+                      ),
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">No tag color</p>
+              )}
+            </form>
           </TabsContent>
+
           <TabsContent value="big">
-            <form className="w-full space-y-6 mt-6"></form>
+            <form className="w-full space-y-4 mt-6">
+              <p className="text-sm text-gray-500">Tag Color & Fixed Price</p>
+
+              {isFetchingColor ? (
+                <p className="text-sm text-gray-400">Loading...</p>
+              ) : dataColorTag?.data?.data?.resource?.[0] ? (
+                <div className="flex items-center gap-4">
+                  <span
+                    className="px-3 py-1 rounded-full text-white text-sm"
+                    style={{
+                      backgroundColor:
+                        dataColorTag.data.data.resource[0].hexa_code_color,
+                    }}
+                  >
+                    {dataColorTag.data.data.resource[0].name_color}
+                  </span>
+
+                  <p className="text-lg font-semibold">
+                    {formatRupiah(
+                      Math.round(
+                        Number(
+                          dataColorTag.data.data.resource[0].fixed_price_color,
+                        ),
+                      ),
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">No tag color</p>
+              )}
+            </form>{" "}
           </TabsContent>
         </Tabs>
       </div>
