@@ -533,7 +533,7 @@ export const Client = () => {
         <div className="grid grid-cols-2 gap-6">
           {/* Saldo */}
           <SummaryCard
-            title="Saldo Awal"
+            title="Saldo New Price Awal"
             value={
               isLoadingBeginBalance ? (
                 <div className="flex items-center gap-2">
@@ -548,7 +548,7 @@ export const Client = () => {
             className="bg-sky-200"
           />
           <SummaryCard
-            title="Saldo Akhir"
+            title="Saldo New Price Akhir"
             value={
               isLoadingEndBalance ? (
                 <div className="flex items-center gap-2">
@@ -578,11 +578,11 @@ export const Client = () => {
           {/* Price */}
           <div className="grid grid-cols-2 gap-4">
             <SummaryCard
-              title="Price Masuk"
+              title="Price Masuk (New Price)"
               value={formatRupiah(dataBoth?.summary_report?.price_in)}
             />
             <SummaryCard
-              title="Price Keluar"
+              title="Price Keluar (Display Price)"
               value={formatRupiah(dataBoth?.summary_report?.price_out)}
             />
           </div>

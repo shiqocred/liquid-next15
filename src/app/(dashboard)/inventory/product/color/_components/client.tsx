@@ -50,13 +50,13 @@ export const Client = () => {
   // type color APK || WMS
   const [isApk, setIsApk] = useQueryState(
     "apk",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
 
   // dialog edit
   const [openDialog, setOpenDialog] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
 
   // color ID Edit
@@ -71,7 +71,7 @@ export const Client = () => {
   const searchValueWMS = useDebounce(dataSearchWMS);
   const [pageWMS, setPageWMS] = useQueryState(
     "p",
-    parseAsInteger.withDefault(1)
+    parseAsInteger.withDefault(1),
   );
   const [metaPageWMS, setMetaPageWMS] = useState({
     last: 1, //page terakhir
@@ -87,7 +87,7 @@ export const Client = () => {
   const searchValueAPK = useDebounce(dataSearchAPK);
   const [pageAPK, setPageAPK] = useQueryState(
     "p2",
-    parseAsInteger.withDefault(1)
+    parseAsInteger.withDefault(1),
   );
   const [metaPageAPK, setMetaPageAPK] = useState({
     last: 1, //page terakhir
@@ -100,7 +100,7 @@ export const Client = () => {
   const [DeleteDialog, confirmDelete] = useConfirm(
     `Delete Product Color ${isApk ? "APK" : "WMS"}`,
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // mutate DELETE, UPDATE, CREATE
@@ -156,22 +156,36 @@ export const Client = () => {
 
   // data Summary memo WMS
   const dataListSummartWMS: any[] = useMemo(() => {
-    return dataWMS?.data.data.resource.tags_summary;
+    return dataWMS?.data.data.resource.tag_color;
+  }, [dataWMS]);
+  // data Summary memo WMS
+  const dataListSummartWMSTag: any[] = useMemo(() => {
+    return dataWMS?.data.data.resource.tag_sku;
   }, [dataWMS]);
 
   // data Summary memo APK
   const dataListSummartAPK: any[] = useMemo(() => {
-    return dataAPK?.data.data.resource.tags_summary;
+    return dataAPK?.data.data.resource.tag_color;
   }, [dataAPK]);
 
   // data memo WMS
   const dataListWMS: any[] = useMemo(() => {
-    return dataWMS?.data.data.resource.data.data;
+    return dataWMS?.data.data.resource.data_color;
   }, [dataWMS]);
 
   // data memo APK
   const dataListAPK: any[] = useMemo(() => {
-    return dataAPK?.data.data.resource.data.data;
+    return dataAPK?.data.data.resource.data_color;
+  }, [dataAPK]);
+
+  // data memo WMS SKu
+  const dataListSkuWMS: any[] = useMemo(() => {
+    return dataWMS?.data.data.resource.data_sku;
+  }, [dataWMS]);
+
+  // data memo APK Sku
+  const dataListSkuAPK: any[] = useMemo(() => {
+    return dataAPK?.data.data.resource.data_sku;
   }, [dataAPK]);
 
   // loading WMS APK
@@ -183,16 +197,17 @@ export const Client = () => {
     setPaginate({
       isSuccess: isSuccessWMS,
       data: dataWMS,
-      dataPaginate: dataWMS?.data.data.resource.data,
+      dataPaginate: dataWMS?.data.data.resource.pagination,
       setPage: setPageWMS,
       setMetaPage: setMetaPageWMS,
     });
   }, [dataWMS]);
+
   useEffect(() => {
     setPaginate({
       isSuccess: isSuccessAPK,
       data: dataAPK,
-      dataPaginate: dataAPK?.data.data.resource.data,
+      dataPaginate: dataAPK?.data.data.resource.pagination,
       setPage: setPageAPK,
       setMetaPage: setMetaPageAPK,
     });
@@ -238,7 +253,7 @@ export const Client = () => {
       {
         onSuccess: (data) => {
           toast.success(
-            `Product Color ${isApk ? "APK" : "WMS"} successfully deleted`
+            `Product Color ${isApk ? "APK" : "WMS"} successfully deleted`,
           );
           queryClient.invalidateQueries({
             queryKey: [
@@ -256,15 +271,15 @@ export const Client = () => {
             toast.error(
               `ERROR ${err?.status}: Product Color ${
                 isApk ? "APK" : "WMS"
-              } failed to delete`
+              } failed to delete`,
             );
             console.log(
               `ERROR_PRODUCT_COLOR_DELETED_${isApk ? "APK" : "WMS"}:`,
-              err
+              err,
             );
           }
         },
-      }
+      },
     );
   };
 
@@ -304,13 +319,50 @@ export const Client = () => {
       ),
     },
   ];
+  const columnSummarySku: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(1 + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "tag_name",
+      header: "SKU Name",
+      cell: ({ row }) => (
+        <div className="break-all">{row.original.tag_name}</div>
+      ),
+    },
+    {
+      accessorKey: "total_data",
+      header: () => <div className="text-center">Total Data</div>,
+      cell: ({ row }) => (
+        <div className="text-center">
+          {row.original.total_data.toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "total_price",
+      header: "Price",
+      cell: ({ row }) => (
+        <div className="tabular-nums">
+          {formatRupiah(row.original.total_price)}
+        </div>
+      ),
+    },
+  ];
   const columnListProductColorWMS: ColumnDef<any>[] = [
     {
       header: () => <div className="text-center">No</div>,
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPageWMS.from + row.index).toLocaleString()}
+          {/* {(metaPageWMS.from + row.index).toLocaleString()} */}
+          {(1 + row.index).toLocaleString()}
         </div>
       ),
     },
@@ -399,7 +451,8 @@ export const Client = () => {
       id: "id",
       cell: ({ row }) => (
         <div className="text-center tabular-nums">
-          {(metaPageAPK.from + row.index).toLocaleString()}
+          {/* {(metaPageAPK.from + row.index).toLocaleString()} */}
+          {(1 + row.index).toLocaleString()}
         </div>
       ),
     },
@@ -419,6 +472,184 @@ export const Client = () => {
     {
       accessorKey: "new_tag_product",
       header: "Tag Color",
+    },
+    {
+      accessorKey: "new_price_product",
+      header: "New Price",
+      cell: ({ row }) => (
+        <div className="tabular-nums">
+          {formatRupiah(row.original.new_price_product)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_status_product",
+      header: "New Price",
+      cell: ({ row }) => (
+        <Badge className="bg-sky-400/80 hover:bg-sky-400/80 text-black font-normal capitalize">
+          {row.original.new_status_product}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isLoadingProduct}
+              onClick={(e) => {
+                e.preventDefault();
+                setProductId(row.original.id);
+                setOpenDialog(true);
+              }}
+            >
+              {isLoadingProduct ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ReceiptText className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.original.id);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
+  ];
+  const columnListProductSkuWMS: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPageWMS.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "old_barcode_product",
+      header: "Old Barcode",
+    },
+    {
+      accessorKey: "new_name_product",
+      header: "Product Name",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_tag_product",
+      header: "Tag SKU",
+    },
+    {
+      accessorKey: "new_price_product",
+      header: "New Price",
+      cell: ({ row }) => (
+        <div className="tabular-nums">
+          {formatRupiah(row.original.new_price_product)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_status_product",
+      header: "New Price",
+      cell: ({ row }) => (
+        <Badge className="bg-sky-400/80 hover:bg-sky-400/80 text-black font-normal capitalize">
+          {row.original.new_status_product}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => (
+        <div className="flex gap-4 justify-center items-center">
+          <TooltipProviderPage value={<p>Detail</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isLoadingProduct}
+              onClick={(e) => {
+                e.preventDefault();
+                setProductId(row.original.id);
+                setOpenDialog(true);
+              }}
+            >
+              {isLoadingProduct ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ReceiptText className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+          <TooltipProviderPage value={<p>Delete</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete(row.original.id);
+              }}
+            >
+              {isPendingDelete ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage>
+        </div>
+      ),
+    },
+  ];
+  const columnListProductSkuAPK: ColumnDef<any>[] = [
+    {
+      header: () => <div className="text-center">No</div>,
+      id: "id",
+      cell: ({ row }) => (
+        <div className="text-center tabular-nums">
+          {(metaPageAPK.from + row.index).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "old_barcode_product",
+      header: "Old Barcode",
+    },
+    {
+      accessorKey: "new_name_product",
+      header: "Product Name",
+      cell: ({ row }) => (
+        <div className="max-w-[500px] break-all">
+          {row.original.new_name_product}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "new_tag_product",
+      header: "Tag SKU",
     },
     {
       accessorKey: "new_price_product",
@@ -597,13 +828,17 @@ export const Client = () => {
                   <div className="w-full border border-sky-400 p-3 rounded-md">
                     <h5 className="text-sm">Total Value</h5>
                     <p className="font-semibold text-lg">
-                      {formatRupiah(dataResWMS?.total_price_all)}
+                      {formatRupiah(dataResWMS?.total_price)}
                     </p>
                   </div>
                 </div>
                 <DataTable
                   columns={columnSummaryColor}
                   data={dataListSummartWMS ?? []}
+                />
+                <DataTable
+                  columns={columnSummarySku}
+                  data={dataListSummartWMSTag ?? []}
                 />
               </div>
             </div>
@@ -628,7 +863,7 @@ export const Client = () => {
                         <RefreshCw
                           className={cn(
                             "w-4 h-4",
-                            loadingWMS ? "animate-spin" : ""
+                            loadingWMS ? "animate-spin" : "",
                           )}
                         />
                       </Button>
@@ -638,6 +873,11 @@ export const Client = () => {
                 <DataTable
                   columns={columnListProductColorWMS}
                   data={dataListWMS ?? []}
+                  isLoading={loadingWMS}
+                />
+                <DataTable
+                  columns={columnListProductSkuWMS}
+                  data={dataListSkuWMS ?? []}
                   isLoading={loadingWMS}
                 />
                 <Pagination
@@ -694,7 +934,7 @@ export const Client = () => {
                         <RefreshCw
                           className={cn(
                             "w-4 h-4",
-                            loadingAPK ? "animate-spin" : ""
+                            loadingAPK ? "animate-spin" : "",
                           )}
                         />
                       </Button>
@@ -704,6 +944,11 @@ export const Client = () => {
                 <DataTable
                   columns={columnListProductColorAPK}
                   data={dataListAPK ?? []}
+                  isLoading={loadingAPK}
+                />
+                <DataTable
+                  columns={columnListProductSkuAPK}
+                  data={dataListSkuAPK ?? []}
                   isLoading={loadingAPK}
                 />
                 <Pagination

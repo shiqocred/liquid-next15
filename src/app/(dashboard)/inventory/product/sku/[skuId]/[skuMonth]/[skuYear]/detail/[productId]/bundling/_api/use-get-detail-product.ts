@@ -3,21 +3,19 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListProductColorWMS = ({ p, q }: any) => {
+export const useGetDetailProduct = ({ id }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-product-color-wms", { p, q }],
+    queryKey: ["detail-bundling-product-sku", id],
     queryFn: async () => {
-      const res = await axios.get(
-        `${baseUrl}/product_byColor?page=${p}&q=${q}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const res = await axios.get(`${baseUrl}/sku-products/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
+    enabled: !!id,
   });
   return query;
 };
