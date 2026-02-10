@@ -180,7 +180,7 @@ export const Client = () => {
 
         const mappedBarcodes = products.map((item: any) => ({
           barcode: item.new_barcode_product,
-          oldPrice: String(item.old_price_product),
+          oldPrice: String(hargaBundle),
           newPrice: String(item.new_price_product),
           category: item.category ?? item.tag,
           discount: selectedCategory
