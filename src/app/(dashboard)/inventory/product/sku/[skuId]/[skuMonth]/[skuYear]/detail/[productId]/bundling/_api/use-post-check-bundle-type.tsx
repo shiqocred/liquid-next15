@@ -6,21 +6,33 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
+  product_id: string;
   items_per_bundle: string;
-  bundle_quantity: string;
-  new_category_product?: string;
-  bundle_type: string,
+  selected_type: string;
+};
+
+type ResponseType = {
+  message: string;
+  is_mismatch: any;
+  data: {
+    is_mismatch: boolean;
+    message?: string;
+  };
 };
 
 type Error = AxiosError;
 
-export const useAddBundle = ({ id }: any) => {
+export const useCheckBundleType = () => {
   const accessToken = getCookie("accessToken");
 
-  const mutation = useMutation<AxiosResponse, Error, RequestType>({
+  const mutation = useMutation<
+    AxiosResponse<ResponseType>,
+    Error,
+    RequestType
+  >({
     mutationFn: async (value) => {
       const res = await axios.post(
-        `${baseUrl}/sku-products/add-bundle/${id}`,
+        `${baseUrl}/sku-products/check-type`,
         value,
         {
           headers: {
@@ -31,10 +43,6 @@ export const useAddBundle = ({ id }: any) => {
       return res;
     },
 
-    onSuccess: () => {
-      toast.success("Bundle berhasil ditambahkan");
-    },
-
     onError: (err) => {
       if (err.status === 403) {
         toast.error("Error 403: Restricted Access");
@@ -42,10 +50,10 @@ export const useAddBundle = ({ id }: any) => {
         toast.error(
           `ERROR ${err?.status}: ${
             (err.response?.data as any)?.data?.message ||
-            "Bundle gagal ditambahkan"
+            "Gagal cek tipe bundle"
           }`,
         );
-        console.error("ERROR_ADD_BUNDLE:", err);
+        console.error("ERROR_CHECK_BUNDLE_TYPE:", err);
       }
     },
   });
