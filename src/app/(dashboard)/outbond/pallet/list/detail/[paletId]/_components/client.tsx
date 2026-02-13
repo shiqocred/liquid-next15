@@ -694,6 +694,7 @@ export const Client = () => {
         }}
         open={isOpen === "barcode"}
         oldPrice={input.total ?? "0"}
+        newName={input.name ??""}
         barcode={data?.data.data.resource.palet_barcode ?? ""}
         category={input.name ?? ""}
         newPrice={input.totalNew ?? "0"}

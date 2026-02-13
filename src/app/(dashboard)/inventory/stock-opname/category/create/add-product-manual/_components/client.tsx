@@ -40,24 +40,28 @@ export const Client = () => {
 
   const [barcodeOpen, setBarcodeOpen] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
-  const [{ barcode, newPrice, oldPrice, category, discount }, setMetaBarcode] =
-    useQueryStates(
-      {
-        barcode: parseAsString.withDefault(""),
-        newPrice: parseAsString.withDefault(""),
-        oldPrice: parseAsString.withDefault(""),
-        category: parseAsString.withDefault(""),
-        discount: parseAsString.withDefault(""),
+  const [
+    { barcode, newPrice, newName, oldPrice, category, discount },
+    setMetaBarcode,
+  ] = useQueryStates(
+    {
+      barcode: parseAsString.withDefault(""),
+      newPrice: parseAsString.withDefault(""),
+      newName: parseAsString.withDefault(""),
+      oldPrice: parseAsString.withDefault(""),
+      category: parseAsString.withDefault(""),
+      discount: parseAsString.withDefault(""),
+    },
+    {
+      urlKeys: {
+        newName: "new-name",
+        newPrice: "new-price",
+        oldPrice: "old-price",
       },
-      {
-        urlKeys: {
-          newPrice: "new-price",
-          oldPrice: "old-price",
-        },
-      }
-    );
+    },
+  );
 
   const [input, setInput] = useState({
     name: "",
@@ -105,7 +109,7 @@ export const Client = () => {
       new_quantity_product: input.qty,
       old_price_product: input.price,
       new_status_product: "display",
-      new_category_product: type === "lolos" ? input.category ?? "" : "",
+      new_category_product: type === "lolos" ? (input.category ?? "") : "",
       new_price_product: input.discountPrice,
       new_tag_product: colorData.name_color ?? "",
       condition: type,
@@ -114,8 +118,8 @@ export const Client = () => {
         type === "abnormal"
           ? input.abnormal
           : type === "damaged"
-          ? input.damaged
-          : "",
+            ? input.damaged
+            : "",
     };
 
     mutate(
@@ -146,7 +150,7 @@ export const Client = () => {
             });
           }
         },
-      }
+      },
     );
   };
 
@@ -182,7 +186,7 @@ export const Client = () => {
       setInput((prev) => ({
         ...prev,
         discountPrice: Math.round(
-          parseFloat(colorData.fixed_price_color)
+          parseFloat(colorData.fixed_price_color),
         ).toString(),
       }));
     } else {
@@ -339,13 +343,13 @@ export const Client = () => {
                         <RadioGroup
                           onValueChange={(e) => {
                             const selectedCategory = categories.find(
-                              (item) => item.name_category === e
+                              (item) => item.name_category === e,
                             );
                             setInput((prev) => ({
                               ...prev,
                               category: selectedCategory?.name_category ?? "",
                               discount: parseFloat(
-                                selectedCategory?.discount_category ?? "0"
+                                selectedCategory?.discount_category ?? "0",
                               ),
                             }));
                           }}
@@ -358,7 +362,7 @@ export const Client = () => {
                                 "flex items-center gap-4 w-full border px-4 py-2.5 rounded-md",
                                 input.category === item.name_category
                                   ? "border-gray-500 bg-sky-100"
-                                  : "border-gray-300"
+                                  : "border-gray-300",
                               )}
                             >
                               <RadioGroupItem
@@ -376,7 +380,7 @@ export const Client = () => {
                                     "font-bold border-b pb-1.5",
                                     input.category === item.name_category
                                       ? "border-gray-500"
-                                      : "border-gray-300"
+                                      : "border-gray-300",
                                   )}
                                 >
                                   {item.name_category}
@@ -387,7 +391,7 @@ export const Client = () => {
                                   <span>
                                     Max.{" "}
                                     {formatRupiah(
-                                      parseFloat(item.max_price_category)
+                                      parseFloat(item.max_price_category),
                                     )}
                                   </span>
                                 </p>
@@ -516,6 +520,7 @@ export const Client = () => {
           </DialogHeader>
           <BarcodePrinted
             oldPrice={oldPrice ?? "0"}
+            description={newName ?? ""}
             barcode={barcode ?? ""}
             category={category ?? ""}
             newPrice={newPrice ?? "0"}

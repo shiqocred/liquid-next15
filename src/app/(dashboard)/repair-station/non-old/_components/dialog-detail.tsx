@@ -527,6 +527,7 @@ const DialogDetail = ({
                   barcode={input.barcode}
                   newPrice={input.price}
                   oldPrice={input.oldPrice}
+                  description={input.newName}
                   category={isColorPrice ? color?.name_color : input.category}
                   colorHex={isColorPrice ? color?.hexa_code_color : undefined}
                 />
