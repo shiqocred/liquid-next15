@@ -910,6 +910,7 @@ export const Client = () => {
                     {dataDetailProduct?.new_category_product ? (
                       <BarcodePrinted
                         barcode={dataDetailProduct?.new_barcode_product}
+                        description={dataDetailProduct?.new_name_product}
                         newPrice={dataDetailProduct?.new_price_product}
                         oldPrice={dataDetailProduct?.old_price_product}
                         category={dataDetailProduct?.new_category_product}

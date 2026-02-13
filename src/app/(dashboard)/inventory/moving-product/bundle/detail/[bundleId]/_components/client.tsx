@@ -482,6 +482,7 @@ export const Client = () => {
         }}
         open={barcodeOpen}
         oldPrice={input.total ?? "0"}
+        newName={input.name}
         barcode={data?.data.data.resource.barcode_bundle ?? ""}
         category={input.category ?? ""}
         newPrice={input.custom ?? "0"}
