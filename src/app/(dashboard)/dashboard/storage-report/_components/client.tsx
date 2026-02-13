@@ -281,7 +281,29 @@ export const Client = () => {
                   <div className="p-2 rounded-full bg-sky-100">
                     <DollarSign className="h-4 w-4" />
                   </div>
-                  <span className="text-lg font-semibold">Price</span>
+                  <span className="text-lg font-semibold">Old Price</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold">
+                    {formatRupiah(dataStorage?.total_all_before_price)}
+                  </span>
+                  <div className="flex items-center text-sky-600 text-sm font-medium border py-0.5 px-2 rounded-full border-sky-600">
+                    <span>{dataStorage?.total_percentage_price}%</span>
+                  </div>
+                </div>
+              </div>
+              <Progress
+                value={dataStorage?.total_percentage_before_price}
+                className="h-1.5 bg-gray-200"
+              />
+            </div>
+            <div className="flex flex-col w-full gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-full bg-sky-100">
+                    <DollarSign className="h-4 w-4" />
+                  </div>
+                  <span className="text-lg font-semibold">New Price</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold">
