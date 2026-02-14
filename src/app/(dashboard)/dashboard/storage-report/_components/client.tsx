@@ -275,7 +275,7 @@ export const Client = () => {
                 className="h-1.5 bg-gray-200"
               />
             </div>
-            <div className="flex flex-col w-full gap-2">
+            {/* <div className="flex flex-col w-full gap-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-full bg-sky-100">
@@ -296,7 +296,7 @@ export const Client = () => {
                 value={dataStorage?.total_percentage_before_price}
                 className="h-1.5 bg-gray-200"
               />
-            </div>
+            </div> */}
             <div className="flex flex-col w-full gap-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

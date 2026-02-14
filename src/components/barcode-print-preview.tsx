@@ -6,6 +6,7 @@ import BarcodePrinted from "@/components/barcode";
 
 interface BarcodeItem {
   barcode: string;
+  description: string;
   oldPrice: string;
   newPrice: string;
   category: string;

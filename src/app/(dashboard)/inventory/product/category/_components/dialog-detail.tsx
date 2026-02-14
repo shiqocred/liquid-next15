@@ -496,6 +496,7 @@ export const DialogDetail = ({
                   </div>
                   <BarcodePrinted
                     barcode={data?.new_barcode_product}
+                    description={data?.new_name_product}
                     newPrice={data?.display_price}
                     oldPrice={data?.old_price_product}
                     category={data?.new_category_product}

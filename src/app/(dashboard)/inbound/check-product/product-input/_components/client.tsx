@@ -86,19 +86,19 @@ export const Client = () => {
   // bool filter
   const [isOpenFiltered, setIsOpenFiltered] = useQueryState(
     "dialog",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
 
   // bool detail category
   const [isOpenCategory, setIsOpenCategory] = useQueryState(
     "categories",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
 
   // bool detail
   const [isOpenDetailProduct, setIsOpenDetailProduct] = useQueryState(
     "dialog2",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
 
   // product id to get detail
@@ -128,7 +128,7 @@ export const Client = () => {
   // pagination filter
   const [pageFiltered, setPageFiltered] = useQueryState(
     "p2",
-    parseAsInteger.withDefault(1)
+    parseAsInteger.withDefault(1),
   );
   const [metaPageFiltered, setMetaPageFiltered] = useState({
     last: 1, //page terakhir
@@ -141,14 +141,14 @@ export const Client = () => {
   const [DeleteProductDialog, confirmDeleteProduct] = useConfirm(
     "Delete Product",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // done check all confirm
   const [DoneCheckAllDialog, confirmDoneCheckAll] = useConfirm(
     "Check All Product",
     "This action cannot be undone",
-    "liquid"
+    "liquid",
   );
 
   // mutate delete product, add filter, remove filter, done check all, update product
@@ -328,7 +328,7 @@ export const Client = () => {
       const qualityObject = JSON.parse(v);
 
       const filteredEntries = Object.entries(qualityObject).find(
-        ([, value]) => value !== null
+        ([, value]) => value !== null,
       );
 
       return filteredEntries?.[0] ?? "";
@@ -351,7 +351,7 @@ export const Client = () => {
         (key) =>
           JSON.parse(dataDetailProduct?.new_quality)[
             key as keyof QualityData
-          ] !== null
+          ] !== null,
       ),
       new_category_product:
         input.category ?? dataDetailProduct?.new_category_product,
@@ -366,7 +366,7 @@ export const Client = () => {
             queryKey: ["product-detail-product-input", dataDetailProduct.id],
           });
         },
-      }
+      },
     );
   };
 
@@ -429,7 +429,7 @@ export const Client = () => {
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.new_price_product ?? row.original.old_price_product
+            row.original.new_price_product ?? row.original.old_price_product,
           )}
         </div>
       ),
@@ -551,11 +551,11 @@ export const Client = () => {
     },
   ];
 
-   useEffect(() => {
-      if (isNaN(parseFloat(input.price))) {
-        setInput((prev) => ({ ...prev, price: "0" }));
-      }
-    }, [input]);
+  useEffect(() => {
+    if (isNaN(parseFloat(input.price))) {
+      setInput((prev) => ({ ...prev, price: "0" }));
+    }
+  }, [input]);
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -666,7 +666,7 @@ export const Client = () => {
                           <RefreshCw
                             className={cn(
                               "w-4 h-4",
-                              loading ? "animate-spin" : ""
+                              loading ? "animate-spin" : "",
                             )}
                           />
                         </Button>
@@ -720,7 +720,7 @@ export const Client = () => {
               findNotNull(dataDetailProduct?.new_quality) !== "damaged" ||
               findNotNull(dataDetailProduct?.new_quality) !== "abnormal"
               ? "max-w-5xl"
-              : "max-w-6xl"
+              : "max-w-6xl",
           )}
         >
           <DialogHeader>
@@ -758,8 +758,8 @@ export const Client = () => {
                           <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
                             {formatRupiah(
                               parseFloat(
-                                dataDetailProduct?.old_price_product ?? "0"
-                              )
+                                dataDetailProduct?.old_price_product ?? "0",
+                              ),
                             )}
                           </p>
                         </div>
@@ -767,7 +767,7 @@ export const Client = () => {
                           <p className="text-xs font-medium">Qty</p>
                           <p className="text-sm text-gray-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">
                             {parseFloat(
-                              dataDetailProduct?.new_quantity_product ?? "0"
+                              dataDetailProduct?.new_quantity_product ?? "0",
                             ).toLocaleString()}
                           </p>
                         </div>
@@ -799,7 +799,7 @@ export const Client = () => {
                                   "bg-red-200 hover:bg-red-200 border-red-700 text-red-700",
                                 findNotNull(dataDetailProduct?.new_quality) ===
                                   "abnormal" &&
-                                  "bg-orange-200 hover:bg-orange-200 border-orange-700 text-orange-700"
+                                  "bg-orange-200 hover:bg-orange-200 border-orange-700 text-orange-700",
                               )}
                             >
                               {findNotNull(dataDetailProduct?.new_quality)}
@@ -960,6 +960,7 @@ export const Client = () => {
                       {dataDetailProduct?.new_category_product ? (
                         <BarcodePrinted
                           barcode={dataDetailProduct?.new_barcode_product}
+                          description={dataDetailProduct?.new_name_product}
                           newPrice={dataDetailProduct?.new_price_product}
                           oldPrice={dataDetailProduct?.old_price_product}
                           category={dataDetailProduct?.new_category_product}
@@ -1001,7 +1002,7 @@ export const Client = () => {
             <h3
               className={cn(
                 "font-bold text-xl",
-                isOpenCategory ? "flex" : "hidden"
+                isOpenCategory ? "flex" : "hidden",
               )}
             >
               Select Category
@@ -1009,13 +1010,13 @@ export const Client = () => {
             <ScrollArea
               className={cn(
                 "h-[500px] w-full border border-sky-500 p-2 rounded-md",
-                isOpenCategory ? "flex" : "hidden"
+                isOpenCategory ? "flex" : "hidden",
               )}
             >
               <RadioGroup
                 onValueChange={(e) => {
                   const selectedCategory = categories.find(
-                    (item) => item.name_category === e
+                    (item) => item.name_category === e,
                   );
                   setInput((prev) => ({
                     ...prev,
@@ -1036,7 +1037,7 @@ export const Client = () => {
                       "flex items-center gap-4 w-full border px-4 py-2.5 rounded-md",
                       input.category === item.name_category
                         ? "border-gray-500 bg-sky-100"
-                        : "border-gray-300"
+                        : "border-gray-300",
                     )}
                   >
                     <RadioGroupItem
@@ -1054,7 +1055,7 @@ export const Client = () => {
                           "font-bold border-b pb-1.5 whitespace-nowrap text-ellipsis overflow-hidden w-full",
                           input.category === item.name_category
                             ? "border-gray-500"
-                            : "border-gray-300"
+                            : "border-gray-300",
                         )}
                       >
                         {item.name_category}

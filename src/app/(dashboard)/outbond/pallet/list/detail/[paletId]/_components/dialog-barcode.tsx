@@ -13,6 +13,7 @@ const DialogBarcode = ({
   open,
   onCloseModal,
   oldPrice,
+  newName,
   barcode,
   category,
   newPrice,
@@ -21,6 +22,7 @@ const DialogBarcode = ({
   open: boolean;
   onCloseModal: () => void;
   oldPrice: any;
+  newName: any;
   barcode: any;
   category: any;
   newPrice: any;
@@ -34,6 +36,7 @@ const DialogBarcode = ({
         </DialogHeader>
         <BarcodePrinted
           oldPrice={oldPrice ?? "0"}
+          description={newName ?? ""}
           barcode={barcode ?? ""}
           category={category ?? ""}
           newPrice={newPrice ?? "0"}
