@@ -10,6 +10,7 @@ import {
 import {
   BookMarked,
   FileDown,
+  HistoryIcon,
   Loader2,
   Printer,
   ReceiptText,
@@ -74,7 +75,7 @@ interface QualityData {
 export const Client = () => {
   const queryClient = useQueryClient();
   const [openCreateEdit, setOpenCreateEdit] = useQueryState(
-    "dialog",
+    "createEditOpen",
     parseAsBoolean.withDefault(false),
   );
   const [isOpenCategory, setIsOpenCategory] = useState(false);
@@ -1133,6 +1134,17 @@ export const Client = () => {
                     Add Rack
                   </Button>
                 </div> */}
+                <div className="flex gap-4 items-center ml-auto">
+                  <Button
+                    asChild
+                    className="bg-sky-400 hover:bg-sky-400/80 text-black"
+                  >
+                    <Link href={`/inventory/product/rack/history`}>
+                      <HistoryIcon className="w-4 h-4 ml-2" />
+                      History Rack
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
             {/* <div className="grid grid-cols-4 gap-4 w-full p-4">

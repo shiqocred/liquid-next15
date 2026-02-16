@@ -10,6 +10,7 @@ import {
 import {
   ArrowRightCircle,
   FileDown,
+  HistoryIcon,
   Loader2,
   PlusCircle,
   RefreshCw,
@@ -57,6 +58,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Link from "next/link";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -694,6 +696,15 @@ export const Client = () => {
                   >
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                     Add Rack
+                  </Button>
+                  <Button
+                    asChild
+                    className="bg-sky-400 hover:bg-sky-400/80 text-black"
+                  >
+                    <Link href={`/stagging/rack/history`}>
+                      <HistoryIcon className="w-4 h-4 ml-2" />
+                      History Rack
+                    </Link>
                   </Button>
                 </div>
               </div>
