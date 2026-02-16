@@ -57,6 +57,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DialogHistoryRack } from "./dialog-history-rack";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -555,6 +556,14 @@ export const Client = () => {
           }
         }}
       />
+      <DialogHistoryRack
+        open={isOpen === "history-rack"}
+        onOpenChange={() => {
+          if (isOpen === "history-rack") {
+            setIsOpen("");
+          }
+        }}
+      />
       <DialogDamaged
         isOpen={isOpenDamaged}
         handleClose={() => setIsOpenDamaged(false)}
@@ -694,6 +703,13 @@ export const Client = () => {
                   >
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                     Add Rack
+                  </Button>
+                  <Button
+                    onClick={() => setIsOpen("history-rack")}
+                    className="bg-sky-400 hover:bg-sky-400/80 text-black"
+                  >
+                    History Rack
+                    <ArrowRightCircle className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
               </div>
