@@ -10,6 +10,7 @@ import {
 import {
   ArrowRightCircle,
   FileDown,
+  HistoryIcon,
   Loader2,
   PlusCircle,
   RefreshCw,
@@ -57,7 +58,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DialogHistoryRack } from "./dialog-history-rack";
+import Link from "next/link";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -556,14 +557,6 @@ export const Client = () => {
           }
         }}
       />
-      <DialogHistoryRack
-        open={isOpen === "history-rack"}
-        onOpenChange={() => {
-          if (isOpen === "history-rack") {
-            setIsOpen("");
-          }
-        }}
-      />
       <DialogDamaged
         isOpen={isOpenDamaged}
         handleClose={() => setIsOpenDamaged(false)}
@@ -705,11 +698,13 @@ export const Client = () => {
                     Add Rack
                   </Button>
                   <Button
-                    onClick={() => setIsOpen("history-rack")}
+                    asChild
                     className="bg-sky-400 hover:bg-sky-400/80 text-black"
                   >
-                    History Rack
-                    <ArrowRightCircle className="w-4 h-4 ml-2" />
+                    <Link href={`/stagging/rack/history`}>
+                      <HistoryIcon className="w-4 h-4 ml-2" />
+                      History Rack
+                    </Link>
                   </Button>
                 </div>
               </div>
