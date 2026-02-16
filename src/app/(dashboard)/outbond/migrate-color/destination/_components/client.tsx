@@ -206,7 +206,6 @@ export const Client = () => {
   const handleSyncTokens = () => {
     mutateSyncTokens(undefined, {
       onSuccess: (res) => {
-        // ambil message dari response backend
         const message =
           res?.data?.message ||
           res?.data?.data?.message ||

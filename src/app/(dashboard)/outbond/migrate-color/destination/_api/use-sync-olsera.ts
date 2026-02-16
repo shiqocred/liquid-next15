@@ -15,7 +15,7 @@ export const useSyncOlseraTokens = () => {
     mutationFn: async () => {
       const res = await axios.post(
         `${baseUrl}/olsera/sync-tokens`,
-        null, // tidak kirim body
+        null, 
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
