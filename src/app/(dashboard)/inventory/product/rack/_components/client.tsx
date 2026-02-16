@@ -8,9 +8,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  ArrowRightCircle,
   BookMarked,
   FileDown,
+  HistoryIcon,
   Loader2,
   Printer,
   ReceiptText,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah } from "@/lib/utils";
-import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
+import { parseAsBoolean, useQueryState } from "nuqs";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -62,7 +62,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DialogHistoryRack } from "./dialog-history-rack";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -74,10 +73,6 @@ interface QualityData {
 }
 
 export const Client = () => {
-  const [isOpen, setIsOpen] = useQueryState(
-    "dialog",
-    parseAsString.withDefault(""),
-  );
   const queryClient = useQueryClient();
   const [openCreateEdit, setOpenCreateEdit] = useQueryState(
     "createEditOpen",
@@ -1004,14 +999,6 @@ export const Client = () => {
         setIsOpenCategory={setIsOpenCategory}
         categories={categories}
       />
-      <DialogHistoryRack
-        open={isOpen === "history-rack"}
-        onOpenChange={() => {
-          if (isOpen === "history-rack") {
-            setIsOpen("");
-          }
-        }}
-      />
       <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -1149,11 +1136,13 @@ export const Client = () => {
                 </div> */}
                 <div className="flex gap-4 items-center ml-auto">
                   <Button
-                    onClick={() => setIsOpen("history-rack")}
+                    asChild
                     className="bg-sky-400 hover:bg-sky-400/80 text-black"
                   >
-                    History Rack
-                    <ArrowRightCircle className="w-4 h-4 ml-2" />
+                    <Link href={`/inventory/product/rack/history`}>
+                      <HistoryIcon className="w-4 h-4 ml-2" />
+                      History Rack
+                    </Link>
                   </Button>
                 </div>
               </div>

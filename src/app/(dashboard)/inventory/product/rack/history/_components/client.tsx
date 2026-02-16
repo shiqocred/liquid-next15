@@ -1,31 +1,29 @@
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/data-table";
-import { InputSearch } from "@/components/input-search";
-import { AxiosError } from "axios";
-import React, { useEffect, useMemo } from "react";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { alertError } from "@/lib/utils";
-import { Loader2, FileDown } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import Forbidden from "@/components/403";
+import { AxiosError } from "axios";
+import Loading from "@/app/(dashboard)/loading";
+import { DataTable } from "@/components/data-table";
+import Pagination from "@/components/pagination";
 import { usePagination } from "@/lib/pagination";
-import { useSearch } from "@/lib/search";
-import { columnHistoryRackDisplay } from "./columns";
 import { useExportHistoryRackDisplay } from "../_api/use-export-rack-history-display";
 import { useGetListHistoryRackDisplay } from "../_api/use-get-list-history-rack-display";
-import Pagination from "@/components/pagination";
+import { useSearch } from "@/lib/search";
+import { InputSearch } from "@/components/input-search";
+import { FileDown, Loader2 } from "lucide-react";
+import { columnHistoryRackDisplay } from "./columns";
 
-export const DialogHistoryRack = ({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: () => void;
-}) => {
+export const Client = () => {
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportHistoryRackDisplay();
   const { page, metaPage, setPage, setPagination } = usePagination("pFilter");
@@ -37,8 +35,7 @@ export const DialogHistoryRack = ({
       q: searchValue,
     });
 
-  const isLoading =
-    isPendingExport || isRefetching || isPending;
+  const isLoading = isPendingExport || isRefetching || isPending;
 
   const dataListHistoryRack: any[] = useMemo(() => {
     return data?.data.data.details.data;
@@ -74,28 +71,62 @@ export const DialogHistoryRack = ({
       method: "GET",
     });
   }, [isError, error]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <Loading />;
+  }
+
+  if (isError && (error as AxiosError)?.status === 403) {
+    return (
+      <div className="flex flex-col items-start h-full bg-gray-100 w-full relative p-4 gap-4">
+        <Forbidden />
+      </div>
+    );
+  }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="min-w-[75vw]">
-        <SheetHeader>
-          <SheetTitle>List History Rack</SheetTitle>
-          <SheetDescription />
-        </SheetHeader>
-        <div className="w-full flex flex-col gap-5 mt-5 text-sm">
-          <InputSearch
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari history rack..."
-            onClick={() => refetch()}
-            loading={isRefetching}
-            disabled={isPending}
-          />
+    <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
+      <div className="flex flex-col gap-4 w-full">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>Display</BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/inventory/product/rack">
+                Rack
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>History Rack</BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
+          <h3 className="text-lg font-semibold">List History</h3>
           <div className="flex gap-4 items-center w-full">
             <div className="h-9 px-4 flex items-center rounded-md justify-center border gap-1 border-sky-500 bg-sky-100">
               Total input all users:{" "}
               <span className="font-semibold">{totalInputAllUsers}</span>
             </div>
+          </div>
+
+          <div className="flex gap-4 items-center w-full">
+            <InputSearch
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari history rack..."
+              onClick={() => refetch()}
+              loading={isRefetching}
+              disabled={isPending}
+            />
             <Button
               onClick={(e) => {
                 e.preventDefault();
@@ -129,7 +160,7 @@ export const DialogHistoryRack = ({
             setPagination={setPage}
           />
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </div>
   );
 };
