@@ -3,12 +3,12 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetListBKL = ({ q, p }: any) => {
+export const useGetGenerateNameBKL = () => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["list-bkl", { q, p }],
+    queryKey: ["generate-name-bkl"],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/bkls?page=${p}&q=${q}`, {
+      const res = await axios.get(`${baseUrl}/bkl-documents/generate-code`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

@@ -3,19 +3,21 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailBKL = ({ id }: any) => {
+export const useGetStatisticsStock = () => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["detail-bkl", id],
+    queryKey: ["statics-stock"],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/bkls/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await axios.get(
+        `${baseUrl}/statistics/stock`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       return res;
     },
-    enabled: !!id,
   });
   return query;
 };

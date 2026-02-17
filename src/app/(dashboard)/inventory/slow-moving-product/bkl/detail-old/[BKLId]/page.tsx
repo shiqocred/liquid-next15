@@ -6,10 +6,10 @@ import { redirect } from "next/navigation";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "BKL",
+  title: "Detail BKL",
 };
 
-const BKLPage = async () => {
+const DetailBKLPage = async () => {
   const user = await protect();
 
   if (!user) redirect("/login");
@@ -21,4 +21,4 @@ const BKLPage = async () => {
   );
 };
 
-export default BKLPage;
+export default DetailBKLPage;

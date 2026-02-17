@@ -6,40 +6,36 @@ import { toast } from "sonner";
 import { getCookie } from "cookies-next/client";
 
 type RequestType = {
-  id: string;
+  body: any;
 };
 
 type Error = AxiosError;
 
-export const useRemoveFilterProductBKL = () => {
+export const useUpdateBKL = ({ id }: any) => {
   const accessToken = getCookie("accessToken");
   const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, RequestType>({
-    mutationFn: async ({ id }) => {
-      const res = await axios.delete(
-        `${baseUrl}/bkl/filter_product/destroy/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+    mutationFn: async ({ body }) => {
+      const res = await axios.put(`${baseUrl}/bkl/${id}/bklDocument`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       return res;
     },
     onSuccess: () => {
-      toast.success("Product successfully removed to filter");
-      queryClient.invalidateQueries({ queryKey: ["list-bkl-product"] });
+      toast.success("BKL successfully created");
       queryClient.invalidateQueries({
-        queryKey: ["list-filter-bkl-product"],
+        queryKey: ["list-list-bkl"],
       });
     },
     onError: (err) => {
       if (err.status === 403) {
         toast.error(`Error 403: Restricted Access`);
       } else {
-        toast.error(`ERROR ${err?.status}: Product failed to remove to filter`);
-        console.log("ERROR_REMOVE_FILTER_PRODUCT:", err);
+        toast.error(`ERROR ${err?.status}: BKL failed to create`);
+        console.log("ERROR_CREATE_BKL:", err);
       }
     },
   });
