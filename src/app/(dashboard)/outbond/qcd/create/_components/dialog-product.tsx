@@ -1,0 +1,162 @@
+"use client";
+
+import { DataTable } from "@/components/data-table";
+import Pagination from "@/components/pagination";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
+import { Loader, RefreshCw, Trash2, X } from "lucide-react";
+import React from "react";
+import { useScrapQCDAll } from "../_api/use-scrap-qcd-all";
+import { useConfirm } from "@/hooks/use-confirm";
+
+const DialogProduct = ({
+  open,
+  onCloseModal,
+  search,
+  setSearch,
+  refetch,
+  isRefetching,
+  columns,
+  dataTable,
+  page,
+  metaPage,
+  setPage,
+  documentId,
+  isLoading,
+}: {
+  open: boolean;
+  onCloseModal: () => void;
+  search: any;
+  setSearch: any;
+  refetch: any;
+  isRefetching: any;
+  columns: any;
+  dataTable: any;
+  page: any;
+  metaPage: any;
+  setPage: any;
+  documentId: string;
+  isLoading: boolean;
+}) => {
+  // confirm delete
+  const [DeleteDialogAll, confirmDeleteAll] = useConfirm(
+    "Scrap All QCD",
+    "This action cannot be undone",
+    "destructive",
+  );
+
+  const { mutate: mutateDeleteAll, isPending: isPendingDeleteAll } =
+    useScrapQCDAll();
+
+  const handleScraptAll = async () => {
+    const body = {
+      scrap_document_id: documentId,
+    };
+    const ok = await confirmDeleteAll();
+
+    if (!ok) return;
+
+    mutateDeleteAll(
+      { body },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      },
+    );
+  };
+  return (
+    <div>
+      <DeleteDialogAll />
+      <Dialog open={open} onOpenChange={onCloseModal}>
+        <DialogContent
+          onClose={false}
+          className="min-w-[75vw]"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="justify-between flex items-center">
+              Select Product
+              <TooltipProviderPage value="close" side="left">
+                <button
+                  onClick={() => onCloseModal()}
+                  className="w-6 h-6 flex items-center justify-center border border-black hover:bg-gray-100 rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </TooltipProviderPage>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col w-full gap-4">
+            <div className="flex gap-2 items-center w-full">
+              <Input
+                className="w-2/5 border-sky-400/80 focus-visible:ring-sky-400"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                autoFocus
+              />
+              <TooltipProviderPage value={"Reload Data"}>
+                <Button
+                  onClick={() => refetch()}
+                  className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-black hover:bg-sky-50"
+                  variant={"outline"}
+                >
+                  <RefreshCw
+                    className={cn(
+                      "w-4 h-4",
+                      isRefetching ? "animate-spin" : "",
+                    )}
+                  />
+                </Button>
+              </TooltipProviderPage>
+              <div className="flex gap-4 items-center ml-auto">
+                <Button
+                  className="items-center flex-none h-9 bg-red-500/80 hover:bg-red-500 text-black disabled:opacity-100 disabled:hover:bg-red-500 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  variant={"outline"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleScraptAll();
+                  }}
+                  disabled={isPendingDeleteAll}
+                >
+                  <Trash2 className={"w-4 h-4 mr-1"} />
+                  Scrapt All
+                </Button>
+              </div>
+            </div>
+            {isLoading ? (
+              <div className="w-full h-[78vh] flex justify-center items-center">
+                <Loader className="size-6 animate-spin" />
+              </div>
+            ) : (
+              <div>
+                <DataTable
+                  isSticky
+                  maxHeight="h-[60vh]"
+                  isLoading={isRefetching}
+                  columns={columns}
+                  data={dataTable ?? []}
+                />
+                <Pagination
+                  pagination={{ ...metaPage, current: page }}
+                  setPagination={setPage}
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default DialogProduct;

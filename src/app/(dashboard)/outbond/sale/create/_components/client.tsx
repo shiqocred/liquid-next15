@@ -133,6 +133,8 @@ export const Client = () => {
   const [dynamicMessage, setDynamicMessage] = useState(
     "This action cannot be undone"
   );
+  // const [successMessage, setSuccessMessage] = useState("Sale berhasil dibuat");
+
   const addRef = useRef<HTMLInputElement | null>(null);
   const [direction, setDirection] = useState(0);
 
@@ -159,7 +161,10 @@ export const Client = () => {
     nextTransactionBuyerRank: "",
     currentTransactionBuyerRank: "",
     percentage_discount: "0",
+    monthlyPoint: "0",
+    monthlyClassPosition: "",
   });
+
   const [inputEdit, setInputEdit] = useState({
     id: "",
     price: "0",
@@ -226,6 +231,11 @@ export const Client = () => {
     "liquid"
   );
 
+  // const [SuccessDialog, confirmSuccess] = useConfirm(
+  //   "Information",
+  //   successMessage,
+  //   "liquid"
+  // );
   // confirm end ----------------------------------------------------------------
 
   // mutate strat ----------------------------------------------------------------
@@ -344,6 +354,8 @@ export const Client = () => {
       percentage_discount: Math.round(
         data?.data.data.resource.percentage_discount ?? "0"
       ).toString(),
+      monthlyPoint: data?.data.data.resource.monthly_point,
+      monthlyClassPosition: data?.data.data.resource.monthly_rank_position,
     }));
   }, [data]);
   useEffect(() => {
@@ -408,8 +420,8 @@ export const Client = () => {
         onError: async (err: any) => {
           if (err?.status === 404) {
             setDynamicMessage("Product tidak ada");
-            await confirmAddProduct(); 
-            return; 
+            await confirmAddProduct();
+            return;
           }
 
           const resource = (err?.response?.data?.data as any)?.resource ?? {};
@@ -478,10 +490,11 @@ export const Client = () => {
     mutateSubmit(
       { body },
       {
-        onSuccess: (res: any) => {
-          console.log("res", res);
-          // Pastikan id sesuai dengan struktur response Anda
+        onSuccess: async (res: any) => {
           const id = res?.data?.data?.resource?.id;
+          // const message = res?.data?.data?.resource?.congratulation_message;
+          // setSuccessMessage(`${message || "-"}`);
+          // await confirmSuccess();
           router.push(`/outbond/sale/detail/${id}`);
         },
       }
@@ -786,6 +799,22 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "monthly_point",
+      header: "Monthly Point",
+      cell: ({ row }) => (
+        <div className="max-w-[500px]">{row.original.monthly_point}</div>
+      ),
+    },
+    {
+      accessorKey: "monthly_rank_position",
+      header: "Montly Rank Position",
+      cell: ({ row }) => (
+        <div className="max-w-[500px]">
+          {row.original.monthly_rank_position}
+        </div>
+      ),
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -808,6 +837,8 @@ export const Client = () => {
                   nextBuyerRank: row.original.next_rank,
                   nextTransactionBuyerRank: row.original.transaction_next,
                   currentTransactionBuyerRank: row.original.current_transaction,
+                  monthlyPoint: row.original.monthly_point,
+                  monthlyClassPosition: row.original.monthly_rank_position,
                 }));
               }}
               type="button"
@@ -1055,6 +1086,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 py-4">
+      {/* <SuccessDialog /> */}
       <SubmitDialog />
       <DeletePPNDialog />
       <DeleteProductDialog />
@@ -1403,6 +1435,12 @@ export const Client = () => {
                   <p>{input.nextBuyerRank ? input.nextBuyerRank : "-"}</p>
                 </div>
               </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Montly Point</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <p>{input.monthlyPoint ? input.monthlyPoint : "0"}</p>
+                </div>
+              </div>
               {/* <div className="flex flex-col">
                 <p className="text-sm">Discount Class</p>
                 <p className="font-semibold">{input.percentage_discount}%</p>
@@ -1450,6 +1488,16 @@ export const Client = () => {
                 <p className="font-semibold">
                   {formatRupiah(parseFloat(input.voucher ?? "0"))}
                 </p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm">Montly Rank Position</p>
+                <div className="flex items-center gap-2 font-semibold">
+                  <p>
+                    {input.monthlyClassPosition
+                      ? input.monthlyClassPosition
+                      : "-"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

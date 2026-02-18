@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  FileDown,
-  Loader2,
-  Recycle,
-  RefreshCw,
-  ShoppingBag,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { FileDown, Loader2, RefreshCw, ShoppingBag } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah, setPaginate } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -26,7 +20,6 @@ import { AxiosError } from "axios";
 import Loading from "@/app/(dashboard)/loading";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { useConfirm } from "@/hooks/use-confirm";
 import Pagination from "@/components/pagination";
 import dynamic from "next/dynamic";
 import { useGetListCategories } from "../_api/use-get-list-categories";
@@ -34,13 +27,19 @@ import { useToDisplay } from "../_api/use-to-display";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetListABN } from "../_api/use-get-list-abnormal";
 import { useGetDetailABN } from "../_api/use-get-detail-abnormal";
-import { useDeleteABN } from "../_api/use-delete-abnormal";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useExportProductAbnormal } from "../_api/use-export-product-abnormal";
 import { toast } from "sonner";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-const DialogDetail = dynamic(() => import("../_components/dialog-detail"), {
+const DialogDetail = dynamic(() => import("./dialog-detail"), {
   ssr: false,
 });
 
@@ -48,9 +47,11 @@ export const Client = () => {
   const queryClient = useQueryClient();
   const [openDisplay, setOpenDisplay] = useState(false);
   const [documentDetail, setDocumentDetail] = useState({
-    id: 0,
+    barcode: "",
   });
-
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [SOProductInput, setSOProductInput] = useState("");
   const [input, setInput] = useState({
     barcode: "",
     oldBarcode: "",
@@ -76,18 +77,20 @@ export const Client = () => {
   });
 
   // donfirm delete
-  const [DeleteDialog, confirmDelete] = useConfirm(
-    "QCD LPR",
-    "This action cannot be undone",
-    "destructive"
-  );
+  // const [DeleteDialog, confirmDelete] = useConfirm(
+  //   "QCD LPR",
+  //   "This action cannot be undone",
+  //   "destructive"
+  // );
 
   // mutate DELETE, UPDATE, CREATE
-  const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteABN();
+  // const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteABN();
   const { mutate: mutateToDisplay, isPending: isPendingToDisplay } =
     useToDisplay();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportProductAbnormal();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
 
   // get data utama
   const {
@@ -109,7 +112,7 @@ export const Client = () => {
     isError: isErrorDetail,
     isSuccess: isSuccessDetail,
   } = useGetDetailABN({
-    id: documentDetail.id,
+    barcode: documentDetail.barcode,
   });
 
   // get data category
@@ -201,13 +204,13 @@ export const Client = () => {
   }, [isErrorCategory, errorCategory]);
 
   // handle delete
-  const handleDelete = async (id: any) => {
-    const ok = await confirmDelete();
+  // const handleDelete = async (id: any, source: any) => {
+  //   const ok = await confirmDelete();
 
-    if (!ok) return;
+  //   if (!ok) return;
 
-    mutateDelete({ id });
-  };
+  //   mutateDelete({ id, source });
+  // };
 
   const handleExport = async () => {
     mutateExport("", {
@@ -234,7 +237,7 @@ export const Client = () => {
       new_tag_product: input.new_tag_product ?? null,
     };
     mutateToDisplay(
-      { id: dataResDetail?.id, body },
+      { id: dataResDetail?.id, source: dataResDetail?.source, body },
       {
         onSuccess: () => {
           toast.success("Successfully updated to display");
@@ -243,7 +246,31 @@ export const Client = () => {
           });
           setOpenDisplay(false);
         },
-      }
+      },
+    );
+  };
+
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
+      },
     );
   };
 
@@ -292,12 +319,17 @@ export const Client = () => {
         "-",
     },
     {
+      accessorKey: "source",
+      header: "Source",
+      cell: ({ row }) => row.original.source,
+    },
+    {
       accessorKey: "new_price_product||old_price_product",
       header: "Price",
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.new_price_product ?? row.original.old_price_product
+            row.original.new_price_product ?? row.original.old_price_product,
           )}
         </div>
       ),
@@ -309,7 +341,7 @@ export const Client = () => {
         <div className="">
           {format(
             new Date(row.original.new_date_in_product),
-            "iii, dd MMM yyyy"
+            "iii, dd MMM yyyy",
           )}
         </div>
       ),
@@ -324,6 +356,24 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -332,26 +382,26 @@ export const Client = () => {
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
-              disabled={isPendingToDisplay || isPendingDelete}
+              disabled={isPendingToDisplay}
               onClick={(e) => {
                 e.preventDefault();
                 setOpenDisplay(true);
                 setDocumentDetail({
-                  id: row.original.id,
+                  barcode: row.original.new_barcode_product,
                 });
               }}
             >
               <ShoppingBag className="w-4 h-4" />
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>QCD</p>}>
+          {/* <TooltipProviderPage value={<p>QCD</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
               disabled={isPendingToDisplay || isPendingDelete}
               onClick={(e) => {
                 e.preventDefault();
-                handleDelete(row.original.id);
+                handleDelete(row.original.id, row.original.source);
               }}
             >
               {isPendingDelete ? (
@@ -360,7 +410,7 @@ export const Client = () => {
                 <Recycle className="w-4 h-4" />
               )}
             </Button>
-          </TooltipProviderPage>
+          </TooltipProviderPage> */}
         </div>
       ),
     },
@@ -387,7 +437,7 @@ export const Client = () => {
 
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
-      <DeleteDialog />
+      {/* <DeleteDialog /> */}
       <DialogDetail
         open={openDisplay}
         handleClose={() => {
@@ -416,6 +466,22 @@ export const Client = () => {
         categories={dataCategories}
         handleSubmit={handleToDisplay}
       />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -427,6 +493,38 @@ export const Client = () => {
           <BreadcrumbItem>List Product Abnormal</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 flex-col">
+        <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+        <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Scan Barcode
+              </label>
+              <Input
+                type="text"
+                className="border-sky-400/80 focus-visible:ring-sky-400"
+                value={SOProductInput}
+                onChange={(e) => setSOProductInput(e.target.value)}
+                placeholder="Scan barcode here..."
+                disabled={isPendingScanSO}
+                autoFocus
+              />
+            </div>
+            <Button
+              type="submit"
+              className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              disabled={isPendingScanSO || !SOProductInput.trim()}
+            >
+              {isPendingScanSO ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "SO"
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
       <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
         <h2 className="text-xl font-bold">List Product Abnormal</h2>
         <div className="flex flex-col w-full gap-4">
@@ -468,7 +566,11 @@ export const Client = () => {
               </Button>
             </div>
           </div>
-          <DataTable columns={columnWarehousePalet} data={dataList ?? []} />
+          <DataTable
+            columns={columnWarehousePalet}
+            data={dataList ?? []}
+            isLoading={isLoading}
+          />
           <Pagination
             pagination={{ ...metaPage, current: page }}
             setPagination={setPage}

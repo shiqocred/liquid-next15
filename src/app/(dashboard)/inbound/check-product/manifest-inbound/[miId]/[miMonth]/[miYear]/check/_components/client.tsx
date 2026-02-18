@@ -61,6 +61,7 @@ export const Client = () => {
   const [metaData, setMetaData] = useState({
     abnormal: "",
     damaged: "",
+    non: "",
     name: "",
     discount: 0,
     qty: "0",
@@ -71,6 +72,7 @@ export const Client = () => {
     barcode: "",
     newPrice: "",
     oldPrice: "",
+    newName: "",
     category: "",
     discount: "",
   });
@@ -78,12 +80,12 @@ export const Client = () => {
   const [SubmitDoubleDialog, confirmSubmit] = useConfirm(
     "Barcode Duplication Confirmation",
     "Confirm to submit the same barcode again, This action cannot be undone",
-    "liquid"
+    "liquid",
   );
   const [DoneAllDialog, confirmDoneAll] = useConfirm(
     "Done check all documents",
     "",
-    "liquid"
+    "liquid",
   );
 
   const [dataSearch, setDataSearch] = useQueryState("q", { defaultValue: "" });
@@ -165,6 +167,7 @@ export const Client = () => {
         setMetaData({
           abnormal: "",
           damaged: "",
+          non: "",
           discount: 0,
           name: "",
           qty: "0",
@@ -175,6 +178,7 @@ export const Client = () => {
         setBarcodeOpen(true);
         setMetaBarcode({
           barcode: data.data.data.resource.new_barcode_product,
+          newName: data?.data.data.resource.new_name_product,
           newPrice: data.data.data.resource.new_price_product,
           oldPrice: data.data.data.resource.old_price_product,
           category: data.data.data.resource.new_category_product,
@@ -202,7 +206,7 @@ export const Client = () => {
       old_price_product: barcodeData?.old_price_product,
       new_date_in_product: format(
         new Date(barcodeData?.created_at),
-        "yyyy-MM-dd"
+        "yyyy-MM-dd",
       ),
       new_status_product: "display",
       condition: type,
@@ -212,8 +216,10 @@ export const Client = () => {
         type === "abnormal"
           ? metaData.abnormal
           : type === "damaged"
-          ? metaData.damaged
-          : "",
+            ? metaData.damaged
+            : type === "non"
+              ? metaData.non
+              : "",
     };
 
     mutate(body, {
@@ -224,6 +230,7 @@ export const Client = () => {
           setMetaData({
             abnormal: "",
             damaged: "",
+            non: "",
             discount: 0,
             name: "",
             qty: "0",
@@ -234,6 +241,7 @@ export const Client = () => {
           setBarcodeOpen(true);
           setMetaBarcode({
             barcode: data.data.data.resource.new_barcode_product,
+            newName: data.data.data.resource.new_name_product,
             newPrice: data.data.data.resource.new_price_product,
             oldPrice: data.data.data.resource.old_price_product,
             category: data.data.data.resource.new_category_product,
@@ -260,14 +268,14 @@ export const Client = () => {
         (isSuccessBarcode && `Error: ${dataBarcode?.data.data.message}`) ||
           `Error ${(errorBarcode as AxiosError).status}: ${
             dataBarcode?.data.data.message
-          }`
+          }`,
       );
     } else if (isSuccessBarcode && dataBarcode?.data.data.status) {
       toast.success("Barcode successfully found.");
       setMetaData((prev) => ({
         ...prev,
         qty: Math.round(
-          dataBarcode?.data.data.resource.product.old_quantity_product
+          dataBarcode?.data.data.resource.product.old_quantity_product,
         ).toString(),
       }));
     }
@@ -423,8 +431,8 @@ export const Client = () => {
             {loadingBarcode
               ? "Getting Data..."
               : isPendingSubmit
-              ? "Submiting..."
-              : "Submiting Double..."}
+                ? "Submiting..."
+                : "Submiting Double..."}
           </p>
         </div>
       ) : barcodeData?.id === "0" ? (
@@ -464,7 +472,7 @@ export const Client = () => {
                       <Label>Price</Label>
                       <Input
                         value={formatRupiah(
-                          parseFloat(barcodeData?.old_price_product)
+                          parseFloat(barcodeData?.old_price_product),
                         )}
                         disabled
                         className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
@@ -474,7 +482,7 @@ export const Client = () => {
                       <Label>Qty</Label>
                       <Input
                         value={parseFloat(
-                          barcodeData?.old_quantity_product
+                          barcodeData?.old_quantity_product,
                         ).toLocaleString()}
                         disabled
                         className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
@@ -505,7 +513,7 @@ export const Client = () => {
                             parseFloat(barcodeData?.old_price_product) -
                               (parseFloat(barcodeData?.old_price_product) /
                                 100) *
-                                metaData.discount
+                                metaData.discount,
                           )}
                           disabled
                           className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
@@ -552,7 +560,7 @@ export const Client = () => {
                         <Label>Price</Label>
                         <Input
                           value={formatRupiah(
-                            parseFloat(tagColor?.fixed_price_color)
+                            parseFloat(tagColor?.fixed_price_color),
                           )}
                           disabled
                           className="w-full border-sky-400/80 focus-visible:ring-sky-400 disabled:opacity-100 disabled:cursor-default"
@@ -594,6 +602,9 @@ export const Client = () => {
                   <TabsTrigger className="w-32" value="abnormal">
                     Abnormal
                   </TabsTrigger>
+                  <TabsTrigger className="w-32" value="non">
+                    Non
+                  </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="good">
@@ -606,13 +617,13 @@ export const Client = () => {
                       <RadioGroup
                         onValueChange={(e) => {
                           const selectedCategory = categories.find(
-                            (item) => item.name_category === e
+                            (item) => item.name_category === e,
                           );
                           setMetaData((prev) => ({
                             ...prev,
                             name: selectedCategory?.name_category ?? "",
                             discount: parseFloat(
-                              selectedCategory?.discount_category ?? "0"
+                              selectedCategory?.discount_category ?? "0",
                             ),
                           }));
                         }}
@@ -625,7 +636,7 @@ export const Client = () => {
                               "flex items-center gap-4 w-full border px-4 py-2.5 rounded-md",
                               metaData.name === item.name_category
                                 ? "border-gray-500 bg-sky-100"
-                                : "border-gray-300"
+                                : "border-gray-300",
                             )}
                           >
                             <RadioGroupItem
@@ -642,7 +653,7 @@ export const Client = () => {
                                   "font-bold border-b pb-1.5",
                                   metaData.name === item.name_category
                                     ? "border-gray-500"
-                                    : "border-gray-300"
+                                    : "border-gray-300",
                                 )}
                               >
                                 {item.name_category}
@@ -653,7 +664,7 @@ export const Client = () => {
                                 <span>
                                   Max.{" "}
                                   {formatRupiah(
-                                    parseFloat(item.max_price_category)
+                                    parseFloat(item.max_price_category),
                                   )}
                                 </span>
                               </p>
@@ -731,6 +742,33 @@ export const Client = () => {
                   </Button>
                 </form>
               </TabsContent>
+              <TabsContent value="non">
+                <form
+                  onSubmit={(e) => handleSubmit(e, "non")}
+                  className="w-full space-y-6 mt-6"
+                >
+                  <Label>Description:</Label>
+                  <Textarea
+                    rows={6}
+                    className="border-sky-400/80 focus-visible:ring-sky-400"
+                    value={metaData.non}
+                    onChange={(e) =>
+                      setMetaData((prev) => ({
+                        ...prev,
+                        non: e.target.value,
+                      }))
+                    }
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full bg-sky-400/80 hover:bg-sky-400 text-black"
+                    disabled={metaData.qty === "0" || !metaData.non}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Submit
+                  </Button>
+                </form>
+              </TabsContent>
             </Tabs>
           </div>
         </div>
@@ -744,6 +782,7 @@ export const Client = () => {
               barcode: "",
               category: "",
               newPrice: "",
+              newName: "",
               oldPrice: "",
               discount: "",
             });
@@ -758,6 +797,7 @@ export const Client = () => {
           </DialogHeader>
           <BarcodePrinted
             oldPrice={metaBarcode.oldPrice ?? "0"}
+            description={metaBarcode.newName ?? ""}
             barcode={metaBarcode.barcode ?? ""}
             category={metaBarcode.category ?? ""}
             newPrice={metaBarcode.newPrice ?? "0"}
@@ -769,6 +809,7 @@ export const Client = () => {
                 category: "",
                 newPrice: "",
                 oldPrice: "",
+                newName: "",
                 discount: "",
               });
             }}

@@ -31,7 +31,7 @@ export const Client = () => {
 
   const { mutate: startSO, isPending: isPendingStartSO } = useStartSOColor();
 
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("");
   const { search, searchValue, setSearch } = useSearchQuery();
 
   const { data, isPending, refetch, isRefetching, error, isError, isSuccess } =

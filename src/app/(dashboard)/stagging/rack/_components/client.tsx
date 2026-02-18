@@ -10,6 +10,7 @@ import {
 import {
   ArrowRightCircle,
   FileDown,
+  HistoryIcon,
   Loader2,
   PlusCircle,
   RefreshCw,
@@ -45,6 +46,19 @@ import { useGetListCategories } from "../_api/use-get-list-categories";
 import { useSubmit } from "../_api/use-submit";
 import { useDryScrap } from "../_api/use-dry-scrap";
 import DialogBarcode from "./dialog-barcode";
+import { useMigrateToRepair } from "../_api/use-migrate-to-repair";
+import { useToDamaged } from "../_api/use-to-damaged";
+import { DialogDamaged } from "./dialog-damaged";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
+import { useStockOpname } from "../_api/use-stock-opname";
+import { useScanSOrack } from "../_api/use-scan-so-rack";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import Link from "next/link";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -52,11 +66,11 @@ const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
 export const Client = () => {
   const [isOpen, setIsOpen] = useQueryState(
     "dialog",
-    parseAsString.withDefault("")
+    parseAsString.withDefault(""),
   );
   const [productId, setProductId] = useQueryState(
     "id",
-    parseAsString.withDefault("")
+    parseAsString.withDefault(""),
   );
   // rack Id for Edit
   const [rackId, setRackId] = useQueryState("rackId", {
@@ -67,6 +81,15 @@ export const Client = () => {
   const [selectedNameRack, setSelectedNameRack] = useState("");
   const [selectedBarcode, setSelectedBarcode] = useState("");
   const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+  const [isOpenDamaged, setIsOpenDamaged] = useState(false);
+  const [damagedDescription, setDamagedDescription] = useState("");
+  const [damagedProductId, setDamagedProductId] = useState("");
+  const [source, setSource] = useState("");
+  const [damagedBarcode, setDamagedBarcode] = useState("");
+  const [SOProductInput, setSOProductInput] = useState("");
+  const [SORackInput, setSORackInput] = useState("");
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // separate search states for rack and product so values don't collide
   const {
@@ -85,10 +108,10 @@ export const Client = () => {
 
   // local input state stored at parent level so values survive tab unmounts
   const [searchRackInput, setSearchRackInput] = useState<string>(
-    (searchRack as string) ?? ""
+    (searchRack as string) ?? "",
   );
   const [searchProductInput, setSearchProductInput] = useState<string>(
-    (searchProduct as string) ?? ""
+    (searchProduct as string) ?? "",
   );
 
   // keep local input in sync when query state changes externally
@@ -100,14 +123,14 @@ export const Client = () => {
     setSearchProductInput((searchProduct as string) ?? "");
   }, [searchProduct]);
 
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
 
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pProduct");
 
   // data form create edit
   type InputState = {
@@ -128,19 +151,31 @@ export const Client = () => {
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Rack Stagging",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   const [ToDisplayDialog, confirmToDisplay] = useConfirm(
     "To Display Rack",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   const [DialogDryScrap, confirmDryScrap] = useConfirm(
     "Dry Scrap Product Stagging",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
+  );
+
+  const [DialogMigrateToRepair, confirmMigrateToRepair] = useConfirm(
+    "Migrate Product Stagging to Repair",
+    "This action cannot be undone",
+    "destructive",
+  );
+
+  const [SoRackDialog, confirmSoRack] = useConfirm(
+    "SO Rack Stagging",
+    "This action cannot be undone",
+    "liquid",
   );
 
   // mutate DELETE, UPDATE, CREATE
@@ -154,11 +189,21 @@ export const Client = () => {
   const { mutate: mutateSubmit, isPending: isPendingSubmit } = useSubmit();
   const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
     useDryScrap();
+  const { mutate: mutateMigrateToRepair, isPending: isPendingMigrateToRepair } =
+    useMigrateToRepair();
+  const { mutate: mutateDamaged, isPending: isPendingDamaged } = useToDamaged();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
+  const { mutate: mutateStockOpname, isPending: isPendingStockOpname } =
+    useStockOpname();
+  const { mutate: mutateScanSORack, isPending: isPendingScanSORack } =
+    useScanSOrack();
 
   const {
     data: dataRacks,
     refetch: refetchRacks,
     isLoading: isLoadingRacks,
+    isRefetching: isRefetchRacks,
     isError: isErrorRacks,
     error: errorRacks,
     isSuccess: isSuccessRacks,
@@ -204,7 +249,17 @@ export const Client = () => {
     isLoadingProducts ||
     isRefetchingProducts ||
     isPendingProducts ||
-    isPendingAddFilter;
+    isPendingAddFilter ||
+    isPendingExport ||
+    isPendingSubmit ||
+    isPendingDryScrap ||
+    isPendingMigrateToRepair ||
+    isPendingScanSO ||
+    isPendingStockOpname ||
+    isLoadingRacks ||
+    isPendingDelete ||
+    isPendingCreate ||
+    isPendingUpdate;
 
   // handle close
   const handleClose = () => {
@@ -248,7 +303,7 @@ export const Client = () => {
         onSuccess: () => {
           handleClose();
         },
-      }
+      },
     );
   };
 
@@ -265,7 +320,112 @@ export const Client = () => {
         onSuccess: () => {
           handleClose();
         },
-      }
+      },
+    );
+  };
+
+  // handle to damaged
+  const handleSubmitDamaged = () => {
+    mutateDamaged(
+      {
+        body: {
+          description: damagedDescription,
+          product_id: damagedProductId,
+          source: source,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsOpenDamaged(false);
+          setDamagedDescription("");
+          setDamagedProductId("");
+          setSource("");
+        },
+      },
+    );
+  };
+
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
+      },
+    );
+  };
+
+  // handle scan SO Rack
+  const handleScanSORack = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SORackInput.trim()) return;
+    const title = `SO Rack Stagging barcode ${SORackInput}`;
+
+    (async () => {
+      const ok = await confirmSoRack(title);
+      if (!ok) return;
+
+      mutateScanSORack(
+        { barcode: SORackInput },
+        {
+          onSuccess: () => {
+            setSORackInput("");
+          },
+          onError: (error: any) => {
+            const message =
+              error?.response?.data?.message ||
+              error?.response?.data?.data?.message ||
+              "Barang gagal di-SO";
+
+            setErrorMessage(message);
+            setOpenErrorDialog(true);
+          },
+        },
+      );
+    })();
+  };
+
+  // handle stock opname
+  const handleStockOpname = async (id: any) => {
+    const foundRack = racksData?.data?.find(
+      (r: any) => String(r.id) === String(id),
+    );
+    const barcode = selectedBarcode || foundRack?.barcode || "";
+    const name =
+      selectedNameRack || foundRack?.display?.name || foundRack?.name || "";
+
+    const title = `SO Rack Stagging barcode ${barcode}${name ? ` nama rak ${name}` : ""}`;
+
+    const ok = await confirmSoRack(title);
+
+    if (!ok) return;
+    mutateStockOpname(
+      { id },
+      {
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
+      },
     );
   };
 
@@ -290,6 +450,13 @@ export const Client = () => {
 
     if (!ok) return;
     mutateDryScrap({ id });
+  };
+
+  const handleMigrateToRepair = async (id: any) => {
+    const ok = await confirmMigrateToRepair();
+
+    if (!ok) return;
+    mutateMigrateToRepair({ id });
   };
 
   useEffect(() => {
@@ -326,8 +493,10 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
+      <SoRackDialog />
       <ToDisplayDialog />
       <DialogDryScrap />
+      <DialogMigrateToRepair />
       <DialogBarcode
         onCloseModal={() => {
           if (barcodeOpen) {
@@ -388,6 +557,33 @@ export const Client = () => {
           }
         }}
       />
+      <DialogDamaged
+        isOpen={isOpenDamaged}
+        handleClose={() => setIsOpenDamaged(false)}
+        barcode={damagedBarcode}
+        description={damagedDescription}
+        setDescription={setDamagedDescription}
+        isLoading={isPendingDamaged}
+        handleSubmit={handleSubmitDamaged}
+      />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -432,6 +628,38 @@ export const Client = () => {
           </TabsList>
         </div>
         <TabsContent value="rack" className="w-full gap-4 flex flex-col">
+          <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">SO Rack Disini</h3>
+            <form onSubmit={handleScanSORack} className="flex flex-col gap-3">
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    Scan Barcode Rack
+                  </label>
+                  <Input
+                    type="text"
+                    className="border-sky-400/80 focus-visible:ring-sky-400"
+                    value={SORackInput}
+                    onChange={(e) => setSORackInput(e.target.value)}
+                    placeholder="Scan barcode here..."
+                    disabled={isPendingScanSORack}
+                    autoFocus
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  disabled={isPendingScanSORack || !SORackInput.trim()}
+                >
+                  {isPendingScanSORack ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "SO"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
           <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full flex flex-col gap-4">
               <h3 className="text-lg font-semibold">List Rak</h3>
@@ -455,7 +683,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isLoadingRacks ? "animate-spin" : ""
+                        isLoadingRacks || isRefetchRacks ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -468,6 +696,15 @@ export const Client = () => {
                   >
                     <PlusCircle className={"w-4 h-4 mr-1"} />
                     Add Rack
+                  </Button>
+                  <Button
+                    asChild
+                    className="bg-sky-400 hover:bg-sky-400/80 text-black"
+                  >
+                    <Link href={`/stagging/rack/history`}>
+                      <HistoryIcon className="w-4 h-4 ml-2" />
+                      History Rack
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -684,8 +921,11 @@ export const Client = () => {
                 setSelectedNameRack,
                 setSelectedTotalProduct,
                 setBarcodeOpen,
+                handleStockOpname,
+                isPendingStockOpname,
               })}
               data={racksData?.data ?? []}
+              isLoading={loading || isLoadingRacks || isRefetchRacks}
             />
 
             <div className="w-full p-4 bg-white">
@@ -697,6 +937,42 @@ export const Client = () => {
           </div>
         </TabsContent>
         <TabsContent value="product" className="w-full gap-4 flex flex-col">
+          {/* Card: SO Barang Disini */}
+          <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+            <form
+              onSubmit={handleScanSOProduct}
+              className="flex flex-col gap-3"
+            >
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    Scan Barcode
+                  </label>
+                  <Input
+                    type="text"
+                    className="border-sky-400/80 focus-visible:ring-sky-400"
+                    value={SOProductInput}
+                    onChange={(e) => setSOProductInput(e.target.value)}
+                    placeholder="Scan barcode here..."
+                    disabled={isPendingScanSO}
+                    autoFocus
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  disabled={isPendingScanSO || !SOProductInput.trim()}
+                >
+                  {isPendingScanSO ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "SO"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
           <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
             <h2 className="text-xl font-bold">List Product Stagging</h2>
             <div className="flex flex-col w-full gap-4">
@@ -756,6 +1032,7 @@ export const Client = () => {
                   </Button>
                 </div>
               </div>
+
               <DataTable
                 columns={columnProductStaging({
                   metaPageProduct,
@@ -763,10 +1040,17 @@ export const Client = () => {
                   isPendingDryScrap,
                   handleAddFilter,
                   handleDryScrap,
+                  handleMigrateToRepair,
+                  isPendingMigrateToRepair,
                   setProductId,
                   setIsOpen,
+                  setDamagedProductId,
+                  setDamagedBarcode,
+                  setIsOpenDamaged,
+                  setSource,
                 })}
                 data={productData ?? []}
+                isLoading={loading}
               />
               <Pagination
                 pagination={{ ...metaPageProduct, current: pageProduct }}

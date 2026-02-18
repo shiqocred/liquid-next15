@@ -8,14 +8,14 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  Drill,
+  BookMarked,
   FileDown,
+  HistoryIcon,
   Loader2,
-  Pencil,
   Printer,
   ReceiptText,
   RefreshCw,
-  Trash2,
+  Shield,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { alertError, cn, formatRupiah } from "@/lib/utils";
@@ -42,15 +42,26 @@ import { useGetListProduct } from "../_api/use-get-list-product";
 import Pagination from "@/components/pagination";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { useDeleteProductCategory } from "../_api/use-delete-product-category";
+// import { useDeleteProductCategory } from "../_api/use-delete-product-category";
 import { useExportProductCategory } from "../_api/use-export-product-category";
 import { useUpdateProductCategory } from "../_api/use-update-product-category";
 import { useGetProductCategoryDetail } from "../_api/use-get-product-category-detail";
 import { DialogDetail } from "./dialog-detail";
 import { useGetPriceProductCategory } from "../_api/use-get-price-product-category";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDryScrap } from "../_api/use-dry-scrap";
+// import { useDryScrap } from "../_api/use-dry-scrap";
 import DialogBarcode from "./dialog-barcode";
+import { useToDamaged } from "../_api/use-to-damaged";
+import { DialogDamaged } from "./dialog-damaged";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
+import { useStockOpname } from "../_api/use-stock-opname";
+// import { useScanSOrack } from "../_api/use-scan-so-rack";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 const DialogCreateEdit = dynamic(() => import("./dialog-create-edit"), {
   ssr: false,
 });
@@ -64,14 +75,17 @@ interface QualityData {
 export const Client = () => {
   const queryClient = useQueryClient();
   const [openCreateEdit, setOpenCreateEdit] = useQueryState(
-    "dialog",
-    parseAsBoolean.withDefault(false)
+    "createEditOpen",
+    parseAsBoolean.withDefault(false),
   );
   const [isOpenCategory, setIsOpenCategory] = useState(false);
   const [isOpenDetailProduct, setIsOpenDetailProduct] = useQueryState(
     "dialog2",
-    parseAsBoolean.withDefault(false)
+    parseAsBoolean.withDefault(false),
   );
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   // rack Id for Edit
   const [rackId, setRackId] = useQueryState("rackId", {
     defaultValue: "",
@@ -84,6 +98,13 @@ export const Client = () => {
   const [selectedNameRack, setSelectedNameRack] = useState("");
   const [selectedBarcode, setSelectedBarcode] = useState("");
   const [selectedTotalProduct, setSelectedTotalProduct] = useState("");
+  const [isOpenDamaged, setIsOpenDamaged] = useState(false);
+  const [damagedDescription, setDamagedDescription] = useState("");
+  const [damagedProductId, setDamagedProductId] = useState("");
+  const [source, setSource] = useState("");
+  const [damagedBarcode, setDamagedBarcode] = useState("");
+  const [SOProductInput, setSOProductInput] = useState("");
+  // const [SORackInput, setSORackInput] = useState("");
 
   const {
     search: searchRack,
@@ -96,19 +117,19 @@ export const Client = () => {
     setSearch: setSearchProduct,
   } = useSearchQuery("qProduct");
   const [searchRackInput, setSearchRackInput] = useState<string>(
-    (searchRack as string) ?? ""
+    (searchRack as string) ?? "",
   );
   const [searchProductInput, setSearchProductInput] = useState<string>(
-    (searchProduct as string) ?? ""
+    (searchProduct as string) ?? "",
   );
 
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pp");
 
   // data form create edit
   const [input, setInput] = useState({
@@ -135,30 +156,44 @@ export const Client = () => {
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Rack Display",
     "This action cannot be undone",
-    "destructive"
-  );
-  const [DeleteDialogProduct, confirmDeleteProduct] = useConfirm(
-    "Delete Product",
-    "This action cannot be undone",
-    "liquid"
+    "destructive",
   );
 
-  const [DialogDryScrap, confirmDryScrap] = useConfirm(
-    "Dry Scrap Product Display",
+  const [SoRackDialog, confirmSoRack] = useConfirm(
+    "SO Rack Stagging",
     "This action cannot be undone",
-    "destructive"
+    "liquid",
   );
+
+  // const [DeleteDialogProduct, confirmDeleteProduct] = useConfirm(
+  //   "Delete Product",
+  //   "This action cannot be undone",
+  //   "liquid"
+  // );
+
+  // const [DialogDryScrap, confirmDryScrap] = useConfirm(
+  //   "Dry Scrap Product Display",
+  //   "This action cannot be undone",
+  //   "destructive"
+  // );
 
   // mutate DELETE, UPDATE, CREATE, EXPORT
   const { mutate: mutateDelete, isPending: isPendingDelete } = useDeleteRack();
   const { mutate: mutateUpdate, isPending: isPendingUpdate } = useUpdateRack();
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateRack();
-  const { mutate: mutateDeleteProduct, isPending: isPendingDeleteProduct } =
-    useDeleteProductCategory();
+  // const { mutate: mutateDeleteProduct, isPending: isPendingDeleteProduct } =
+  //   useDeleteProductCategory();
   const { mutate: mutateExport, isPending: isPendingExport } =
     useExportProductCategory();
-  const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
-    useDryScrap();
+  // const { mutate: mutateDryScrap, isPending: isPendingDryScrap } =
+  //   useDryScrap();
+  const { mutate: mutateDamaged, isPending: isPendingDamaged } = useToDamaged();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
+  const { mutate: mutateStockOpname, isPending: isPendingStockOpname } =
+    useStockOpname();
+  // const { mutate: mutateScanSORack, isPending: isPendingScanSORack } =
+  //   useScanSOrack();
 
   const {
     mutate: updateProduct,
@@ -178,6 +213,7 @@ export const Client = () => {
     data: dataRacks,
     refetch: refetchRacks,
     isLoading: isLoadingRacks,
+    isRefetching: isRefetchRacks,
     isError: isErrorRacks,
     error: errorRacks,
     isSuccess: isSuccessRacks,
@@ -265,7 +301,7 @@ export const Client = () => {
         (key) =>
           JSON.parse(dataDetailProduct?.new_quality)[
             key as keyof QualityData
-          ] !== null
+          ] !== null,
       ),
       new_category_product:
         inputProduct.category ?? dataDetailProduct?.new_category_product,
@@ -282,12 +318,38 @@ export const Client = () => {
             queryKey: ["product-detail-product-detail", dataDetailProduct.id],
           });
         },
-      }
+      },
+    );
+  };
+
+  const handleSubmitDamaged = () => {
+    mutateDamaged(
+      {
+        body: {
+          description: damagedDescription,
+          product_id: damagedProductId,
+          source: source,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsOpenDamaged(false);
+          setDamagedDescription("");
+          setDamagedProductId("");
+
+          queryClient.invalidateQueries({
+            queryKey: ["list-product-by-category"],
+          });
+        },
+      },
     );
   };
 
   const loading =
-    isLoadingProducts || isRefetchingProducts || isPendingProducts;
+    isLoadingProducts ||
+    isRefetchingProducts ||
+    isPendingProducts ||
+    isRefetchRacks;
 
   // handle close
   const handleClose = () => {
@@ -322,7 +384,7 @@ export const Client = () => {
         onSuccess: () => {
           handleClose();
         },
-      }
+      },
     );
   };
 
@@ -339,7 +401,7 @@ export const Client = () => {
         onSuccess: () => {
           handleClose();
         },
-      }
+      },
     );
   };
 
@@ -353,13 +415,13 @@ export const Client = () => {
   };
 
   // handle delete product
-  const handleDeleteProduct = async (id: any) => {
-    const ok = await confirmDeleteProduct();
+  // const handleDeleteProduct = async (id: any) => {
+  //   const ok = await confirmDeleteProduct();
 
-    if (!ok) return;
+  //   if (!ok) return;
 
-    mutateDeleteProduct({ params: { id } });
-  };
+  //   mutateDeleteProduct({ params: { id } });
+  // };
 
   // handle export
   const handleExport = async () => {
@@ -373,16 +435,100 @@ export const Client = () => {
           link.click();
           document.body.removeChild(link);
         },
-      }
+      },
     );
   };
 
-  const handleDryScrap = async (id: any) => {
-    const ok = await confirmDryScrap();
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
+      },
+    );
+  };
+
+  // // handle scan SO Rack
+  // const handleScanSORack = (e: FormEvent) => {
+  //   e.preventDefault();
+  //   if (!SORackInput.trim()) return;
+  //   const title = `SO Rack Stagging barcode ${SORackInput}`;
+
+  //   (async () => {
+  //     const ok = await confirmSoRack(title);
+  //     if (!ok) return;
+
+  //     mutateScanSORack(
+  //       { barcode: SORackInput },
+  //       {
+  //         onSuccess: () => {
+  //           setSORackInput("");
+  //         },
+  //         onError: (error: any) => {
+  //           const message =
+  //             error?.response?.data?.message ||
+  //             error?.response?.data?.data?.message ||
+  //             "Rack gagal di-SO";
+
+  //           setErrorMessage(message);
+  //           setOpenErrorDialog(true);
+  //         },
+  //       },
+  //     );
+  //   })();
+  // };
+
+  // handle stock opname
+  const handleStockOpname = async (id: any) => {
+    const foundRack = racksData?.data?.find(
+      (r: any) => String(r.id) === String(id),
+    );
+    const barcode = selectedBarcode || foundRack?.barcode || "";
+    const name =
+      selectedNameRack || foundRack?.display?.name || foundRack?.name || "";
+
+    const title = `SO Rack Stagging barcode ${barcode}${name ? ` nama rak ${name}` : ""}`;
+
+    const ok = await confirmSoRack(title);
 
     if (!ok) return;
-    mutateDryScrap({ id });
+    mutateStockOpname(
+      { id },
+      {
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
+      },
+    );
   };
+
+  // const handleDryScrap = async (id: any) => {
+  //   const ok = await confirmDryScrap();
+
+  //   if (!ok) return;
+  //   mutateDryScrap({ id });
+  // };
 
   useEffect(() => {
     setSearchRackInput((searchRack as string) ?? "");
@@ -428,7 +574,7 @@ export const Client = () => {
       displayPrice: Math.round(
         parseFloat(inputProduct.price ?? "0") -
           (parseFloat(inputProduct.price ?? "0") / 100) *
-            parseFloat(inputProduct.discount ?? "0")
+            parseFloat(inputProduct.discount ?? "0"),
       ).toString(),
     }));
   }, [inputProduct.discount, inputProduct.price]);
@@ -469,12 +615,12 @@ export const Client = () => {
         "-",
     },
     {
-      accessorKey: "new_price_product||old_price_product",
+      accessorKey: "display_price||old_price_product",
       header: "Price",
       cell: ({ row }) => (
         <div className="tabular-nums">
           {formatRupiah(
-            row.original.new_price_product ?? row.original.old_price_product
+            row.original.display_price ?? row.original.old_price_product,
           )}
         </div>
       ),
@@ -486,7 +632,7 @@ export const Client = () => {
         <div className="">
           {format(
             new Date(row.original.new_date_in_product),
-            "iii, dd MMM yyyy"
+            "iii, dd MMM yyyy",
           )}
         </div>
       ),
@@ -510,7 +656,25 @@ export const Client = () => {
                   | "display"
                   | "expired"
                   | "slowmoving"
-              ]
+              ],
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
             )}
           >
             {status}
@@ -541,7 +705,26 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Delete</p>}>
+          <TooltipProviderPage value={<p>Damaged</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-orange-400 text-orange-700 hover:text-orange-700 hover:bg-orange-50"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setDamagedProductId(row.original.id);
+                setDamagedBarcode(
+                  row.original.new_barcode_product ??
+                    row.original.old_barcode_product ??
+                    "-",
+                );
+                setSource(row.original.source ?? "");
+                setIsOpenDamaged(true);
+              }}
+            >
+              <Shield className="w-4 h-4" />
+            </Button>
+          </TooltipProviderPage>
+          {/* <TooltipProviderPage value={<p>Delete</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -557,8 +740,9 @@ export const Client = () => {
                 <Trash2 className="w-4 h-4" />
               )}
             </Button>
-          </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Scrapt</p>}>
+          </TooltipProviderPage> */}
+
+          {/* <TooltipProviderPage value={<p>Scrapt</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -574,7 +758,7 @@ export const Client = () => {
                 <Drill className="w-4 h-4" />
               )}
             </Button>
-          </TooltipProviderPage>
+          </TooltipProviderPage> */}
         </div>
       ),
     },
@@ -616,6 +800,24 @@ export const Client = () => {
         </div>
       ),
     },
+    // {
+    //   accessorKey: "status_so",
+    //   header: "Status SO",
+    //   cell: ({ row }) => {
+    //     const status = row.original.status_so;
+    //     return (
+    //       <Badge
+    //         className={cn(
+    //           "shadow-none font-normal rounded-full capitalize text-black",
+    //           status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+    //           status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+    //         )}
+    //       >
+    //         {status}
+    //       </Badge>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
@@ -623,6 +825,7 @@ export const Client = () => {
         <div className="flex gap-4 justify-center items-center">
           <TooltipProviderPage value={<p>Detail</p>}>
             <Button
+              asChild
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
             >
@@ -631,7 +834,7 @@ export const Client = () => {
               </Link>
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Edit</p>}>
+          {/* <TooltipProviderPage value={<p>Edit</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -658,7 +861,7 @@ export const Client = () => {
             >
               <Pencil className="w-4 h-4" />
             </Button>
-          </TooltipProviderPage>
+          </TooltipProviderPage> */}
           <TooltipProviderPage value={<p>Print</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-sky-400 text-sky-700 hover:text-sky-700 hover:bg-sky-50 disabled:opacity-100 disabled:hover:bg-sky-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
@@ -679,7 +882,7 @@ export const Client = () => {
               )}
             </Button>
           </TooltipProviderPage>
-          <TooltipProviderPage value={<p>Delete</p>}>
+          {/* <TooltipProviderPage value={<p>Delete</p>}>
             <Button
               className="items-center w-9 px-0 flex-none h-9 border-red-400 text-red-700 hover:text-red-700 hover:bg-red-50 disabled:opacity-100 disabled:hover:bg-red-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
@@ -693,6 +896,23 @@ export const Client = () => {
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </TooltipProviderPage> */}
+          <TooltipProviderPage value={<p>Stock Opname</p>}>
+            <Button
+              className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              disabled={isPendingStockOpname}
+              onClick={(e) => {
+                e.preventDefault();
+                handleStockOpname(row.original.id);
+              }}
+            >
+              {isPendingStockOpname ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <BookMarked className="w-4 h-4" />
               )}
             </Button>
           </TooltipProviderPage>
@@ -723,7 +943,17 @@ export const Client = () => {
   return (
     <div className="flex flex-col items-start bg-gray-100 w-full relative px-4 gap-4 py-4">
       <DeleteDialog />
-      <DialogDryScrap />
+      <SoRackDialog />
+      {/* <DialogDryScrap /> */}
+      <DialogDamaged
+        isOpen={isOpenDamaged}
+        handleClose={() => setIsOpenDamaged(false)}
+        barcode={damagedBarcode}
+        description={damagedDescription}
+        setDescription={setDamagedDescription}
+        isLoading={isPendingDamaged}
+        handleSubmit={handleSubmitDamaged}
+      />
       <DialogBarcode
         onCloseModal={() => {
           if (barcodeOpen) {
@@ -755,7 +985,7 @@ export const Client = () => {
         isPendingUpdate={isPendingUpdate} // loading update
         data={racksData}
       />
-      <DeleteDialogProduct />
+      {/* <DeleteDialogProduct /> */}
       <DialogDetail
         isOpen={isOpenDetailProduct}
         handleClose={handleCloseProduct}
@@ -769,6 +999,24 @@ export const Client = () => {
         setIsOpenCategory={setIsOpenCategory}
         categories={categories}
       />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -813,6 +1061,38 @@ export const Client = () => {
           </TabsList>
         </div>
         <TabsContent value="rack" className="w-full gap-4 flex flex-col">
+          {/* <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">SO Rack Disini</h3>
+            <form onSubmit={handleScanSORack} className="flex flex-col gap-3">
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    Scan Barcode Rack
+                  </label>
+                  <Input
+                    type="text"
+                    className="border-sky-400/80 focus-visible:ring-sky-400"
+                    value={SORackInput}
+                    onChange={(e) => setSORackInput(e.target.value)}
+                    placeholder="Scan barcode here..."
+                    disabled={isPendingScanSORack}
+                    autoFocus
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                  disabled={isPendingScanSORack || !SORackInput.trim()}
+                >
+                  {isPendingScanSORack ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "SO"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div> */}
           <div className="flex w-full bg-white rounded-md shadow p-5 gap-6 flex-col">
             <div className="w-full flex flex-col gap-4">
               <h3 className="text-lg font-semibold">List Rak</h3>
@@ -836,7 +1116,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isLoadingRacks ? "animate-spin" : ""
+                        isLoadingRacks || isRefetchRacks ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -854,6 +1134,17 @@ export const Client = () => {
                     Add Rack
                   </Button>
                 </div> */}
+                <div className="flex gap-4 items-center ml-auto">
+                  <Button
+                    asChild
+                    className="bg-sky-400 hover:bg-sky-400/80 text-black"
+                  >
+                    <Link href={`/inventory/product/rack/history`}>
+                      <HistoryIcon className="w-4 h-4 ml-2" />
+                      History Rack
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
             {/* <div className="grid grid-cols-4 gap-4 w-full p-4">
@@ -1034,8 +1325,11 @@ export const Client = () => {
                 setSelectedNameRack,
                 setSelectedTotalProduct,
                 setBarcodeOpen,
+                handleStockOpname,
+                isPendingStockOpname,
               })}
               data={racksData?.data ?? []}
+              isLoading={isLoadingRacks || isRefetchRacks}
             />
             <div className="w-full p-4 bg-white">
               <Pagination
@@ -1086,6 +1380,41 @@ export const Client = () => {
           </div> */}
 
           <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-10 flex-col">
+            <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+              <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+              <form
+                onSubmit={handleScanSOProduct}
+                className="flex flex-col gap-3"
+              >
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">
+                      Scan Barcode
+                    </label>
+                    <Input
+                      type="text"
+                      className="border-sky-400/80 focus-visible:ring-sky-400"
+                      value={SOProductInput}
+                      onChange={(e) => setSOProductInput(e.target.value)}
+                      placeholder="Scan barcode here..."
+                      disabled={isPendingScanSO}
+                      autoFocus
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                    disabled={isPendingScanSO || !SOProductInput.trim()}
+                  >
+                    {isPendingScanSO ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "SO"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </div>
             <h2 className="text-xl font-bold">List Product by Category</h2>
             <div className="flex flex-col w-full gap-4">
               <div className="flex gap-2 items-center w-full justify-between">
@@ -1133,6 +1462,7 @@ export const Client = () => {
                   metaPageProduct,
                 })}
                 data={productData ?? []}
+                isLoading={loading}
               />
               <Pagination
                 pagination={{ ...metaPageProduct, current: pageProduct }}

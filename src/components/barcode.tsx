@@ -13,6 +13,7 @@ interface BarcodePrint {
   discount?: string;
   isBundle?: boolean;
   colorHex?: string;
+  description?: string;
   cancel?: () => void;
 }
 
@@ -24,6 +25,7 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
   discount,
   isBundle,
   colorHex,
+  description,
   cancel,
 }) => {
   const componentRef = useRef<HTMLDivElement>(null);
@@ -74,6 +76,11 @@ const BarcodePrinted: React.FC<BarcodePrint> = ({
                 </p>
               </div>
             </div>
+            {description && (
+              <div className="text-[11px] font-semibold mt-1 line-clamp-2 leading-tight">
+                {description}
+              </div>
+            )}
             <div className="flex text-base font-semibold gap-1">
               <div className="flex flex-col">
                 <p>{!isBundle ? "Harga Retail" : "Total Awal"}</p>

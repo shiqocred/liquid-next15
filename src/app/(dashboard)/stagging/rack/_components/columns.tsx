@@ -1,25 +1,21 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import { cn, formatRupiah } from "@/lib/utils";
 import { TooltipProviderPage } from "@/providers/tooltip-provider-page";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import {
   Boxes,
-  Drill,
   Loader2,
   LucideIcon,
   Pencil,
   PlusCircle,
   Printer,
   ReceiptText,
+  Shield,
   Trash2,
   XCircle,
+  BookMarked,
 } from "lucide-react";
 import Link from "next/link";
 import { MouseEvent } from "react";
@@ -49,7 +45,7 @@ const ButtonAction = ({
       <Button
         className={cn(
           "items-center p-0 w-9 disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed",
-          colorMap[type]
+          colorMap[type],
         )}
         disabled={isLoading}
         variant={"outline"}
@@ -70,10 +66,16 @@ export const columnProductStaging = ({
   metaPageProduct,
   isLoading,
   handleAddFilter,
-  handleDryScrap,
+  // handleDryScrap,
+  // handleMigrateToRepair,
+  // isPendingMigrateToRepair,
   setProductId,
   setIsOpen,
-  isPendingDryScrap,
+  // isPendingDryScrap,
+  setIsOpenDamaged,
+  setDamagedProductId,
+  setDamagedBarcode,
+  setSource,
 }: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -113,7 +115,7 @@ export const columnProductStaging = ({
     cell: ({ row }) => (
       <div className="tabular-nums">
         {formatRupiah(
-          row.original.new_price_product ?? row.original.old_price_product
+          row.original.new_price_product ?? row.original.old_price_product,
         )}
       </div>
     ),
@@ -138,8 +140,26 @@ export const columnProductStaging = ({
             "shadow-none font-normal rounded-full capitalize text-black",
             status === "display" && "bg-green-400/80 hover:bg-green-400/80",
             status === "expired" && "bg-red-400/80 hover:bg-red-400/80",
-            status === "slow moving" &&
-              "bg-yellow-400/80 hover:bg-yellow-400/80"
+            status === "slow_moving" &&
+              "bg-yellow-400/80 hover:bg-yellow-400/80",
+          )}
+        >
+          {status}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "status_so",
+    header: "Status SO",
+    cell: ({ row }) => {
+      const status = row.original.status_so;
+      return (
+        <Badge
+          className={cn(
+            "shadow-none font-normal rounded-full capitalize text-black",
+            status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+            status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
           )}
         >
           {status}
@@ -173,8 +193,25 @@ export const columnProductStaging = ({
           }}
           label="Detail"
         />
-        <Popover>
-          <TooltipProviderPage value={<p>To LPR / Dry Scrap</p>}>
+        <ButtonAction
+          label="Damaged"
+          onClick={(e) => {
+            e.preventDefault();
+            setDamagedProductId(row.original.id);
+            setDamagedBarcode(
+              row.original.new_barcode_product ??
+                row.original.old_barcode_product ??
+                "-",
+            );
+            setSource(row.original.source ?? "");
+            setIsOpenDamaged(true);
+          }}
+          isLoading={isLoading}
+          icon={Shield}
+          type="red"
+        />
+        {/* <Popover>
+          <TooltipProviderPage value={<p>Migrate To Repair / Dry Scrap</p>}>
             <PopoverTrigger asChild>
               <Button
                 className={cn(
@@ -206,6 +243,16 @@ export const columnProductStaging = ({
                 variant="ghost"
                 className="justify-start px-3 text-sm"
                 onClick={() => {
+                  handleMigrateToRepair(row.original.id);
+                }}
+                disabled={isPendingMigrateToRepair}
+              >
+                Migrate to Repair
+              </Button>
+              <Button
+                variant="ghost"
+                className="justify-start px-3 text-sm"
+                onClick={() => {
                   handleDryScrap(row.original.id);
                 }}
                 disabled={isPendingDryScrap}
@@ -214,7 +261,7 @@ export const columnProductStaging = ({
               </Button>
             </div>
           </PopoverContent>
-        </Popover>
+        </Popover> */}
       </div>
     ),
   },
@@ -271,6 +318,51 @@ export const columnFilteredProductStaging = ({
   },
 ];
 
+export const columnHistoryRackStaging = ({
+  metaPage,
+}: any): ColumnDef<any>[] => [
+  {
+    header: () => <div className="text-center">No</div>,
+    id: "id",
+    cell: ({ row }) => (
+      <div className="text-center tabular-nums">
+        {(metaPage.from + row.index).toLocaleString()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "rack_name",
+    header: "Rack Name",
+    cell: ({ row }) => row.original.rack_name ?? "-",
+  },
+  {
+    accessorKey: "total_in_rack",
+    header: "Total in Rack",
+    cell: ({ row }) => (
+      <div className="max-w-[500px] break-all">
+        {row.original.total_in_rack}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "users",
+    header: "User & Total Input",
+    cell: ({ row }) => {
+      const users = row.original.users;
+
+      if (!users || users.length === 0) return <span>-</span>;
+
+      return (
+        <div className="max-w-[500px] break-all">
+          {users
+            .map((user: any) => `${user.user_name} (${user.total_inserted})`)
+            .join(", ")}
+        </div>
+      );
+    },
+  },
+];
+
 export const columnRackStaging = ({
   metaPage,
   isLoading,
@@ -283,6 +375,8 @@ export const columnRackStaging = ({
   setSelectedNameRack,
   setSelectedTotalProduct,
   setBarcodeOpen,
+  handleStockOpname,
+  isPendingStockOpname,
 }: any): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -318,6 +412,24 @@ export const columnRackStaging = ({
         {formatRupiah(row.original.total_new_price_product ?? 0)}
       </div>
     ),
+  },
+  {
+    accessorKey: "status_so",
+    header: "Status SO",
+    cell: ({ row }) => {
+      const status = row.original.status_so;
+      return (
+        <Badge
+          className={cn(
+            "shadow-none font-normal rounded-full capitalize text-black",
+            status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+            status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+          )}
+        >
+          {status}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "action",
@@ -370,6 +482,7 @@ export const columnRackStaging = ({
           icon={Printer}
           type="sky"
         />
+
         <ButtonAction
           label="Delete"
           onClick={(e) => {
@@ -389,6 +502,16 @@ export const columnRackStaging = ({
           isLoading={isLoading}
           icon={Boxes}
           type="sky"
+        />
+        <ButtonAction
+          label="Stock Opname"
+          onClick={(e) => {
+            e.preventDefault();
+            handleStockOpname(row.original.id);
+          }}
+          isLoading={isPendingStockOpname}
+          icon={BookMarked}
+          type="yellow"
         />
       </div>
     ),

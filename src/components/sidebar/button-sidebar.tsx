@@ -1,6 +1,12 @@
 "use client";
 
-import React, { Dispatch, ReactNode, SetStateAction, useEffect } from "react";
+import React, {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useMemo,
+} from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
@@ -10,10 +16,10 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface SidebarButtonProps {
   label: string;
-  href: string | undefined;
+  href?: string;
   icon: ReactNode;
   sidebarMenu: any[];
-  subMenu?: any[];
+  subMenu?: { title: string; href: string }[];
   query?: string;
   pathname: string;
   setOpenMenu: Dispatch<SetStateAction<string>>;
@@ -28,59 +34,40 @@ export const ButtonSidebar = ({
   href,
   icon,
   query,
-  sidebarMenu,
-  subMenu,
+  subMenu = [],
   pathname,
   openMenu,
   setOpenMenu,
   setOpenSubMenu,
-  openSubMenu,
+  // openSubMenu,
   setOpen,
 }: SidebarButtonProps) => {
-  // button width variant
-  const buttonChevronVariant = {
-    isClose: { rotate: "0deg" },
-    isOpen: { rotate: "90deg" },
-  };
-
   const queryClient = useQueryClient();
+  const isActive = href ? pathname === href : false;
+  const isSubMenuActive = useMemo(() => {
+    return subMenu.some((item) => pathname === item.href);
+  }, [pathname, subMenu]);
 
-  const findActiveMenuTitle = () => {
-    for (const menu of sidebarMenu) {
-      for (const item of menu.menu) {
-        // Check direct href match
-        if (menu.href && pathname.includes(menu.href)) {
-          return menu.title;
-        }
-        // Check sub_menu href match
-        for (const subItem of item.sub_menu) {
-          if (subItem.href && pathname.includes(subItem.href)) {
-            return item.title;
-          }
-        }
-      }
-    }
-    return null;
-  };
-  const findActiveSubMenuTitle = () => {
-    for (const menu of sidebarMenu) {
-      for (const item of menu.menu) {
-        for (const subItem of item.sub_menu) {
-          if (subItem.href && pathname.includes(subItem.href)) {
-            return subItem.title;
-          }
-        }
-      }
-    }
-    return null;
-  };
+  const isParentActive = isActive || isSubMenuActive;
 
+  /* =========================
+   * AUTO OPEN MENU
+   * ========================= */
   useEffect(() => {
-    // Function to find the active menu title
-    setOpenMenu(findActiveMenuTitle());
-    // Function to find the active menu title
-    setOpenSubMenu(findActiveSubMenuTitle());
+    if (isSubMenuActive) {
+      setOpenMenu(label);
+      const activeSub = subMenu.find((s) => s.href === pathname);
+      if (activeSub) {
+        setOpenSubMenu(activeSub.href);
+      }
+    }
   }, [pathname]);
+
+  const chevronVariant = {
+    close: { rotate: 0 },
+    open: { rotate: 90 },
+  };
+
   return (
     <div className="w-full">
       {href ? (
@@ -88,9 +75,8 @@ export const ButtonSidebar = ({
           asChild
           type="button"
           className={cn(
-            "flex items-center leading-none h-10 bg-transparent shadow-none hover:bg-sky-200/70 dark:hover:bg-gray-700 px-3 transition-all text-sm font-medium rounded-md justify-between w-full",
-            pathname.includes(href) &&
-              "bg-sky-200/50 hover:bg-sky-200/80 border border-sky-300"
+            "flex h-10 w-full items-center justify-between rounded-md bg-transparent px-3 text-sm font-medium shadow-none transition-all hover:bg-sky-200/70",
+            isActive && "bg-sky-200/60 border border-sky-300",
           )}
           onClick={() => {
             setOpen?.(false);
@@ -100,8 +86,8 @@ export const ButtonSidebar = ({
           }}
         >
           <Link href={href}>
-            <div className="flex gap-2 items-center w-full capitalize text-sky-900">
-              <span className="w-4 h-4">{icon}</span>
+            <div className="flex items-center gap-2 capitalize text-sky-900">
+              <span className="h-4 w-4">{icon}</span>
               <span>{label}</span>
             </div>
           </Link>
@@ -111,56 +97,58 @@ export const ButtonSidebar = ({
           <button
             type="button"
             className={cn(
-              "flex items-center leading-none h-10 bg-transparent hover:bg-sky-200/70 dark:hover:bg-gray-700 px-3 transition-all text-sm font-medium rounded-md justify-between w-full",
-              (openMenu === label || findActiveMenuTitle() === label) &&
-                "bg-sky-200/50 hover:bg-sky-200/80 border border-sky-300"
+              "flex h-10 w-full items-center justify-between rounded-md px-3 text-sm font-medium transition-all hover:bg-sky-200/70",
+              isParentActive && "bg-sky-200/60 border border-sky-300",
             )}
             onClick={() =>
-              label === openMenu ? setOpenMenu("") : setOpenMenu(label)
+              openMenu === label ? setOpenMenu("") : setOpenMenu(label)
             }
           >
-            <div className="flex gap-2 items-center w-full capitalize text-sky-900">
-              <span className="w-5 h-5">{icon}</span>
+            <div className="flex items-center gap-2 capitalize text-sky-900">
+              <span className="h-5 w-5">{icon}</span>
               <span>{label}</span>
             </div>
+
             <motion.span
-              initial="isClose"
-              animate={openMenu === label ? "isOpen" : "isClose"}
-              variants={buttonChevronVariant}
-              transition={{ delay: 0, duration: 0.5 }}
+              variants={chevronVariant}
+              animate={openMenu === label ? "open" : "close"}
+              transition={{ duration: 0.3 }}
             >
               <ChevronRight className="h-4 w-4 text-sky-900" />
             </motion.span>
           </button>
-          {subMenu && subMenu?.length > 0 && (
-            <AnimatePresence>
-              {openMenu === label && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden flex flex-col items-start mt-1"
-                >
-                  {subMenu.map((item) => (
-                    <Link href={item.href} className="w-full" key={item.href}>
+
+          <AnimatePresence>
+            {openMenu === label && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="mt-1 flex flex-col overflow-hidden"
+              >
+                {subMenu.map((item) => {
+                  const isSubActive = pathname === item.href;
+
+                  return (
+                    <Link href={item.href} key={item.href} className="w-full">
                       <button
-                        className={cn(
-                          "flex items-center leading-none capitalize h-10 text-sky-900 bg-transparent hover:bg-sky-200/50 hover:border hover:border-sky-300 dark:hover:bg-gray-700 pl-6 pr-3 transition-all text-sm font-light rounded-md justify-start before:pr-1 w-full before:content-['-']",
-                          (pathname === item.href ||
-                            openSubMenu === item.title) &&
-                            "*:underline text-sky-950"
-                        )}
                         type="button"
                         onClick={() => setOpen?.(false)}
+                        className={cn(
+                          "flex h-10 w-full items-center rounded-md pl-6 pr-3 text-sm font-light capitalize text-sky-900 transition-all hover:bg-sky-200/50",
+                          isSubActive &&
+                            "bg-sky-200/60 border border-sky-300 font-medium",
+                        )}
                       >
-                        <p>{item.title}</p>
+                        <span className="mr-1">-</span>
+                        {item.title}
                       </button>
                     </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          )}
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </div>

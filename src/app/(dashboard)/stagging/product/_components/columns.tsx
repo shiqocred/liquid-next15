@@ -126,7 +126,7 @@ export const columnProductStaging = ({
             "shadow-none font-normal rounded-full capitalize text-black",
             status === "display" && "bg-green-400/80 hover:bg-green-400/80",
             status === "expired" && "bg-red-400/80 hover:bg-red-400/80",
-            status === "slow moving" &&
+            status === "slow_moving" &&
               "bg-yellow-400/80 hover:bg-yellow-400/80"
           )}
         >

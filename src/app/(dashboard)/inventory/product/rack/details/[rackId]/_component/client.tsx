@@ -8,7 +8,7 @@ import {
   ScanBarcode,
   Search,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { alertError, cn, formatRupiah } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -39,6 +39,13 @@ import { useGetDetailRacks } from "../_api/use-get-detail-rack";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { usePagination } from "@/lib/pagination";
+import { useScanSOProduct } from "../_api/use-scan-so-product";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const DialogProduct = dynamic(() => import("./dialog-product"), {
   ssr: false,
@@ -48,6 +55,9 @@ export const Client = () => {
   const { rackId } = useParams();
   const [isProduct, setIsProduct] = useState(false);
   const addRef = useRef<HTMLInputElement | null>(null);
+  const [SOProductInput, setSOProductInput] = useState("");
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // search, debounce, paginate strat ----------------------------------------------------------------
 
@@ -56,13 +66,13 @@ export const Client = () => {
   const [search, setSearch] = useQueryState("q", { defaultValue: "" });
   const [productSearch, setProductSearch] = useState("");
   const searchProductValue = useDebounce(productSearch);
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
   const {
     metaPage: metaPageProduct,
     page: pageProduct,
     setPage: setPageProduct,
     setPagination: setPaginationProduct,
-  } = usePagination();
+  } = usePagination("pp");
 
   // search, debounce, paginate end ----------------------------------------------------------------
 
@@ -71,7 +81,7 @@ export const Client = () => {
   const [DeleteProductDialog, confirmDeleteProduct] = useConfirm(
     "Remove Product from Rack",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   // confirm end ----------------------------------------------------------------
@@ -82,12 +92,14 @@ export const Client = () => {
     useAddProduct();
   const { mutate: mutateRemoveProduct, isPending: isPendingRemoveProduct } =
     useRemoveProduct();
+  const { mutate: mutateScanSO, isPending: isPendingScanSO } =
+    useScanSOProduct();
 
   // mutate end ----------------------------------------------------------------
 
   // query strat ----------------------------------------------------------------
 
-  const { data, refetch, isRefetching, error, isError, isSuccess } =
+  const { data, refetch, isRefetching, isLoading, error, isError, isSuccess } =
     useGetDetailRacks({
       id: rackId,
       p: page,
@@ -112,7 +124,7 @@ export const Client = () => {
   }, [data]);
 
   const dataList: any[] = useMemo(() => {
-    return data?.data.data.resource.products;
+    return data?.data.data.resource.products.data;
   }, [data]);
 
   const dataListProduct: any[] = useMemo(() => {
@@ -158,19 +170,55 @@ export const Client = () => {
           toast.error(
             `ERROR ${err?.status}: ${
               (err.response?.data as any).message || "Product failed to add"
-            } `
+            } `,
           );
         },
-      }
+      },
     );
   };
 
-  const handleRemoveProduct = async (id: any, idProduct: any) => {
+  const handleRemoveProduct = async (
+    rackId: any,
+    productId: any,
+    source: any,
+  ) => {
     const ok = await confirmDeleteProduct();
 
     if (!ok) return;
 
-    mutateRemoveProduct({ id, idProduct });
+    const body = {
+      rack_id: rackId,
+      product_id: productId,
+      source: source,
+    };
+
+    mutateRemoveProduct({
+      body,
+    });
+  };
+
+  // handle scan SO Barang
+  const handleScanSOProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!SOProductInput.trim()) return;
+
+    mutateScanSO(
+      { barcode: SOProductInput, rack_id: rackId },
+      {
+        onSuccess: () => {
+          setSOProductInput("");
+        },
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.data?.message ||
+            "Barang gagal di-SO";
+
+          setErrorMessage(message);
+          setOpenErrorDialog(true);
+        },
+      },
+    );
   };
 
   // handling action end ----------------------------------------------------------------
@@ -263,6 +311,24 @@ export const Client = () => {
       ),
     },
     {
+      accessorKey: "status_so",
+      header: "Status SO",
+      cell: ({ row }) => {
+        const status = row.original.status_so;
+        return (
+          <Badge
+            className={cn(
+              "shadow-none font-normal rounded-full capitalize text-black",
+              status === "Sudah SO" && "bg-green-400/80 hover:bg-green-400/80",
+              status === "Belum SO" && "bg-red-400/80 hover:bg-red-400/80",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => (
@@ -274,7 +340,11 @@ export const Client = () => {
               type="button"
               disabled={isPendingRemoveProduct}
               onClick={() => {
-                handleRemoveProduct(rackId, row.original.id);
+                handleRemoveProduct(
+                  rackId,
+                  row.original.id,
+                  row.original.source,
+                );
               }}
             >
               {isPendingRemoveProduct ? (
@@ -387,6 +457,24 @@ export const Client = () => {
         metaPage={metaPageProduct}
         setPage={setPageProduct}
       />
+      <Dialog open={openErrorDialog} onOpenChange={setOpenErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">SO Gagal</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-gray-700">{errorMessage}</div>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              className="bg-sky-400 hover:bg-sky-400/80 text-black"
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <div className="flex flex-col gap-4 w-full">
         <Breadcrumb>
           <BreadcrumbList>
@@ -425,7 +513,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isRefetching ? "animate-spin" : ""
+                        isRefetching ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -462,13 +550,24 @@ export const Client = () => {
                     {formatRupiah(dataDetail?.total_display_price_product)}{" "}
                   </p>
                 </div>
+                {/* <div className="flex flex-col">
+                  <p className="text-sm">Status SO</p>
+                  <p className="font-semibold">
+                    {" "}
+                    {dataDetail?.is_so === 1
+                      ? "Sudah SO"
+                      : dataDetail?.is_so === 0
+                        ? "Belum SO"
+                        : "-"}{" "}
+                  </p>
+                </div> */}
               </div>
             </div>
             <div className="border-t border-gray-500 w-full pt-3 mt-5">
               <div className="w-full flex justify-between items-center">
                 <div
                   className={cn(
-                    "flex items-center gap-2 relative group w-full max-w-xl"
+                    "flex items-center gap-2 relative group w-full max-w-xl",
                   )}
                 >
                   <Label
@@ -507,7 +606,7 @@ export const Client = () => {
                     <RefreshCw
                       className={cn(
                         "w-4 h-4",
-                        isRefetching ? "animate-spin" : ""
+                        isRefetching ? "animate-spin" : "",
                       )}
                     />
                   </Button>
@@ -516,7 +615,38 @@ export const Client = () => {
             </div>
           </div>
         </div>
-
+        <div className="bg-white shadow rounded-xl p-5 border border-gray-200 flex flex-col gap-4">
+          <h3 className="text-lg font-semibold">SO Barang Disini</h3>
+          <form onSubmit={handleScanSOProduct} className="flex flex-col gap-3">
+            <div className="flex gap-3 items-end">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Scan Barcode
+                </label>
+                <Input
+                  type="text"
+                  className="border-sky-400/80 focus-visible:ring-sky-400"
+                  value={SOProductInput}
+                  onChange={(e) => setSOProductInput(e.target.value)}
+                  placeholder="Scan barcode here..."
+                  disabled={isPendingScanSO}
+                  autoFocus
+                />
+              </div>
+              <Button
+                type="submit"
+                className="bg-sky-400 hover:bg-sky-400/80 text-black disabled:opacity-100 disabled:hover:bg-sky-400 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                disabled={isPendingScanSO || !SOProductInput.trim()}
+              >
+                {isPendingScanSO ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "SO"
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
         <div className="flex w-full bg-white rounded-md overflow-hidden shadow px-5 py-3 gap-4 flex-col">
           <div className="flex gap-2 items-center w-full justify-between">
             <div className="flex items-center gap-3 w-full">
@@ -536,7 +666,7 @@ export const Client = () => {
                   <RefreshCw
                     className={cn(
                       "w-4 h-4",
-                      isRefetching ? "animate-spin" : ""
+                      isRefetching ? "animate-spin" : "",
                     )}
                   />
                 </Button>
@@ -544,7 +674,7 @@ export const Client = () => {
             </div>
           </div>
           <DataTable
-            isLoading={isRefetching}
+            isLoading={isRefetching || isLoading}
             columns={columnSales}
             data={dataList ?? []}
           />

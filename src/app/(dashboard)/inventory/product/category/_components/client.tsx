@@ -52,7 +52,7 @@ export const Client = () => {
   const queryClient = useQueryClient();
 
   const { search, searchValue, setSearch } = useSearchQuery();
-  const { metaPage, page, setPage, setPagination } = usePagination();
+  const { metaPage, page, setPage, setPagination } = usePagination("p");
 
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Product",

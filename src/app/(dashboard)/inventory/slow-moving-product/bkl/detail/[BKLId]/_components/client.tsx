@@ -56,8 +56,6 @@ export const Client = () => {
     return detailBKL?.data.data.resource;
   }, [detailBKL]);
 
-  console.log("dataDetailBKL", dataDetailBKL);
-
   // ⬇⬇ DISABLE SEMUA INPUT JIKA STATUS DONE
   const isDisabled = dataDetailBKL?.status === "done";
 

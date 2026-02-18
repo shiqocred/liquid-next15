@@ -348,7 +348,7 @@ export const Client = () => {
     },
     {
       accessorKey: "new_status_product",
-      header: () => <div className="text-center">Price</div>,
+      header: () => <div className="text-center">Status</div>,
       cell: ({ row }) => (
         <div className="flex justify-center">
           <Badge className="bg-sky-400/80 hover:bg-sky-400/80 text-black rounded font-normal capitalize">
@@ -482,8 +482,9 @@ export const Client = () => {
         }}
         open={barcodeOpen}
         oldPrice={input.total ?? "0"}
+        newName={input.name}
         barcode={data?.data.data.resource.barcode_bundle ?? ""}
-        category={input.name ?? ""}
+        category={input.category ?? ""}
         newPrice={input.custom ?? "0"}
         handleCancel={() => {
           setBarcodeOpen(false);

@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { useMutate } from "@/lib/query";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Params = {
   id: string;
@@ -23,11 +24,14 @@ type Body = {
 };
 
 export const useUpdateProductCategory = () => {
+    const queryClient = useQueryClient();
+
   const mutation = useMutate<Body, Params>({
     endpoint: "/new_products/:id",
     method: "put",
     onSuccess: () => {
       toast.success("Product successfully Updated");
+      queryClient.invalidateQueries({ queryKey: ["list-product-display"] });
     },
     onError: {
       message: "Product failed to update",

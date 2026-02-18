@@ -44,6 +44,12 @@ const DialogExportData = ({
   const [pageBreak, setPageBreak] = useState<"none" | "cek" | "catat">("none");
   const [cekOpen, setCekOpen] = useState(false);
   const [catatOpen, setCatatOpen] = useState(false);
+  const loyalty = data?.buyer_loyalty;
+
+  const showLoyaltyCard =
+    loyalty?.upgrade_message_rank != null &&
+    loyalty?.upgrade_message_discount != null &&
+    loyalty?.expired_rank != null;
 
   function convertToRoman(num: number): string {
     const romanNumerals: { value: number; symbol: string }[] = [
@@ -339,6 +345,31 @@ const DialogExportData = ({
                       <p>: {data?.data?.transactions_today}</p>
                     </div>
                   </div>
+                  {showLoyaltyCard && (
+                    <div className="w-full border border-black p-3 my-3 bg-gray-50">
+                      <p className="font-bold mb-1">🎉 Selamat!</p>
+
+                      <p className="text-justify">
+                        Anda saat ini berada di{" "}
+                        <span className="font-bold uppercase">
+                          Rank {loyalty.upgrade_message_rank}
+                        </span>{" "}
+                        dan berhak mendapatkan{" "}
+                        <span className="font-bold">
+                          diskon {loyalty.upgrade_message_discount}%
+                        </span>{" "}
+                        untuk pembelanjaan selanjutnya.
+                      </p>
+
+                      <p className="mt-1 text-sm">
+                        Masa berlaku rank hingga:{" "}
+                        <span className="font-bold">
+                          {loyalty.expired_rank}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+
                   <h3 className="font-bold my-3">A. Identitas Pembeli</h3>
                   <div className="w-[99.8%] flex flex-col border border-black">
                     <div className="w-full flex">
@@ -503,11 +534,7 @@ const DialogExportData = ({
                       </p>
                     </div>
                     <div className="flex">
-                      <p className="px-3">
-                        Kardus @
-                        {formatRupiah(data?.buyer?.cardbox_unit_price) ??
-                          "Rp 0"}
-                      </p>
+                      <p className="px-3">Kardus</p>
                       <p className="w-12 flex-none text-center">
                         {data?.buyer?.cardbox_qty}
                       </p>
@@ -524,7 +551,7 @@ const DialogExportData = ({
                       </p>
                     </div>
                     <div className="flex">
-                      <p className="px-3">Discount Rank</p>
+                      <p className="px-3">Discount Class</p>
                       <p className="w-12 flex-none" />
                       <p className="w-32 flex-none pr-3 text-end tabular-nums">
                         -{" "}
