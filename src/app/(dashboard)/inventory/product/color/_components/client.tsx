@@ -903,7 +903,7 @@ export const Client = () => {
                   <div className="w-full border border-sky-400 p-3 rounded-md">
                     <h5 className="text-sm">Total Value</h5>
                     <p className="font-semibold text-lg">
-                      {formatRupiah(dataResAPK?.total_price_all)}
+                      {formatRupiah(dataResAPK?.total_price)}
                     </p>
                   </div>
                 </div>
