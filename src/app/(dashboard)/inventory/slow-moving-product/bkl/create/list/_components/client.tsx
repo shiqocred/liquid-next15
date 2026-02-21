@@ -51,7 +51,7 @@ export const Client = () => {
 
   // memo data utama
   const dataList: any[] = useMemo(() => {
-    return data?.data.resource ?? [];
+    return data?.data.data.resource?.data ?? [];
   }, [data]);
 
   // load data
@@ -62,7 +62,7 @@ export const Client = () => {
     setPaginate({
       isSuccess,
       data,
-      dataPaginate: data?.data.resource,
+      dataPaginate: data?.data.data.resource,
       setPage,
       setMetaPage,
     });
@@ -122,6 +122,7 @@ export const Client = () => {
         <div className="flex gap-4 justify-center items-center">
           <TooltipProviderPage value={<p>Edit</p>}>
             <Button
+              asChild
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
               // onClick={(e) => {
