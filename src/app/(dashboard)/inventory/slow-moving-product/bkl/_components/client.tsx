@@ -103,7 +103,7 @@ export const Client = () => {
               "rounded w-20 px-0 justify-center text-black font-normal capitalize",
               row.original.status.toLowerCase() === "done"
                 ? "bg-green-400 hover:bg-green-400"
-                : "bg-yellow-400 hover:bg-yellow-400"
+                : "bg-yellow-400 hover:bg-yellow-400",
             )}
           >
             {row.original.status}
@@ -118,6 +118,7 @@ export const Client = () => {
         <div className="flex gap-4 justify-center items-center">
           <TooltipProviderPage value={<p>Edit</p>}>
             <Button
+              asChild
               className="items-center w-9 px-0 flex-none h-9 border-yellow-400 text-yellow-700 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-100 disabled:hover:bg-yellow-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
               variant={"outline"}
               // onClick={(e) => {

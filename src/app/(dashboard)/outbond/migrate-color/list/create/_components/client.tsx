@@ -78,7 +78,7 @@ export const Client = () => {
   const [DeleteMigrateDialog, confirmDeleteMigrate] = useConfirm(
     "Delete Migrate",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   const { data, refetch, isRefetching, error, isError } =
@@ -106,7 +106,7 @@ export const Client = () => {
         ([key, value]) => ({
           name: key.toLowerCase(), // Convert key to lowercase
           value: value,
-        })
+        }),
       )
     );
   }, [dataSelect]);
@@ -143,7 +143,7 @@ export const Client = () => {
         onSuccess: () => {
           setInput({ destination: "", color: "", count: 0, qty: "0" });
         },
-      }
+      },
     );
   };
 
@@ -298,8 +298,8 @@ export const Client = () => {
               {dataList?.destiny_document_migrate
                 ? dataList?.destiny_document_migrate
                 : input.destination
-                ? input.destination
-                : "Not Selected"}
+                  ? input.destination
+                  : "Not Selected"}
               {!dataList?.destiny_document_migrate && (
                 <div className="size-9 flex items-center justify-center rounded-full group-hover:bg-sky-100">
                   <ArrowLeftRight className="size-4" />
@@ -333,7 +333,7 @@ export const Client = () => {
                           "fill-black stroke-white mr-2 w-5 h-5",
                           input.destination === item.shop_name
                             ? "opacity-100"
-                            : "opacity-0"
+                            : "opacity-0",
                         )}
                       />
                       <div className="flex flex-col">
@@ -367,13 +367,23 @@ export const Client = () => {
               input.qty === "0"
             }
           >
-            {(!input.destination && !dataList?.destiny_document_migrate) ||
-            input.qty === "0" ? (
-              <Ban className="size-3 mr-1" />
+            {isPendingAddColor ? (
+              <>
+                <Loader2 className="size-3 mr-1 animate-spin" />
+                Loading...
+              </>
+            ) : (!input.destination && !dataList?.destiny_document_migrate) ||
+              input.qty === "0" ? (
+              <>
+                <Ban className="size-3 mr-1" />
+                Add
+              </>
             ) : (
-              <PlusCircle className="size-3 mr-1" />
+              <>
+                <PlusCircle className="size-3 mr-1" />
+                Add
+              </>
             )}
-            Add
           </Button>
         </div>
         <div className="flex w-full items-center px-5 gap-4">
@@ -431,7 +441,7 @@ export const Client = () => {
                             "fill-black stroke-white mr-2 w-5 h-5",
                             input.color === item.name
                               ? "opacity-100"
-                              : "opacity-0"
+                              : "opacity-0",
                           )}
                         />
                         <div className="flex justify-between items-center w-full">
@@ -533,7 +543,7 @@ export const Client = () => {
                   <RefreshCw
                     className={cn(
                       "w-4 h-4",
-                      isRefetching ? "animate-spin" : ""
+                      isRefetching ? "animate-spin" : "",
                     )}
                   />
                 </Button>
@@ -546,14 +556,18 @@ export const Client = () => {
                   handleSubmit();
                 }}
               >
-                <Send className="size-4 mr-1" />
-                Send
+                {isSubmit ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Send className="size-4 mr-1" />
+                )}
               </Button>
             </div>
           </div>
           <DataTable
             columns={columnColorMigrate}
             data={dataList?.migrates ?? []}
+            isLoading={isRefetching || isSubmit || isPendingAddColor || isPendingRemoveColor}
           />
         </div>
       </div>

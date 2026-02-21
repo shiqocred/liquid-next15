@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/select";
 import { useCreateBKL } from "../_api";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useGetGenerateNameBKL } from "../_api/use-get-generate-name";
 import { useGetDetailStockReturOlsera } from "../_api/use-get-detail-stock-olsera";
 
 export const Client = () => {
@@ -38,16 +37,16 @@ export const Client = () => {
   const [dataSearch] = useQueryState("q", { defaultValue: "" });
   const searchValue = useDebounce(dataSearch);
   const { mutate: mutateCreate, isPending: isPendingCreate } = useCreateBKL();
-  const { data: generatedNameData, refetch: refetchGenerate } =
-    useGetGenerateNameBKL();
 
   const { data } = useGetListTagColorWMS({ q: searchValue });
-  const { data: detailBKL, refetch: refetchBKL, isFetching } = useGetDetailStockReturOlsera(
-    {
-      id: stockOlseraId,
-      destinationId: destinationId,
-    },
-  );
+  const {
+    data: detailBKL,
+    refetch: refetchBKL,
+    isFetching,
+  } = useGetDetailStockReturOlsera({
+    id: stockOlseraId,
+    destinationId: destinationId,
+  });
   const dataListColor: any[] = useMemo(() => {
     return data?.data.data.resource;
   }, [data]);
@@ -55,10 +54,6 @@ export const Client = () => {
   const detailData: any = useMemo(() => {
     return detailBKL?.data.data.resource.data;
   }, [detailBKL]);
-
-  const dataGenerateName: any = useMemo(() => {
-    return generatedNameData?.data.data.resource;
-  }, [generatedNameData]);
 
   type ColorItem = { color: string; qty: string };
   const [formState, setFormState] = useState<{
@@ -139,21 +134,22 @@ export const Client = () => {
       </Breadcrumb>
       {detailData && (
         <div className="bg-white rounded shadow p-4 flex flex-col gap-4">
-          <h2 className="text-lg font-semibold border-b pb-2">
-            Detail Retur Olsera
-          </h2>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isFetching}
-            onClick={() => refetchBKL()}
-            className="flex items-center gap-2"
-          >
-            <RefreshCcw
-              className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
-            />
-          </Button>
+          <div className="flex items-center justify-between border-b pb-2">
+            <h2 className="text-lg font-semibold">Detail Retur Olsera</h2>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isFetching}
+              onClick={() => refetchBKL()}
+              className="flex items-center gap-2"
+            >
+              <RefreshCcw
+                className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
+              />
+            </Button>
+          </div>
 
           {/* Header Info */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -266,25 +262,6 @@ export const Client = () => {
               }}
               className="flex flex-col gap-4"
             >
-              <div className="flex gap-2 items-center">
-                <Input
-                  disabled
-                  placeholder="Nama"
-                  value={dataGenerateName?.code_document_bkl || ""}
-                  onChange={(e) =>
-                    setFormState((s) => ({ ...s, name: e.target.value }))
-                  }
-                  className="px-3 py-2 border rounded w-1/3 border-sky-400/80 focus-visible:ring-sky-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => refetchGenerate()}
-                  className="w-8 h-8 flex items-center justify-center border border-l-none rounded border-gray-500 hover:bg-sky-100"
-                >
-                  <RefreshCcw className="w-4 h-4" />
-                </button>
-              </div>
-
               <div className="flex gap-3 items-center">
                 <Input
                   placeholder="Damaged"
