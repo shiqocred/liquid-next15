@@ -100,15 +100,15 @@ export const Client = () => {
   }, [dataSelect]);
 
   const dataListColor: any[] = useMemo(() => {
-    return (
-      dataSelect?.data.data.resource.color &&
-      Object.entries(dataSelect?.data.data.resource.color).map(
-        ([key, value]) => ({
-          name: key.toLowerCase(), // Convert key to lowercase
-          value: value,
-        }),
-      )
-    );
+    const colors = dataSelect?.data?.data?.resource?.color;
+
+    if (!colors) return [];
+
+    return Object.entries(colors).map(([name, value]: any) => ({
+      name,
+      qty: value.qty,
+      fixed_price: value.fixed_price,
+    }));
   }, [dataSelect]);
 
   useEffect(() => {
@@ -423,7 +423,7 @@ export const Client = () => {
                 <CommandList>
                   <CommandEmpty>No Color yet.</CommandEmpty>
                   <CommandGroup>
-                    {dataListColor?.map((item) => (
+                    {/* {dataListColor?.map((item) => (
                       <CommandItem
                         key={item.name}
                         onSelect={() => {
@@ -446,7 +446,45 @@ export const Client = () => {
                         />
                         <div className="flex justify-between items-center w-full">
                           <p className="font-semibold">{item.name}</p>
+                          <p className="font-semibold">{item.name}</p>
+
                           <p className="text-xs">{item.value} Products</p>
+                        </div>
+                      </CommandItem>
+                    ))} */}
+                    {dataListColor?.map((item) => (
+                      <CommandItem
+                        key={item.name}
+                        onSelect={() => {
+                          setInput((prev) => ({
+                            ...prev,
+                            color: item.name,
+                            count: item.qty, // ambil dari qty
+                          }));
+                          setIsOpenColor(false);
+                        }}
+                        className="py-2.5 px-3 capitalize"
+                      >
+                        <CheckCircle2
+                          className={cn(
+                            "fill-black stroke-white mr-2 w-5 h-5",
+                            input.color === item.name
+                              ? "opacity-100"
+                              : "opacity-0",
+                          )}
+                        />
+
+                        <div className="flex justify-between items-center w-full">
+                          <div className="flex flex-col">
+                            <p className="font-semibold">{item.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {item.qty.toLocaleString()} Products
+                            </p>
+                          </div>
+
+                          <p className="text-sm font-bold">
+                            Rp {item.fixed_price.toLocaleString("id-ID")}
+                          </p>
                         </div>
                       </CommandItem>
                     ))}
@@ -567,7 +605,12 @@ export const Client = () => {
           <DataTable
             columns={columnColorMigrate}
             data={dataList?.migrates ?? []}
-            isLoading={isRefetching || isSubmit || isPendingAddColor || isPendingRemoveColor}
+            isLoading={
+              isRefetching ||
+              isSubmit ||
+              isPendingAddColor ||
+              isPendingRemoveColor
+            }
           />
         </div>
       </div>

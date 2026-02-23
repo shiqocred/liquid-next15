@@ -117,8 +117,6 @@ export const Client = () => {
     return dataStatisticsStock?.data.data.resource;
   }, [dataStatisticsStock]);
 
-  console.log("dataStatisticsStock", dataStatisticsStockMemo);
-
   // get pagetination
   useEffect(() => {
     setPaginate({
