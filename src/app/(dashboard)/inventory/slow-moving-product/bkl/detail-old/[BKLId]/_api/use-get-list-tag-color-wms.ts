@@ -3,19 +3,18 @@ import axios from "axios";
 import { baseUrl } from "@/lib/baseUrl";
 import { getCookie } from "cookies-next/client";
 
-export const useGetDetailBKL = ({ id }: any) => {
+export const useGetListTagColorWMS = ({ q }: any) => {
   const accessToken = getCookie("accessToken");
   const query = useQuery({
-    queryKey: ["detail-bkl", id],
+    queryKey: ["list-tag-color-wms", { q }],
     queryFn: async () => {
-      const res = await axios.get(`${baseUrl}/bkls/${id}`, {
+      const res = await axios.get(`${baseUrl}/color_tags?q=${q}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       return res;
     },
-    enabled: !!id,
   });
   return query;
 };

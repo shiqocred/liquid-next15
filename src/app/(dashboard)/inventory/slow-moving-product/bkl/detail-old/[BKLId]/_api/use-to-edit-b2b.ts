@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import { baseUrl } from "@/lib/baseUrl";
@@ -7,13 +7,14 @@ import { getCookie } from "cookies-next/client";
 
 type Error = AxiosError;
 
-export const useCreateBKL = () => {
+export const useToEditBKL = ({ id }: any) => {
   const accessToken = getCookie("accessToken");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation<AxiosResponse, Error, any>({
     mutationFn: async () => {
       const res = await axios.post(
-        `${baseUrl}/bkls`,
+        `${baseUrl}/bkl/${id}/to-edit`,
         {},
         {
           headers: {
@@ -25,7 +26,9 @@ export const useCreateBKL = () => {
     },
     onSuccess: () => {
       toast.success("BKL successfully created");
-      window.location.href = "/inventory/slow-moving-product/bkl";
+      queryClient.invalidateQueries({
+        queryKey: ["list-list-bkl"],
+      });
     },
     onError: (err) => {
       if (err.status === 403) {
