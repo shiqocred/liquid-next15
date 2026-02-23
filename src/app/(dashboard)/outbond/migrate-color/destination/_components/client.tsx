@@ -395,7 +395,9 @@ export const Client = () => {
                 <Button
                   onClick={handleSyncTokens}
                   disabled={isPendingSync}
-                  className="items-center flex-none h-9 border-green-400 text-green-700 hover:bg-green-50 disabled:opacity-100 disabled:hover:bg-green-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
+                    className="hidden"
+
+                  // className="items-center flex-none h-9 border-green-400 text-green-700 hover:bg-green-50 disabled:opacity-100 disabled:hover:bg-green-50 disabled:pointer-events-auto disabled:cursor-not-allowed"
                   variant={"outline"}
                 >
                   {isPendingSync ? (
